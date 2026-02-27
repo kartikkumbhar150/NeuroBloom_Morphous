@@ -52,7 +52,7 @@ export function MarioHero() {
           <Coin position={[0, -1.5, 0.5]} />
         </Float>
 
-        <gridHelper args={[20, 20, '#ffffff', '#ffffff']} position={[0, -2, 0]} opacity={0.2} transparent />
+        <gridHelper args={[20, 20, '#ffffff', '#ffffff']} position={[0, -2, 0]} />
       </Canvas>
       
       {/* Decorative CSS Clouds */}

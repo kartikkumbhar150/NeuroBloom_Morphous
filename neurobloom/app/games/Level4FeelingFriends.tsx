@@ -100,104 +100,80 @@ export function Level4FeelingFriends({ onComplete, onProgress }: Level4Props) {
     }, 1200);
   };
 
-  return (
-    <div className="text-center max-w-2xl mx-auto px-4 py-2">
-      <h2 className="text-2xl font-black text-orange-600 mb-4 uppercase tracking-tight">
-        {t('game_f1_title')}
-      </h2>
-
-      <div className="bg-gradient-to-br from-yellow-100 to-orange-100 p-4 rounded-2xl shadow-md mb-6 border-b-4 border-orange-200">
-        <p className="text-2xl font-black text-orange-700">
-          {t('game_f1_instr')} <span className="underline decoration-orange-400">{currentEmotion.label}</span> {t('game_f1_instr_face')}
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl mx-auto">
-        {faces[currentEmotion.emotion].map((face, index) => (
-          <motion.button
-            key={`${currentGame}-${index}`}
-            whileHover={{ scale: feedback === null ? 1.03 : 1 }}
-            whileTap={{ scale: feedback === null ? 0.98 : 1 }}
-            onClick={() => handleAnswer(index)}
-            disabled={feedback !== null}
-            className={`relative overflow-hidden bg-white rounded-2xl shadow-lg transition-all border-4 ${
-              selectedFace === index
-                ? feedback === 'correct'
-                  ? 'border-green-500'
-                  : 'border-red-500'
-                : 'border-transparent hover:border-orange-200'
-            }`}
-          >
-            <img 
-              src={face.src} 
-              alt={face.emotion} 
-              className="w-full h-40 md:h-44 object-cover"
+    return (
+      <div className="text-center max-w-2xl mx-auto px-4 py-2">
+        <h2 className="text-4xl font-black text-black mb-6 uppercase tracking-tight">
+          {t('game_f1_title')}
+        </h2>
+  
+        <div className="bg-white border-4 border-black p-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] mb-10">
+          <p className="text-2xl font-black text-black uppercase">
+            {t('game_f1_instr')} <span className="text-primary underline decoration-4 decoration-black">{currentEmotion.label}</span> {t('game_f1_instr_face')}
+          </p>
+        </div>
+  
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-3xl mx-auto">
+          {faces[currentEmotion.emotion].map((face, index) => (
+            <motion.button
+              key={`${currentGame}-${index}`}
+              whileHover={{ scale: feedback === null ? 1.05 : 1, y: -4 }}
+              whileTap={{ scale: feedback === null ? 0.95 : 1, y: 0 }}
+              onClick={() => handleAnswer(index)}
+              disabled={feedback !== null}
+              className={`relative overflow-hidden bg-white border-4 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] active:shadow-none transition-all ${
+                selectedFace === index
+                  ? feedback === 'correct'
+                    ? 'border-secondary'
+                    : 'border-primary'
+                  : 'border-black hover:border-accent'
+              }`}
+            >
+              <img 
+                src={face.src} 
+                alt={face.emotion} 
+                className="w-full h-44 md:h-48 object-cover"
+              />
+              
+              <AnimatePresence>
+                {selectedFace === index && feedback && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-[2px]"
+                  >
+                    {feedback === 'correct' ? (
+                      <div className="bg-secondary border-4 border-black p-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                        <Check className="w-12 h-12 text-white" strokeWidth={5} />
+                      </div>
+                    ) : (
+                      <div className="bg-primary border-4 border-black p-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                        <X className="w-12 h-12 text-white" strokeWidth={5} />
+                      </div>
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.button>
+          ))}
+        </div>
+  
+        {/* Progress indicator */}
+        <div className="mt-12 flex justify-center gap-4">
+          {emotions.map((_, index) => (
+            <div
+              key={index}
+              className={`w-6 h-6 border-2 border-black transition-all duration-300 ${
+                index < currentGame
+                  ? 'bg-secondary'
+                  : index === currentGame
+                  ? 'bg-accent'
+                  : 'bg-muted'
+              } shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]`}
             />
-            
-            <AnimatePresence>
-              {selectedFace === index && feedback && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="absolute inset-0 flex items-center justify-center bg-white/10 backdrop-blur-[2px]"
-                >
-                  {feedback === 'correct' ? (
-                    <div className="bg-green-500 rounded-full p-2">
-                      <Check className="w-10 h-10 text-white" strokeWidth={5} />
-                    </div>
-                  ) : (
-                    <div className="bg-red-500 rounded-full p-2">
-                      <X className="w-10 h-10 text-white" strokeWidth={5} />
-                    </div>
-                  )}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </motion.button>
-        ))}
+          ))}
+        </div>
       </div>
-
-      {/* Progress indicator - Scaled down */}
-      <div className="mt-8 flex justify-center gap-3">
-        {emotions.map((_, index) => (
-          <div
-            key={index}
-            className={`w-3 h-3 rounded-full transition-all duration-300 ${
-              index < currentGame
-                ? 'bg-green-500'
-                : index === currentGame
-                ? 'bg-orange-500 ring-2 ring-orange-200'
-                : 'bg-gray-300'
-            }`}
-          />
-        ))}
-      </div>
-
-      {/* Background Hearts - Reduced size and count for zoom clarity */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden" style={{ zIndex: -1 }}>
-        {[...Array(6)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute text-3xl opacity-30"
-            style={{
-              top: `${Math.random() * 100}%`,
-              left: `${Math.random() * 100}%`,
-            }}
-            animate={{
-              y: [0, -20, 0],
-              rotate: [0, 10, -10, 0],
-            }}
-            transition={{
-              duration: 5,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
-          >
-            {['💛', '💙', '💚', '❤️'][i % 4]}
-          </motion.div>
-        ))}
-      </div>
-    </div>
-  );
-}
+    );
+  }
+  

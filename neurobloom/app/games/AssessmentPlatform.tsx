@@ -254,24 +254,6 @@ export function AssessmentPlatform({ onExit }: AssessmentPlatformProps) {
     );
   }
 
-          {/* Mascot encouragement */}
-          <motion.div
-            animate={{ scale: [1, 1.05, 1] }}
-            transition={{ duration: 2, repeat: Infinity }}
-            className="mt-12 text-center"
-          >
-            <div className="bg-white rounded-3xl shadow-xl p-6 inline-block">
-              <p className="text-2xl text-purple-600">
-                <span className="text-3xl mr-2">🦉</span>
-                {t('ap_mascot_msg')}
-              </p>
-            </div>
-          </motion.div>
-        </div>
-      </div>
-    );
-  }
-
   // Level is selected - render game content
   const selectedLevel = levels.find(l => l.id === currentLevel)!;
   
@@ -340,55 +322,55 @@ export function AssessmentPlatform({ onExit }: AssessmentPlatformProps) {
     }
   };
   
-    return (
-      <div className={`min-h-screen bg-[#5C94FC] p-8 relative overflow-hidden`}>
-        {/* Background decoration */}
-        <div className="absolute top-10 left-10 w-20 h-20 bg-white/20 rounded-full blur-xl" />
-        <div className="absolute bottom-10 right-10 w-40 h-40 bg-white/10 rounded-full blur-2xl" />
-  
-        <div className="max-w-4xl mx-auto relative z-10">
-          {/* Progress bar */}
-          <div className="bg-white border-4 border-black p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] mb-8">
-            <div className="flex items-center gap-6">
-              <div className="flex-1 bg-muted border-2 border-black h-8 overflow-hidden">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${(currentGame / selectedLevel.totalGames) * 100}%` }}
-                  className="bg-primary h-full border-r-2 border-black"
-                />
-              </div>
-              <div className="bg-accent border-2 border-black px-4 py-1">
-                <span className="text-xl font-black text-black">
-                  {currentGame}/{selectedLevel.totalGames}
-                </span>
-              </div>
-              <button
-                onClick={() => {
-                  setCurrentLevel(null);
-                  setCurrentGame(0);
-                }}
-                className="text-sm font-black text-black hover:text-primary uppercase underline"
-              >
-                {t('ap_exit')}
-              </button>
+  return (
+    <div className={`min-h-screen bg-[#5C94FC] p-8 relative overflow-hidden`}>
+      {/* Background decoration */}
+      <div className="absolute top-10 left-10 w-20 h-20 bg-white/20 rounded-full blur-xl" />
+      <div className="absolute bottom-10 right-10 w-40 h-40 bg-white/10 rounded-full blur-2xl" />
+
+      <div className="max-w-4xl mx-auto relative z-10">
+        {/* Progress bar */}
+        <div className="bg-white border-4 border-black p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] mb-8">
+          <div className="flex items-center gap-6">
+            <div className="flex-1 bg-muted border-2 border-black h-8 overflow-hidden">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${(currentGame / selectedLevel.totalGames) * 100}%` }}
+                className="bg-primary h-full border-r-2 border-black"
+              />
             </div>
-          </div>
-  
-          {/* Game content */}
-          <div className="bg-white border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] p-8 md:p-12 min-h-[500px]">
-            <div className="mb-8 flex items-center justify-between border-b-4 border-black pb-6">
-              <div>
-                <h2 className="text-4xl font-black text-black uppercase tracking-tight">
-                  {selectedLevel.name}
-                </h2>
-                <p className="text-black/60 font-bold uppercase text-sm tracking-widest">{selectedLevel.theme}</p>
-              </div>
-              <div className="text-6xl">{selectedLevel.icon}</div>
+            <div className="bg-accent border-2 border-black px-4 py-1">
+              <span className="text-xl font-black text-black">
+                {currentGame}/{selectedLevel.totalGames}
+              </span>
             </div>
-            {renderLevelContent()}
+            <button
+              onClick={() => {
+                setCurrentLevel(null);
+                setCurrentGame(0);
+              }}
+              className="text-sm font-black text-black hover:text-primary uppercase underline"
+            >
+              {t('ap_exit')}
+            </button>
           </div>
         </div>
+
+        {/* Game content */}
+        <div className="bg-white border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] p-8 md:p-12 min-h-[500px]">
+          <div className="mb-8 flex items-center justify-between border-b-4 border-black pb-6">
+            <div>
+              <h2 className="text-4xl font-black text-black uppercase tracking-tight">
+                {selectedLevel.name}
+              </h2>
+              <p className="text-black/60 font-bold uppercase text-sm tracking-widest">{selectedLevel.theme}</p>
+            </div>
+            <div className="text-6xl">{selectedLevel.icon}</div>
+          </div>
+          {renderLevelContent()}
+        </div>
       </div>
-    );
-  }
+    </div>
+  );
+}
   

@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { motion } from "framer-motion";
 import { Check, X } from 'lucide-react';
 import { useTranslation } from "@/hooks/useTranslation";
+import { Button } from "@/components/ui/button";
 
 interface Level6Props {
   onComplete: () => void;
@@ -78,33 +79,32 @@ export function Level6EagleEyes({ onComplete, onProgress }: Level6Props) {
   const games = [
     // Game 1: Odd One Out
     <div key="odd-one-out" className="text-center max-w-4xl mx-auto">
-      <h2 className="text-2xl md:text-3xl font-black text-rose-700 mb-4">
+      <h2 className="text-4xl font-black text-black mb-6 uppercase tracking-tight">
         {t('game_ee1_title')}
       </h2>
       
       <motion.div
         animate={{ scale: [1, 1.1, 1] }}
-        transition={{ duration: 2, repeat: Infinity }}
-        className="text-6xl mb-4"
+        transition={{ duration: 1, repeat: Infinity }}
+        className="text-8xl mb-8 drop-shadow-lg"
       >
         🦅
       </motion.div>
 
-      <div className="bg-gradient-to-br from-rose-100 to-pink-100 p-6 md:p-8 rounded-3xl shadow-xl mb-4">
-        <p className="text-xl font-bold text-rose-700 mb-6">{t('game_ee1_instr')}</p>
-        <div className="flex justify-center items-center gap-4 md:gap-6">
+      <div className="bg-white border-4 border-black p-10 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] mb-8">
+        <p className="text-2xl font-black text-black mb-10 uppercase tracking-widest">{t('game_ee1_instr')}</p>
+        <div className="flex justify-center items-center gap-6">
           {['●', '●', '■', '●'].map((shape, index) => (
             <motion.button
               key={index}
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
+              whileHover={{ scale: 1.1, y: -4 }}
+              whileTap={{ scale: 0.9, y: 0 }}
               onClick={() => handleAnswer(index === 2, index)}
-              disabled={feedback !== null}
-              className={`text-5xl md:text-6xl p-6 rounded-2xl transition-all ${
+              className={`text-6xl p-10 border-4 border-black transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none ${
                 selectedAnswer === index
-                  ? feedback === 'correct' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
-                  : 'bg-white text-gray-700 hover:bg-gray-100'
-              } shadow-lg`}
+                  ? feedback === 'correct' ? 'bg-secondary text-white' : 'bg-primary text-white'
+                  : 'bg-white text-black hover:bg-accent'
+              }`}
             >
               {shape}
             </motion.button>
@@ -115,28 +115,28 @@ export function Level6EagleEyes({ onComplete, onProgress }: Level6Props) {
 
     // Game 2: Memory
     <div key="memory" className="text-center max-w-4xl mx-auto">
-      <h2 className="text-2xl md:text-3xl font-black text-rose-700 mb-4">
+      <h2 className="text-4xl font-black text-black mb-6 uppercase tracking-tight">
         {t('game_ee2_title')}
       </h2>
       
       <motion.div
         animate={{ rotate: [0, 5, -5, 0] }}
-        transition={{ duration: 2, repeat: Infinity }}
-        className="text-6xl mb-4"
+        transition={{ duration: 0.5, repeat: Infinity }}
+        className="text-8xl mb-8 drop-shadow-lg"
       >
         🎯
       </motion.div>
 
       {showMemoryItems ? (
-        <div className="bg-gradient-to-br from-purple-100 to-pink-100 p-6 rounded-3xl shadow-xl">
-          <div className="bg-yellow-200 text-yellow-900 text-lg font-black px-6 py-2 rounded-full inline-block mb-6">
+        <div className="bg-white border-4 border-black p-10 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+          <div className="bg-accent border-4 border-black text-black text-xl font-black px-10 py-4 inline-block mb-10 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] uppercase">
             {t('game_ee2_remember')} {t('game_ee2_time')} {memoryTimer}s
           </div>
-          <div className="grid grid-cols-3 gap-4 max-w-md mx-auto">
+          <div className="grid grid-cols-3 gap-6 max-w-md mx-auto">
             {originalMemoryItems.map((itemIndex) => (
               <motion.div
                 key={itemIndex}
-                className="bg-white p-4 rounded-2xl shadow-md text-5xl"
+                className="bg-muted border-4 border-black p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-6xl"
               >
                 {allMemoryItems[itemIndex]}
               </motion.div>
@@ -144,11 +144,11 @@ export function Level6EagleEyes({ onComplete, onProgress }: Level6Props) {
           </div>
         </div>
       ) : (
-        <div className="bg-gradient-to-br from-blue-100 to-purple-100 p-6 rounded-3xl shadow-xl">
-          <p className="text-xl font-bold text-rose-700 mb-4">
-            {t('game_ee2_select')} ({selectedItems.length}/6)
+        <div className="bg-white border-4 border-black p-10 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+          <p className="text-2xl font-black text-black mb-8 uppercase tracking-widest">
+            {t('game_ee2_select')} <span className="text-primary">({selectedItems.length}/6)</span>
           </p>
-          <div className="grid grid-cols-5 gap-3 max-w-2xl mx-auto mb-6">
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 max-w-2xl mx-auto mb-10">
             {allMemoryItems.map((item, index) => (
               <motion.button
                 key={index}
@@ -159,55 +159,56 @@ export function Level6EagleEyes({ onComplete, onProgress }: Level6Props) {
                     setSelectedItems([...selectedItems, index]);
                   }
                 }}
-                disabled={feedback !== null}
-                className={`p-4 rounded-xl shadow-md transition-all text-4xl ${
-                  selectedItems.includes(index) ? 'bg-blue-500 ring-2 ring-blue-300' : 'bg-white'
+                className={`p-6 border-4 border-black transition-all text-5xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none ${
+                  selectedItems.includes(index) ? 'bg-secondary' : 'bg-white hover:bg-muted'
                 }`}
               >
                 {item}
               </motion.button>
             ))}
           </div>
-          <button
+          <Button
+            size="lg"
             onClick={() => {
               const correct = selectedItems.length === 6 && selectedItems.every(i => originalMemoryItems.includes(i));
               handleAnswer(correct);
             }}
-            disabled={selectedItems.length !== 6 || feedback !== null}
-            className="bg-green-500 text-white text-xl font-black px-8 py-3 rounded-full shadow-lg disabled:opacity-50"
+            disabled={selectedItems.length !== 6}
+            className="text-2xl py-8 px-12"
           >
             {t('game_ee2_btn_check')}
-          </button>
+          </Button>
         </div>
       )}
     </div>,
 
     // Game 3: Mirror Letters
     <div key="mirror-letters" className="text-center max-w-4xl mx-auto">
-      <h2 className="text-2xl md:text-3xl font-black text-rose-700 mb-4">
+      <h2 className="text-4xl font-black text-black mb-6 uppercase tracking-tight">
         {t('game_ee3_title')}
       </h2>
       
       <motion.div
         animate={{ scaleX: [-1, 1, -1] }}
-        transition={{ duration: 3, repeat: Infinity }}
-        className="text-6xl mb-4"
+        transition={{ duration: 1, repeat: Infinity }}
+        className="text-8xl mb-8 drop-shadow-lg"
       >
         🦋
       </motion.div>
 
-      <div className="bg-gradient-to-br from-pink-100 to-rose-100 p-6 md:p-8 rounded-3xl shadow-xl">
-        <p className="text-xl font-bold text-rose-700 mb-6">{t('game_ee3_instr')}</p>
-        <div className="grid grid-cols-4 gap-4 max-w-2xl mx-auto">
+      <div className="bg-white border-4 border-black p-10 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+        <p className="text-2xl font-black text-black mb-10 uppercase tracking-widest">{t('game_ee3_instr')}</p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-2xl mx-auto">
           {['b', 'd', 'p', 'q'].map((letter, index) => (
             <motion.button
               key={index}
+              whileHover={{ scale: 1.05, y: -4 }}
+              whileTap={{ scale: 0.95, y: 0 }}
               onClick={() => handleAnswer(index === 1, index)}
-              disabled={feedback !== null}
-              className={`text-6xl md:text-7xl font-bold p-6 rounded-2xl shadow-lg transition-all ${
+              className={`text-7xl font-black p-10 border-4 border-black transition-all shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] active:shadow-none ${
                 selectedAnswer === index
-                  ? feedback === 'correct' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
-                  : 'bg-white text-gray-800'
+                  ? feedback === 'correct' ? 'bg-secondary text-white' : 'bg-primary text-white'
+                  : 'bg-white text-black hover:bg-accent'
               }`}
             >
               {letter}
@@ -219,28 +220,28 @@ export function Level6EagleEyes({ onComplete, onProgress }: Level6Props) {
 
     // Game 4: Visual Puzzle
     <div key="visual-puzzle" className="text-center max-w-4xl mx-auto">
-      <h2 className="text-2xl md:text-3xl font-black text-rose-700 mb-4">
+      <h2 className="text-4xl font-black text-black mb-6 uppercase tracking-tight">
         {t('game_ee4_title')}
       </h2>
       
       <motion.div
         animate={{ rotate: [0, 360] }}
         transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
-        className="text-6xl mb-4"
+        className="text-8xl mb-8 drop-shadow-lg"
       >
         🎨
       </motion.div>
 
-      <div className="bg-gradient-to-br from-orange-100 to-rose-100 p-6 rounded-3xl shadow-xl">
-        <div className="flex justify-center items-center gap-2 mb-8 bg-white p-4 rounded-xl inline-flex">
-          <div className="text-4xl">🔴</div>
-          <div className="text-4xl">🔵</div>
-          <div className="text-4xl">🔴</div>
-          <div className="text-4xl">🔵</div>
-          <div className="text-4xl">❓</div>
+      <div className="bg-white border-4 border-black p-10 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+        <div className="flex justify-center items-center gap-4 mb-12 bg-muted border-4 border-black p-8 shadow-[inset_4px_4px_0px_0px_rgba(0,0,0,0.1)]">
+          <div className="text-6xl">🔴</div>
+          <div className="text-6xl">🔵</div>
+          <div className="text-6xl">🔴</div>
+          <div className="text-6xl">🔵</div>
+          <div className="text-6xl animate-bounce">❓</div>
         </div>
 
-        <div className="grid grid-cols-3 gap-4 max-w-lg mx-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-lg mx-auto">
           {[
             { emoji: '🔴', label: t('game_ee4_red'), correct: true },
             { emoji: '🔵', label: t('game_ee4_blue'), correct: false },
@@ -248,16 +249,17 @@ export function Level6EagleEyes({ onComplete, onProgress }: Level6Props) {
           ].map((option, index) => (
             <motion.button
               key={index}
+              whileHover={{ scale: 1.05, y: -4 }}
+              whileTap={{ scale: 0.95, y: 0 }}
               onClick={() => handleAnswer(option.correct, index)}
-              disabled={feedback !== null}
-              className={`p-6 rounded-2xl shadow-lg transition-all ${
+              className={`p-8 border-4 border-black transition-all shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] active:shadow-none ${
                 selectedAnswer === index
-                  ? feedback === 'correct' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
-                  : 'bg-white'
+                  ? feedback === 'correct' ? 'bg-secondary text-white' : 'bg-primary text-white'
+                  : 'bg-white text-black hover:bg-accent'
               }`}
             >
-              <div className="text-5xl mb-2">{option.emoji}</div>
-              <p className="text-lg font-bold text-gray-700">{option.label}</p>
+              <div className="text-6xl mb-4">{option.emoji}</div>
+              <p className="text-xl font-black uppercase">{option.label}</p>
             </motion.button>
           ))}
         </div>
@@ -265,50 +267,36 @@ export function Level6EagleEyes({ onComplete, onProgress }: Level6Props) {
     </div>,
   ];
 
-  return (
-    <div className="relative max-h-screen overflow-y-auto px-4 py-6">
-      <motion.div
-        key={currentGame}
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -20 }}
-        transition={{ duration: 0.3 }}
-      >
-        {games[currentGame]}
-      </motion.div>
-
-      <div className="fixed inset-0 pointer-events-none overflow-hidden" style={{ zIndex: -1 }}>
-        {[...Array(10)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute text-4xl opacity-20"
-            style={{
-              top: `${Math.random() * 100}%`,
-              left: `${Math.random() * 100}%`,
-            }}
-            animate={{ y: [0, -10, 0], rotate: [0, 5, -5, 0] }}
-            transition={{ duration: 3 + Math.random() * 2, repeat: Infinity }}
-          >
-            🌿
-          </motion.div>
-        ))}
-      </div>
-
-      {feedback && (
+    return (
+      <div className="relative">
         <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          className="fixed inset-0 flex items-center justify-center pointer-events-none z-50"
+          key={currentGame}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          transition={{ duration: 0.3 }}
         >
-          <div className={feedback === 'correct' ? 'text-green-500' : 'text-red-500'}>
-            {feedback === 'correct' ? (
-              <Check className="w-32 h-32" />
-            ) : (
-              <X className="w-32 h-32" />
-            )}
-          </div>
+          {games[currentGame]}
         </motion.div>
-      )}
-    </div>
-  );
-}
+  
+        {feedback && (
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            className="fixed inset-0 flex items-center justify-center pointer-events-none z-50 bg-black/20 backdrop-blur-sm"
+          >
+            <div className={`p-12 border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] ${
+              feedback === 'correct' ? 'bg-secondary text-white' : 'bg-primary text-white'
+            }`}>
+              {feedback === 'correct' ? (
+                <Check className="w-32 h-32 stroke-[4]" />
+              ) : (
+                <X className="w-32 h-32 stroke-[4]" />
+              )}
+            </div>
+          </motion.div>
+        )}
+      </div>
+    );
+  }
+  

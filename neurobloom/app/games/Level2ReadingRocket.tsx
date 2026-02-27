@@ -247,42 +247,18 @@ export function Level2ReadingRocket({ onComplete, onProgress }: Level2Props) {
     </div>,
   ];
 
-  return (
-    <div className="relative">
-      <motion.div
-        key={currentGame}
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.9 }}
-        transition={{ duration: 0.3 }}
-      >
-        {games[currentGame]}
-      </motion.div>
-
-      {/* Space background stars - Reduced count for performance and visual clarity at zoom */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden" style={{ zIndex: -1 }}>
-        {[...Array(15)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute text-yellow-300 text-xs"
-            style={{
-              top: `${Math.random() * 100}%`,
-              left: `${Math.random() * 100}%`,
-            }}
-            animate={{
-              opacity: [0.3, 0.8, 0.3],
-              scale: [1, 1.2, 1],
-            }}
-            transition={{
-              duration: 2 + Math.random() * 2,
-              repeat: Infinity,
-              delay: Math.random() * 2,
-            }}
-          >
-            ⭐
-          </motion.div>
-        ))}
+    return (
+      <div className="relative">
+        <motion.div
+          key={currentGame}
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.9 }}
+          transition={{ duration: 0.3 }}
+        >
+          {games[currentGame]}
+        </motion.div>
       </div>
-    </div>
-  );
-}
+    );
+  }
+  
