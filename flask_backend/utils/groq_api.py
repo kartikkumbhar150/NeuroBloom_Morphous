@@ -177,6 +177,60 @@ REQUIRED JSON SCHEMA (return ONLY this JSON, nothing else)
 """
 
 
+# ---------------------------------------------------------------------------
+# Payload trimmer — removes large arrays that blow the 413 token limit
+# ---------------------------------------------------------------------------
+
+def _trim_for_llm(data: dict) -> dict:
+    """
+    Strips verbose/large fields from the aggregated report before sending
+    to Groq.  The LLM only needs summary scores and labels — not per-frame
+    timelines, probability vectors, or raw audio features.
+    """
+    import copy
+    trimmed = copy.deepcopy(data)
+
+    # ── video_analysis: drop timeline & per-frame arrays ─────────────────
+    va = trimmed.get("video_analysis", {})
+    for key in ("timeline", "alert_flags", "recommended_followup"):
+        va.pop(key, None)
+    # Keep only the scalar summary fields
+    scalar_keys = {
+        "duration_sec", "face_detection_rate",
+        "mean_engagement_score", "mean_attention_score", "mean_stress_score",
+        "mean_eye_contact_score", "mean_hyperactivity_score",
+        "mean_asd_confidence", "mean_adhd_confidence",
+        "dominant_emotion", "dominant_engagement", "dominant_attention",
+        "dominant_stress", "look_away_events", "look_away_total_sec",
+        "blink_rate_per_min", "distraction_events", "hyperactivity_episodes",
+        "eye_contact_deficit", "flat_affect_detected", "repetitive_motion_detected",
+        "sustained_attention_failure", "high_impulsivity", "attention_switch_rate",
+        "composite_disability_risk", "risk_category",
+    }
+    trimmed["video_analysis"] = {k: v for k, v in va.items() if k in scalar_keys}
+
+    # ── reading: drop raw audio feature dicts (keep combined + risk) ─────
+    reading = trimmed.get("reading", {})
+    for key in ("audio_1_features", "audio_2_features"):
+        reading.pop(key, None)
+
+    # ── emotion: drop per-question breakdown ──────────────────────────────
+    trimmed.get("emotion", {}).pop("question_analysis", None)
+
+    # ── math: drop per-question breakdown ─────────────────────────────────
+    trimmed.get("math", {}).pop("question_analysis", None)
+
+    # ── cognition / hearing: drop raw feature arrays ──────────────────────
+    trimmed.get("cognition", {}).pop("test6_times", None)
+    trimmed.get("hearing",   {}).pop("features", None)
+
+    return trimmed
+
+
+# ---------------------------------------------------------------------------
+# Public API
+# ---------------------------------------------------------------------------
+
 def send_to_groq(report_json: dict) -> dict | None:
     """
     Send aggregated assessment JSON to Groq and return parsed LLM report dict.
@@ -187,9 +241,20 @@ def send_to_groq(report_json: dict) -> dict | None:
         logger.error("GROQ_API_KEY is not set. Cannot generate LLM report.")
         return None
 
+    # ✅ FIX: trim payload before building prompt to avoid 413 Payload Too Large
+    trimmed = _trim_for_llm(report_json)
+
     prompt = _USER_PROMPT_TEMPLATE.format(
-        report_json=json.dumps(report_json, indent=2)
+        report_json=json.dumps(trimmed, indent=2)
     )
+
+    # Safety check: warn if prompt is still very large
+    prompt_chars = len(prompt)
+    if prompt_chars > 20_000:
+        logger.warning(
+            "Groq prompt is %d chars after trimming — consider reducing further.",
+            prompt_chars,
+        )
 
     headers = {
         "Authorization": f"Bearer {GROQ_API_KEY}",

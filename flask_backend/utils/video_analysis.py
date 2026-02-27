@@ -28,7 +28,6 @@ from utils.video_download import cleanup_video, download_video_from_url
 logger = logging.getLogger(__name__)
 
 # ── MediaPipe (lazy import so app still starts if not installed) ──
-# ── MediaPipe (lazy import so app still starts if not installed) ──
 try:
     import mediapipe as mp
 
@@ -102,7 +101,10 @@ ENGAGEMENT_LABELS = ["bored", "confused", "engaged", "not_engaged"]
 # ─────────────────────────────────────────────────────────────────
 
 def _dist(p1, p2) -> float:
-    return math.sqrt((p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2)
+    # ✅ FIX 1: Support both (x, y) tuples and MediaPipe NormalizedLandmark objects
+    x1, y1 = (p1.x, p1.y) if hasattr(p1, 'x') else (p1[0], p1[1])
+    x2, y2 = (p2.x, p2.y) if hasattr(p2, 'x') else (p2[0], p2[1])
+    return math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
 
 
 def _ear(lm, indices) -> float:
@@ -495,14 +497,19 @@ def _process_video(video_path: str, engine: _InferenceEngine) -> Dict:
         face_det.close()
 
     # ── Aggregate summary ─────────────────────────────────────────
+    # face_frames: detected a face (used for detection rate count)
     face_frames = [f for f in all_frames if f.get("face_detected")]
 
+    # ✅ FIX 2: full_frames — only frames that completed the full mesh pipeline
+    # (face_detected=True but mesh failed leaves frames without metric keys)
+    full_frames = [f for f in face_frames if "engagement_score" in f]
+
     def _mean(key):
-        vals = [f[key] for f in face_frames if isinstance(f.get(key), (int, float))]
+        vals = [f[key] for f in full_frames if isinstance(f.get(key), (int, float))]
         return round(float(np.mean(vals)), 4) if vals else 0.0
 
     def _dominant(key):
-        vals = [f[key] for f in face_frames
+        vals = [f[key] for f in full_frames
                 if isinstance(f.get(key), str) and f[key] not in ("unknown","")]
         return Counter(vals).most_common(1)[0][0] if vals else "unknown"
 
@@ -526,16 +533,16 @@ def _process_video(video_path: str, engine: _InferenceEngine) -> Dict:
     if blink_rate < 8:                        recs.append("EYE_HEALTH: Low blink rate (screen fatigue)")
     if _mean("impulsivity_score") > 0.60:     recs.append("ADHD_EVALUATION: Elevated impulsivity markers")
 
-    # All alert flags across video
+    # All alert flags across video — use full_frames only
     all_flags = []
-    for f in face_frames:
+    for f in full_frames:
         all_flags.extend(f.get("alert_flags", []))
     flag_counts = Counter(all_flags)
 
-    # Per-second timeline
+    # Per-second timeline — use full_frames only to avoid KeyError
     timeline = []
     for sec in range(int(duration_sec) + 1):
-        sf = [f for f in face_frames if int(f.get("timestamp_sec", -1)) == sec]
+        sf = [f for f in full_frames if int(f.get("timestamp_sec", -1)) == sec]
         if sf:
             timeline.append({
                 "second":        sec,
@@ -574,7 +581,7 @@ def _process_video(video_path: str, engine: _InferenceEngine) -> Dict:
         "look_away_total_sec":    round(st.look_away_frames / fps, 2),
         "blink_rate_per_min":     blink_rate,
         "distraction_events":     st.look_away_events,
-        "hyperactivity_episodes": sum(1 for f in face_frames if f.get("hyperactivity_level") == "hyperactive"),
+        "hyperactivity_episodes": sum(1 for f in full_frames if f.get("hyperactivity_level") == "hyperactive"),
 
         # ── ASD markers ─────────────────────────────────────────
         "eye_contact_deficit":       mean_ec < 0.35,

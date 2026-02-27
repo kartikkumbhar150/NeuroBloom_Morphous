@@ -1,11 +1,13 @@
 """
 app.py - Production-Grade Flask API for Child Learning Disability Assessment
 """
+import io
 import logging
 import os
 from functools import wraps
 
 import numpy as np
+import pandas as pd
 import requests
 from flask import Flask, jsonify, request
 
@@ -31,8 +33,11 @@ from utils.test5_model import predict_test5
 from utils.test6_model import predict_test6
 from utils.video_download import cleanup_video, download_video_from_url
 
-# ── NEW: Video behavioral analysis ───────────────────────────────
+# ── Video behavioral analysis ─────────────────────────────────────
 from utils.video_analysis import run_video_analysis_for_session
+
+# ── EEG analyzer ─────────────────────────────────────────────────
+from eeg_analyzer import analyze_eeg
 
 # ---------------------------------------------------------------------------
 # Logging
@@ -82,13 +87,27 @@ def detect_disabilities(data: dict) -> list[str]:
     if hw_risk != "NORMAL":
         found.append("dysgraphia")
 
-    # ── NEW: include ASD/ADHD from video analysis ─────────────────
+    # Include ASD/ADHD from video analysis
     video = data.get("video_analysis", {})
     if video.get("risk_category") in ("moderate", "high"):
         if video.get("eye_contact_deficit") or video.get("flat_affect_detected"):
             found.append("asd_risk")
         if video.get("sustained_attention_failure") or video.get("high_impulsivity"):
             found.append("adhd_risk")
+
+    # ── EEG-based attention flags ─────────────────────────────────
+    eeg = data.get("eeg", {})
+    eeg_analysis = eeg.get("analysis", eeg)  # handle both wrapped and direct
+    if eeg_analysis:
+        attention = eeg_analysis.get("attention_span", {})
+        fatigue   = eeg_analysis.get("fatigue", {})
+        attention_score = attention.get("score_out_of_100", None)
+        fatigue_score   = fatigue.get("score_out_of_100", None)
+
+        if attention_score is not None and attention_score < 30:
+            found.append("attention_deficit_risk")
+        if fatigue_score is not None and fatigue_score >= 70:
+            found.append("cognitive_fatigue_detected")
 
     return found
 
@@ -427,30 +446,103 @@ def test5(session_id, row):
 
 
 # ---------------------------------------------------------------------------
-# ★ NEW: Video Behavioral Analysis (ASD / ADHD / Engagement / Stress)
+# Video Behavioral Analysis (ASD / ADHD / Engagement / Stress)
 # ---------------------------------------------------------------------------
 
 @app.route("/predict/video_analysis", methods=["POST"])
 @require_session
 def video_analysis(session_id, row):
-    """
-    Analyzes a session's recorded video for behavioral markers of
-    ASD, ADHD, stress, engagement, attention, gaze, and hyperactivity.
-
-    Request body:
-        {"session_id": "<id>"}
-
-    The video URL is read automatically from the DB row.
-    Configure VIDEO_URL_ROW_INDEX in utils/video_analysis.py
-    to match your DB column order (default = last column, -1).
-
-    Response: full behavioral metrics JSON — see utils/video_analysis.py
-    """
     return run_video_analysis_for_session(session_id, row)
 
 
 # ---------------------------------------------------------------------------
-# Full Report (updated to include video analysis)
+# EEG Brainwave Analysis
+# ---------------------------------------------------------------------------
+
+@app.route("/predict/eeg", methods=["POST"])
+def eeg_analysis():
+    """
+    Accepts a CSV file upload (multipart/form-data) OR
+    a JSON body with a "csv_url" field pointing to a downloadable CSV.
+
+    Returns detailed EEG brainwave analysis for the child.
+    Expected CSV columns: Delta, Theta, Alpha1, Alpha2, Beta1, Beta2, Gamma1, Gamma2
+    """
+
+    df = None
+
+    # ── Option 1: File uploaded directly ─────────────────────────
+    if "file" in request.files:
+        file = request.files["file"]
+        if file.filename == "":
+            return jsonify({"error": "Empty file received"}), 400
+
+        raw = file.read()
+        if not raw or not raw.strip():
+            return jsonify({"session_id": None, "rows_analyzed": 0, "analysis": {}}), 200
+
+        try:
+            df = pd.read_csv(io.StringIO(raw.decode("utf-8")))
+            df.columns = [c.strip() for c in df.columns]
+        except Exception as exc:
+            return jsonify({"error": f"Could not parse CSV: {exc}"}), 400
+
+    # ── Option 2: CSV URL in JSON body ────────────────────────────
+    elif request.is_json:
+        body = request.get_json(silent=True) or {}
+        csv_url = body.get("csv_url")
+
+        if not csv_url:
+            return jsonify({"error": "Provide either a 'file' upload or 'csv_url' in JSON body"}), 400
+
+        try:
+            resp = requests.get(csv_url, timeout=30)
+            resp.raise_for_status()
+            raw = resp.content
+        except requests.RequestException as exc:
+            return jsonify({"error": f"Failed to download CSV from URL: {exc}"}), 400
+
+        if not raw or not raw.strip():
+            return jsonify({"session_id": None, "rows_analyzed": 0, "analysis": {}}), 200
+
+        try:
+            df = pd.read_csv(io.StringIO(raw.decode("utf-8")))
+            df.columns = [c.strip() for c in df.columns]
+        except Exception as exc:
+            return jsonify({"error": f"Could not parse CSV: {exc}"}), 400
+
+    else:
+        return jsonify({"error": "Send a CSV file (multipart) or JSON with 'csv_url'"}), 400
+
+    # ── Empty dataframe ───────────────────────────────────────────
+    if df is None or len(df) == 0:
+        return jsonify({"rows_analyzed": 0, "analysis": {}}), 200
+
+    # ── Validate required columns ─────────────────────────────────
+    required = ["Delta", "Theta", "Alpha1", "Alpha2", "Beta1", "Beta2", "Gamma1", "Gamma2"]
+    missing = [c for c in required if c not in df.columns]
+    if missing:
+        return jsonify({"error": f"Missing columns: {missing}. Required: {required}"}), 422
+
+    # ── Too few rows → return empty ───────────────────────────────
+    if len(df) < 10:
+        return jsonify({"rows_analyzed": len(df), "analysis": {}}), 200
+
+    # ── Run analysis ──────────────────────────────────────────────
+    try:
+        result = analyze_eeg(df)
+    except Exception as exc:
+        logger.error("EEG analysis failed: %s", exc)
+        return jsonify({"error": f"EEG analysis failed: {exc}"}), 500
+
+    return jsonify({
+        "rows_analyzed": len(df),
+        "analysis": result,
+    }), 200
+
+
+# ---------------------------------------------------------------------------
+# Full Report
 # ---------------------------------------------------------------------------
 
 @app.route("/predict/full_report", methods=["POST"])
@@ -460,48 +552,98 @@ def full_report():
     if not session_id:
         return jsonify({"error": "session_id is required"}), 400
 
+    # Optional: caller can pass eeg_csv_url so EEG is included in full report
+    eeg_csv_url = body.get("eeg_csv_url")
+
     logger.info("Full report requested for session: %s", session_id)
 
     full_json = {
-        "session_id":    session_id,
-        "math":          _post("dyscalculia",       session_id),
-        "reading":       _post("reading_disability", session_id),
-        "emotion":       _post("emotion",            session_id),
-        "hearing":       _post("test5",              session_id),
-        "cognition":     _post("test6",              session_id),
-        "handwriting":   _post("handwriting",        session_id),
-        "video_analysis":_post("video_analysis",     session_id),   # ← NEW
+        "session_id":     session_id,
+        "math":           _post("dyscalculia",        session_id),
+        "reading":        _post("reading_disability",  session_id),
+        "emotion":        _post("emotion",             session_id),
+        "hearing":        _post("test5",               session_id),
+        "cognition":      _post("test6",               session_id),
+        "handwriting":    _post("handwriting",         session_id),
+        "video_analysis": _post("video_analysis",      session_id),
     }
+
+    # ── EEG: call internally if a CSV URL was provided ────────────
+    if eeg_csv_url:
+        try:
+            eeg_resp = requests.post(
+                f"{BASE_URL}/predict/eeg",
+                json={"csv_url": eeg_csv_url},
+                timeout=60,
+            )
+            eeg_resp.raise_for_status()
+            full_json["eeg"] = eeg_resp.json()
+        except requests.RequestException as exc:
+            logger.error("EEG sub-call failed for session %s: %s", session_id, exc)
+            full_json["eeg"] = {"error": str(exc)}
+    else:
+        logger.info("No eeg_csv_url provided for session %s — EEG skipped.", session_id)
+        full_json["eeg"] = {}
 
     ensure_disabilities_column()
     disabilities = detect_disabilities(full_json)
     logger.info("Disabilities detected for %s: %s", session_id, disabilities)
 
-    try:
-        llm_report = send_to_groq(full_json)
-    except Exception as exc:
-        logger.error("Groq API error: %s", exc)
-        llm_report = "LLM report unavailable."
+    # ── LLM report ────────────────────────────────────────────────
+    llm_report = send_to_groq(full_json)
+    if llm_report is None:
+        logger.warning(
+            "LLM report unavailable for session %s — PDF will be skipped.", session_id
+        )
 
+    # ── PDF generation ────────────────────────────────────────────
+    pdf_path = None
+    url      = None
+
+    if llm_report is not None:
+        try:
+            pdf_path = create_pdf(full_json, llm_report)
+        except Exception as exc:
+            logger.error("PDF generation error for session %s: %s", session_id, exc)
+            pdf_path = None
+
+    # ── Cloudinary upload ─────────────────────────────────────────
+    if pdf_path is not None and os.path.isfile(pdf_path):
+        try:
+            url = upload_to_cloudinary(pdf_path)
+        except Exception as exc:
+            logger.error("Cloudinary upload error for session %s: %s", session_id, exc)
+            url = None
+    else:
+        logger.warning(
+            "PDF not generated for session %s — skipping Cloudinary upload.", session_id
+        )
+
+    # ── Persist to DB ─────────────────────────────────────────────
     try:
-        pdf_path = create_pdf(full_json, llm_report)
-        url = upload_to_cloudinary(pdf_path)
         save_report_url(session_id, url, disabilities)
     except Exception as exc:
-        logger.error("PDF/upload error: %s", exc)
+        logger.error("DB save error for session %s: %s", session_id, exc)
+
+    # ── Response ──────────────────────────────────────────────────
+    if url:
+        logger.info("Report URL saved for session %s: %s", session_id, url)
         return jsonify({
-            "status": "partial",
-            "error": f"Report generation failed: {exc}",
+            "status":       "completed",
+            "report_url":   url,
             "disabilities": disabilities,
-        }), 500
-
-    logger.info("Report URL saved for session %s: %s", session_id, url)
-
-    return jsonify({
-        "status":      "completed",
-        "report_url":  url,
-        "disabilities":disabilities,
-    })
+        })
+    else:
+        return jsonify({
+            "status":       "partial",
+            "report_url":   None,
+            "disabilities": disabilities,
+            "warning":      (
+                "PDF report could not be generated. "
+                "This may be due to an LLM service error. "
+                "Disability screening results are still available."
+            ),
+        }), 207
 
 
 # ---------------------------------------------------------------------------
