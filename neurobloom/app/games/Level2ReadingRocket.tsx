@@ -106,61 +106,61 @@ export function Level2ReadingRocket({ onComplete, onProgress }: Level2Props) {
   const games = [
     // Reading 1
     <div key="reading1" className="text-center max-w-2xl mx-auto px-4">
-      <h2 className="text-3xl font-black text-blue-700 mb-4">
+      <h2 className="text-4xl font-black text-black mb-6 uppercase tracking-tight">
         {t('game_r1_title1')}
       </h2>
       
       <motion.div
-        animate={{ y: [0, -8, 0] }}
-        transition={{ duration: 2, repeat: Infinity }}
-        className="text-6xl mb-4"
+        animate={{ y: [0, -20, 0] }}
+        transition={{ duration: 1, repeat: Infinity }}
+        className="text-8xl mb-8 drop-shadow-lg"
       >
         🚀
       </motion.div>
 
-      <div className="bg-white p-6 rounded-3xl shadow-xl mb-6 border-2 border-blue-200">
-        <p className="text-2xl leading-snug text-gray-800 text-left">
+      <div className="bg-white border-4 border-black p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] mb-8">
+        <p className="text-3xl font-black leading-tight text-black text-left">
           {t('game_r1_text1')}
         </p>
       </div>
 
-      <p className="text-lg font-medium text-blue-600 mb-6">
+      <p className="text-xl font-black text-primary mb-8 uppercase tracking-widest">
         {!hasRecorded ? t('game_r1_instr1') : t('game_r1_success1')}
       </p>
 
       {!hasRecorded ? (
         <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
+          whileHover={{ scale: 1.05, y: -4 }}
+          whileTap={{ scale: 0.95, y: 0 }}
           onClick={isRecording ? finishRecording : startRecording}
           disabled={isSaving}
           className={`relative ${
             isRecording
-              ? 'bg-red-500'
-              : 'bg-gradient-to-r from-blue-500 to-indigo-500'
-          } text-white px-10 py-6 rounded-full shadow-xl transition-all`}
+              ? 'bg-primary'
+              : 'bg-secondary'
+          } text-white px-12 py-8 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] active:shadow-none transition-all`}
         >
           {isRecording ? (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4">
               <motion.div
                 animate={{ scale: [1, 1.2, 1] }}
                 transition={{ duration: 0.5, repeat: Infinity }}
               >
-                <Square className="w-8 h-8 fill-white" />
+                <Square className="w-10 h-10 fill-white" />
               </motion.div>
-              <span className="text-xl font-black uppercase tracking-wide">{t('game_r1_btn_stop')}</span>
+              <span className="text-2xl font-black uppercase tracking-wide">{t('game_r1_btn_stop')}</span>
             </div>
           ) : (
-            <div className="flex items-center gap-3">
-              <Mic className="w-8 h-8" />
-              <span className="text-xl font-black uppercase tracking-wide">{t('game_r1_btn_start')}</span>
+            <div className="flex items-center gap-4">
+              <Mic className="w-10 h-10" />
+              <span className="text-2xl font-black uppercase tracking-wide">{t('game_r1_btn_start')}</span>
             </div>
           )}
 
           {isRecording && (
             <motion.div
-              className="absolute inset-0 border-2 border-white rounded-full"
-              animate={{ scale: [1, 1.15, 1], opacity: [0.7, 0, 0.7] }}
+              className="absolute inset-0 border-4 border-white"
+              animate={{ scale: [1, 1.1, 1], opacity: [0.5, 0, 0.5] }}
               transition={{ duration: 1, repeat: Infinity }}
             />
           )}
@@ -169,10 +169,10 @@ export function Level2ReadingRocket({ onComplete, onProgress }: Level2Props) {
         <motion.button
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
+          whileHover={{ scale: 1.05, y: -4 }}
+          whileTap={{ scale: 0.95, y: 0 }}
           onClick={handleNext}
-          className="bg-gradient-to-r from-green-500 to-emerald-500 text-white text-xl font-black px-10 py-6 rounded-full shadow-xl"
+          className="bg-accent border-4 border-black text-black text-2xl font-black px-12 py-8 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] uppercase"
         >
           {t('game_r1_btn_next')}
         </motion.button>
@@ -181,54 +181,54 @@ export function Level2ReadingRocket({ onComplete, onProgress }: Level2Props) {
 
     // Reading 2
     <div key="reading2" className="text-center max-w-2xl mx-auto px-4">
-      <h2 className="text-3xl font-black text-blue-700 mb-4">
+      <h2 className="text-4xl font-black text-black mb-6 uppercase tracking-tight">
         {t('game_r1_title2')}
       </h2>
       
       <motion.div
         animate={{ rotate: [0, 360] }}
         transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
-        className="text-6xl mb-4"
+        className="text-8xl mb-8 drop-shadow-lg"
       >
         🌍
       </motion.div>
 
-      <div className="bg-gradient-to-br from-green-50 to-blue-50 p-6 rounded-3xl shadow-xl mb-6 border-2 border-green-200">
-        <p className="text-2xl leading-snug text-gray-800">
+      <div className="bg-white border-4 border-black p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] mb-8">
+        <p className="text-3xl font-black leading-tight text-black">
           {t('game_r1_text2')}
         </p>
       </div>
 
-      <p className="text-lg font-medium text-blue-600 mb-6">
+      <p className="text-xl font-black text-primary mb-8 uppercase tracking-widest">
         {!hasRecorded ? t('game_r1_instr2') : t('game_r1_success2')}
       </p>
 
       {!hasRecorded ? (
         <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
+          whileHover={{ scale: 1.05, y: -4 }}
+          whileTap={{ scale: 0.95, y: 0 }}
           onClick={isRecording ? finishRecording : startRecording}
           disabled={isSaving}
           className={`relative ${
             isRecording
-              ? 'bg-red-500'
-              : 'bg-gradient-to-r from-blue-500 to-indigo-500'
-          } text-white px-10 py-6 rounded-full shadow-xl transition-all`}
+              ? 'bg-primary'
+              : 'bg-secondary'
+          } text-white px-12 py-8 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] active:shadow-none transition-all`}
         >
           {isRecording ? (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4">
               <motion.div
                 animate={{ scale: [1, 1.2, 1] }}
                 transition={{ duration: 0.5, repeat: Infinity }}
               >
-                <Square className="w-8 h-8 fill-white" />
+                <Square className="w-10 h-10 fill-white" />
               </motion.div>
-              <span className="text-xl font-black uppercase tracking-wide">{t('game_r1_btn_stop')}</span>
+              <span className="text-2xl font-black uppercase tracking-wide">{t('game_r1_btn_stop')}</span>
             </div>
           ) : (
-            <div className="flex items-center gap-3">
-              <Mic className="w-8 h-8" />
-              <span className="text-xl font-black uppercase tracking-wide">{t('game_r1_btn_start')}</span>
+            <div className="flex items-center gap-4">
+              <Mic className="w-10 h-10" />
+              <span className="text-2xl font-black uppercase tracking-wide">{t('game_r1_btn_start')}</span>
             </div>
           )}
         </motion.button>
@@ -236,10 +236,10 @@ export function Level2ReadingRocket({ onComplete, onProgress }: Level2Props) {
         <motion.button
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
+          whileHover={{ scale: 1.05, y: -4 }}
+          whileTap={{ scale: 0.95, y: 0 }}
           onClick={handleNext}
-          className="bg-gradient-to-r from-green-500 to-emerald-500 text-white text-xl font-black px-10 py-6 rounded-full shadow-xl"
+          className="bg-accent border-4 border-black text-black text-2xl font-black px-12 py-8 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] uppercase"
         >
           {t('game_r1_btn_complete')}
         </motion.button>
@@ -247,42 +247,18 @@ export function Level2ReadingRocket({ onComplete, onProgress }: Level2Props) {
     </div>,
   ];
 
-  return (
-    <div className="relative">
-      <motion.div
-        key={currentGame}
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.9 }}
-        transition={{ duration: 0.3 }}
-      >
-        {games[currentGame]}
-      </motion.div>
-
-      {/* Space background stars - Reduced count for performance and visual clarity at zoom */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden" style={{ zIndex: -1 }}>
-        {[...Array(15)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute text-yellow-300 text-xs"
-            style={{
-              top: `${Math.random() * 100}%`,
-              left: `${Math.random() * 100}%`,
-            }}
-            animate={{
-              opacity: [0.3, 0.8, 0.3],
-              scale: [1, 1.2, 1],
-            }}
-            transition={{
-              duration: 2 + Math.random() * 2,
-              repeat: Infinity,
-              delay: Math.random() * 2,
-            }}
-          >
-            ⭐
-          </motion.div>
-        ))}
+    return (
+      <div className="relative">
+        <motion.div
+          key={currentGame}
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.9 }}
+          transition={{ duration: 0.3 }}
+        >
+          {games[currentGame]}
+        </motion.div>
       </div>
-    </div>
-  );
-}
+    );
+  }
+  

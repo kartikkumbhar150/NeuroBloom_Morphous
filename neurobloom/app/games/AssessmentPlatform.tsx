@@ -10,6 +10,7 @@ import { Level4FeelingFriends } from '../games/Level4FeelingFriends';
 import { Level5SuperEars } from '../games/Level5SuperEars';
 import { Level6EagleEyes } from '../games/Level6EagleEyes';
 import { useTranslation } from "@/hooks/useTranslation";
+import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
 
 interface AssessmentPlatformProps {
   onExit?: () => void;
@@ -41,8 +42,8 @@ export function AssessmentPlatform({ onExit }: AssessmentPlatformProps) {
       id: 1,
       name: t('ap_math_adv'),
       theme: t('ap_math_theme'),
-      icon: '🌳',
-      color: 'from-green-400 to-emerald-500',
+      icon: '🧱',
+      color: 'from-orange-400 to-red-500',
       totalGames: 6,
       completed: false,
       unlocked: true,
@@ -51,8 +52,8 @@ export function AssessmentPlatform({ onExit }: AssessmentPlatformProps) {
       id: 2,
       name: t('ap_read_rock'),
       theme: t('ap_read_theme'),
-      icon: '🚀',
-      color: 'from-blue-400 to-indigo-500',
+      icon: '❓',
+      color: 'from-yellow-400 to-orange-500',
       totalGames: 2,
       completed: false,
       unlocked: true,
@@ -61,8 +62,8 @@ export function AssessmentPlatform({ onExit }: AssessmentPlatformProps) {
       id: 3,
       name: t('ap_writ_wiz'),
       theme: t('ap_writ_theme'),
-      icon: '✨',
-      color: 'from-purple-400 to-pink-500',
+      icon: '🍄',
+      color: 'from-red-400 to-rose-500',
       totalGames: 1,
       completed: false,
       unlocked: true,
@@ -71,8 +72,8 @@ export function AssessmentPlatform({ onExit }: AssessmentPlatformProps) {
       id: 4,
       name: t('ap_feel_fri'),
       theme: t('ap_feel_theme'),
-      icon: '😊',
-      color: 'from-yellow-400 to-orange-500',
+      icon: '⭐',
+      color: 'from-blue-400 to-indigo-500',
       totalGames: 4,
       completed: false,
       unlocked: true,
@@ -81,8 +82,8 @@ export function AssessmentPlatform({ onExit }: AssessmentPlatformProps) {
       id: 5,
       name: t('ap_sup_ears'),
       theme: t('ap_sup_theme'),
-      icon: '🔊',
-      color: 'from-cyan-400 to-teal-500',
+      icon: '🎺',
+      color: 'from-green-400 to-emerald-500',
       totalGames: 3,
       completed: false,
       unlocked: true,
@@ -91,8 +92,8 @@ export function AssessmentPlatform({ onExit }: AssessmentPlatformProps) {
       id: 6,
       name: t('ap_eag_eyes'),
       theme: t('ap_eag_theme'),
-      icon: '👀',
-      color: 'from-rose-400 to-red-500',
+      icon: '🏰',
+      color: 'from-purple-400 to-pink-500',
       totalGames: 4,
       completed: false,
       unlocked: true,
@@ -163,89 +164,82 @@ export function AssessmentPlatform({ onExit }: AssessmentPlatformProps) {
 
   if (!currentLevel) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 p-8">
-        {/* Header with mascot */}
-        <div className="max-w-6xl mx-auto">
+      <div className="min-h-screen bg-[#5C94FC] p-8 relative overflow-hidden">
+        {/* Background Clouds */}
+        <div className="absolute top-20 left-10 w-32 h-10 bg-white rounded-full opacity-60 blur-sm animate-pulse" />
+        <div className="absolute top-40 right-20 w-40 h-12 bg-white rounded-full opacity-40 blur-md" />
+        <div className="absolute bottom-40 left-1/4 w-24 h-8 bg-white rounded-full opacity-50 blur-sm" />
+        
+        {/* Grass floor */}
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-[#43B047] border-t-8 border-black shadow-[inset_0_8px_0_0_rgba(0,0,0,0.1)]" />
+
+        <div className="max-w-6xl mx-auto relative z-10">
           <div className="text-center mb-12">
             <motion.div
-              animate={{ y: [0, -10, 0] }}
-              transition={{ duration: 2, repeat: Infinity }}
-              className="inline-block text-8xl mb-4"
+              animate={{ y: [0, -20, 0] }}
+              transition={{ duration: 1.5, repeat: Infinity }}
+              className="inline-block text-8xl mb-4 drop-shadow-xl"
             >
-              🦉
+              ⭐
             </motion.div>
-            <h1 className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600 mb-2">
+            <h1 className="text-6xl font-black text-white mb-2 uppercase tracking-tighter drop-shadow-[4px_4px_0px_rgba(0,0,0,1)]">
               {t('ap_welcome')}
             </h1>
-            <p className="text-2xl text-purple-600">
+            <p className="text-2xl text-white font-bold bg-black/20 px-6 py-2 rounded-full inline-block backdrop-blur-sm">
               {t('ap_choose_level')}
             </p>
           </div>
 
           {/* Stars collected */}
-          <div className="flex justify-center gap-2 mb-8">
-            <div className="bg-white rounded-full px-6 py-3 shadow-lg flex items-center gap-2">
-              <Star className="w-6 h-6 fill-yellow-400 text-yellow-500" />
-              <span className="text-2xl font-bold text-purple-600">{stars} {t('ap_stars')}</span>
+          <div className="flex justify-center items-center gap-4 mb-12">
+            <LanguageSwitcher />
+            <div className="bg-accent border-4 border-black px-8 py-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex items-center gap-3">
+              <Star className="w-8 h-8 fill-white text-black" />
+              <span className="text-3xl font-black text-black">{stars} {t('ap_stars')}</span>
             </div>
           </div>
 
           {/* Level path */}
           <div className="relative">
-            {/* Connecting path */}
-            <svg className="absolute top-0 left-0 w-full h-full pointer-events-none" style={{ zIndex: 0 }}>
-              <path
-                d="M 150 100 Q 300 150, 450 100 T 750 100 Q 900 150, 1050 100"
-                stroke="#E0BBE4"
-                strokeWidth="8"
-                fill="none"
-                strokeDasharray="10 5"
-              />
-            </svg>
-
-            <div className="grid grid-cols-3 gap-8 relative" style={{ zIndex: 1 }}>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-12 relative" style={{ zIndex: 1 }}>
               {levels.map((level, index) => (
                 <motion.div
                   key={level.id}
-                  initial={{ scale: 0, rotate: -180 }}
-                  animate={{ scale: 1, rotate: 0 }}
+                  initial={{ scale: 0, y: 50 }}
+                  animate={{ scale: 1, y: 0 }}
                   transition={{ delay: index * 0.1, type: 'spring' }}
-                  whileHover={{ scale: level.unlocked ? 1.1 : 1 }}
+                  whileHover={{ scale: level.unlocked ? 1.05 : 1, y: -10 }}
                   whileTap={{ scale: level.unlocked ? 0.95 : 1 }}
                   className={`cursor-pointer ${!level.unlocked && 'opacity-50 cursor-not-allowed'}`}
                   onClick={() => level.unlocked && setCurrentLevel(level.id)}
                 >
-                  <div className={`bg-gradient-to-br ${level.color} rounded-3xl p-8 shadow-2xl relative overflow-hidden`}>
-                    {/* Background pattern */}
-                    <div className="absolute inset-0 opacity-20">
-                      <div className="absolute top-4 right-4 text-6xl">✨</div>
-                      <div className="absolute bottom-4 left-4 text-4xl">⭐</div>
+                  <div className={`bg-white border-4 border-black p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] relative overflow-hidden group`}>
+                    {/* Level Number Badge */}
+                    <div className={`absolute top-0 right-0 px-4 py-2 bg-black text-white font-black text-xl`}>
+                      #{level.id}
                     </div>
 
                     <div className="relative text-center">
-                      <div className="text-7xl mb-4">{level.icon}</div>
-                      <h3 className="text-3xl font-black text-white mb-2">
-                        {t('ap_level')}{level.id}
-                      </h3>
-                      <h4 className="text-xl font-bold text-white/90 mb-1">
+                      <div className="text-7xl mb-6 group-hover:scale-110 transition-transform">{level.icon}</div>
+                      <h3 className="text-3xl font-black text-black mb-1 uppercase tracking-tight">
                         {level.name}
-                      </h4>
-                      <p className="text-white/80 text-sm mb-4">{level.theme}</p>
+                      </h3>
+                      <p className="text-black/60 font-bold text-sm mb-6">{level.theme}</p>
                       
-                      <div className="bg-white/30 rounded-full px-4 py-2 inline-block">
-                        <span className="text-white font-bold">
-                          {level.totalGames}{t('ap_games_count')}
+                      <div className="bg-primary border-2 border-black px-4 py-2 inline-block shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                        <span className="text-white font-black uppercase text-xs tracking-widest">
+                          {level.totalGames} {t('ap_games_count')}
                         </span>
                       </div>
 
                       {level.completed && (
-                        <div className="absolute top-2 right-2">
-                          <Star className="w-8 h-8 fill-yellow-300 text-yellow-400" />
+                        <div className="absolute top-2 left-2 rotate-[-12deg]">
+                          <Star className="w-10 h-10 fill-accent text-black" />
                         </div>
                       )}
 
                       {!level.unlocked && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-3xl">
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/60">
                           <div className="text-6xl">🔒</div>
                         </div>
                       )}
@@ -255,20 +249,6 @@ export function AssessmentPlatform({ onExit }: AssessmentPlatformProps) {
               ))}
             </div>
           </div>
-
-          {/* Mascot encouragement */}
-          <motion.div
-            animate={{ scale: [1, 1.05, 1] }}
-            transition={{ duration: 2, repeat: Infinity }}
-            className="mt-12 text-center"
-          >
-            <div className="bg-white rounded-3xl shadow-xl p-6 inline-block">
-              <p className="text-2xl text-purple-600">
-                <span className="text-3xl mr-2">🦉</span>
-                {t('ap_mascot_msg')}
-              </p>
-            </div>
-          </motion.div>
         </div>
       </div>
     );
@@ -343,27 +323,33 @@ export function AssessmentPlatform({ onExit }: AssessmentPlatformProps) {
   };
   
   return (
-    <div className={`min-h-screen bg-gradient-to-br ${selectedLevel.color} p-8`}>
-      <div className="max-w-4xl mx-auto">
+    <div className={`min-h-screen bg-[#5C94FC] p-8 relative overflow-hidden`}>
+      {/* Background decoration */}
+      <div className="absolute top-10 left-10 w-20 h-20 bg-white/20 rounded-full blur-xl" />
+      <div className="absolute bottom-10 right-10 w-40 h-40 bg-white/10 rounded-full blur-2xl" />
+
+      <div className="max-w-4xl mx-auto relative z-10">
         {/* Progress bar */}
-        <div className="bg-white rounded-full p-2 shadow-lg mb-8">
-          <div className="flex items-center gap-4">
-            <div className="flex-1 bg-gray-200 rounded-full h-6 overflow-hidden">
+        <div className="bg-white border-4 border-black p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] mb-8">
+          <div className="flex items-center gap-6">
+            <div className="flex-1 bg-muted border-2 border-black h-8 overflow-hidden">
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${(currentGame / selectedLevel.totalGames) * 100}%` }}
-                className="bg-gradient-to-r from-yellow-400 to-orange-500 h-full rounded-full"
+                className="bg-primary h-full border-r-2 border-black"
               />
             </div>
-            <span className="text-lg font-bold text-purple-600 min-w-[80px]">
-              {currentGame}/{selectedLevel.totalGames}
-            </span>
+            <div className="bg-accent border-2 border-black px-4 py-1">
+              <span className="text-xl font-black text-black">
+                {currentGame}/{selectedLevel.totalGames}
+              </span>
+            </div>
             <button
               onClick={() => {
                 setCurrentLevel(null);
                 setCurrentGame(0);
               }}
-              className="text-sm text-gray-500 hover:text-gray-700 underline"
+              className="text-sm font-black text-black hover:text-primary uppercase underline"
             >
               {t('ap_exit')}
             </button>
@@ -371,10 +357,20 @@ export function AssessmentPlatform({ onExit }: AssessmentPlatformProps) {
         </div>
 
         {/* Game content */}
-        <div className="bg-white rounded-3xl shadow-2xl p-12">
+        <div className="bg-white border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] p-8 md:p-12 min-h-[500px]">
+          <div className="mb-8 flex items-center justify-between border-b-4 border-black pb-6">
+            <div>
+              <h2 className="text-4xl font-black text-black uppercase tracking-tight">
+                {selectedLevel.name}
+              </h2>
+              <p className="text-black/60 font-bold uppercase text-sm tracking-widest">{selectedLevel.theme}</p>
+            </div>
+            <div className="text-6xl">{selectedLevel.icon}</div>
+          </div>
           {renderLevelContent()}
         </div>
       </div>
     </div>
   );
 }
+  

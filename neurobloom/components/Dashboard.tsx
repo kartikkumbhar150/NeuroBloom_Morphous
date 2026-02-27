@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { Button } from "./ui/button";
 
 import { 
   Play, 
@@ -101,18 +102,18 @@ export default function Dashboard({ onStartTest }: DashboardProps) {
   return (
     <div className="h-screen w-full bg-background text-foreground flex overflow-hidden">
       {/* Sidebar */}
-      <aside className="w-20 lg:w-64 bg-card border-r border-border flex flex-col">
+      <aside className="w-20 lg:w-64 bg-card border-r-4 border-black flex flex-col">
         <div className="p-6 mb-4 flex items-center gap-3">
-          <div className="w-10 h-10 bg-primary rounded-2xl flex items-center justify-center shadow-lg shadow-primary/20">
-            <Activity className="text-primary-foreground w-5 h-5" />
+          <div className="w-10 h-10 bg-primary border-2 border-black rounded-lg flex items-center justify-center shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+            <Activity className="text-white w-6 h-6" />
           </div>
-          <span className="hidden lg:block font-extrabold text-lg tracking-tight text-foreground">NeuroBloom</span>
+          <span className="hidden lg:block font-black text-xl tracking-tight text-foreground uppercase">NeuroBloom</span>
         </div>
         
-        <nav className="flex-1 px-3 space-y-1">
+        <nav className="flex-1 px-3 space-y-2">
           <Link href="/">
             <NavItem
-              icon={<LayoutDashboard size={18} />}
+              icon={<LayoutDashboard size={20} />}
               label={t("nav_overview")}
               active
             />
@@ -120,36 +121,36 @@ export default function Dashboard({ onStartTest }: DashboardProps) {
 
           <Link href="/assessments">
             <NavItem
-              icon={<FileText size={18} />}
+              icon={<FileText size={20} />}
               label={t("nav_reports")}
             />
           </Link>
 
           <Link href="/patients">
             <NavItem
-              icon={<Users size={18} />}
+              icon={<Users size={20} />}
               label={t("nav_patients")}
             />
           </Link>
 
           <Link href="/analytics">
             <NavItem
-              icon={<TrendingUp size={18} />}
+              icon={<TrendingUp size={20} />}
               label={t("nav_analytics")}
             />
           </Link>
 
-          <Link href="/personalist-path">
+          <Link href="/personalised-path">
             <NavItem
-              icon={<Compass size={18} />}
+              icon={<Compass size={20} />}
               label={t("nav_personalist")}
             />
           </Link>
         </nav>
 
-        <div className="p-3 border-t border-border space-y-1">
-          <NavItem icon={<Settings size={18} />} label="Settings" />
-          <NavItem icon={<HelpCircle size={18} />} label="Support" />
+        <div className="p-3 border-t-4 border-black space-y-2">
+          <NavItem icon={<Settings size={20} />} label="Settings" />
+          <NavItem icon={<HelpCircle size={20} />} label="Support" />
         </div>
       </aside>
 
@@ -169,6 +170,7 @@ export default function Dashboard({ onStartTest }: DashboardProps) {
               <p className="text-sm text-muted-foreground mt-1">Welcome back to your diagnostic terminal</p>
             </div>
             <div className="flex items-center gap-3">
+              <LanguageSwitcher />
               <div className="hidden sm:block text-right">
                 <p className="text-xs font-bold text-foreground">{userName}</p>
                 <p className="text-[10px] text-muted-foreground font-medium">{t("dash_practitioner")}</p>
@@ -191,118 +193,108 @@ export default function Dashboard({ onStartTest }: DashboardProps) {
               <p className="text-sm text-muted-foreground mt-1">Select an environment to begin patient screening.</p>
             </div>
 
-            {/* Assessment Card — exact reference style */}
-            <motion.div 
-              initial={{ opacity: 0, y: 24 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ type: "spring", stiffness: 110 }}
-              className="w-full max-w-md bg-card rounded-3xl overflow-hidden shadow-md hover:shadow-lg transition-shadow relative border border-border"
-            >
-              {/* Top gradient line */}
-              <div className="h-1 w-full bg-primary" />
-
-              {/* Background glow */}
-              <div className="absolute inset-0 overflow-hidden rounded-3xl pointer-events-none">
-                <div className="absolute -top-10 -right-10 w-48 h-48 rounded-full blur-3xl bg-primary/10" />
-              </div>
-
-              {/* Floating animated symbols */}
-              {CARD_FLOATERS.map((el, i) => (
-                <FloatingSymbol key={i} el={el} className="text-primary" />
-              ))}
-
-              {/* Card content */}
-              <div className="p-4 relative z-10">
-                {/* Top row: status badge + shield */}
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-1.5 bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full dark:bg-emerald-950 dark:text-emerald-400">
-                    <Zap size={10} className="fill-current text-current" />
-                    <span className="text-[10px] font-extrabold tracking-widest uppercase">
-                      Ready
-                    </span>
-                  </div>
-                  <motion.div
-                    whileHover={{ scale: 1.1, rotate: 10 }}
-                    className="w-9 h-9 rounded-full flex items-center justify-center bg-primary/10"
-                  >
-                    <Shield size={16} className="text-primary" />
-                  </motion.div>
-                </div>
-
-                {/* Title & subtitle */}
-                <h3 className="text-[17px] font-extrabold text-card-foreground leading-tight mb-0.5">
-                  Test 1:{" "}
-                  <span className="text-primary">Cognitive Reading</span>
-                </h3>
-                <p className="text-[11px] text-muted-foreground mb-4">AI-Analysis Module v4.2</p>
-
-                {/* Stat boxes */}
-                <div className="flex gap-2 mb-4">
-                  <div className="flex-1 rounded-2xl px-3 py-2.5 bg-muted border border-border">
-                    <div className="flex items-center gap-1 mb-1">
-                      <Clock size={10} className="text-muted-foreground" />
-                      <span className="text-[9px] font-extrabold tracking-widest text-muted-foreground uppercase">
-                        Duration
-                      </span>
+                        {/* Assessment Card — exact reference style */}
+                        <motion.div 
+                          initial={{ opacity: 0, y: 24 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ type: "spring", stiffness: 110 }}
+                          className="w-full max-w-md bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[-4px] transition-all relative overflow-hidden"
+                        >
+                          {/* Top gradient line */}
+                          <div className="h-2 w-full bg-primary" />
+            
+                          {/* Floating animated symbols */}
+                          {CARD_FLOATERS.map((el, i) => (
+                            <FloatingSymbol key={i} el={el} className="text-primary/40" />
+                          ))}
+            
+                          {/* Card content */}
+                          <div className="p-6 relative z-10">
+                            {/* Top row: status badge + shield */}
+                            <div className="flex items-center justify-between mb-6">
+                              <div className="flex items-center gap-2 bg-accent border-2 border-black px-4 py-1 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                                <Zap size={12} className="fill-black text-black" />
+                                <span className="text-xs font-black tracking-widest uppercase text-black">
+                                  {t("dash_system_ready")}
+                                </span>
+                              </div>
+                              <motion.div
+                                whileHover={{ scale: 1.1, rotate: 10 }}
+                                className="w-10 h-10 border-2 border-black flex items-center justify-center bg-primary text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+                              >
+                                <Shield size={20} />
+                              </motion.div>
+                            </div>
+            
+                            {/* Title & subtitle */}
+                            <h3 className="text-2xl font-black text-black leading-tight mb-1 uppercase italic">
+                              {t("dash_cognitive_reading")}
+                            </h3>
+                            <p className="text-xs text-black/40 font-black mb-6 uppercase tracking-widest">{t("dash_ai_module")}</p>
+            
+                            {/* Stat boxes */}
+                            <div className="flex gap-3 mb-6">
+                              <div className="flex-1 border-2 border-black p-3 bg-muted shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                                <div className="flex items-center gap-1 mb-1">
+                                  <Clock size={12} className="text-black/40" />
+                                  <span className="text-[10px] font-black tracking-widest text-black/40 uppercase">
+                                    {t("dash_duration")}
+                                  </span>
+                                </div>
+                                <p className="text-sm font-black text-black uppercase">{t("dash_duration_val")}</p>
+                              </div>
+                              <div className="flex-1 border-2 border-black p-3 bg-muted shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                                <div className="flex items-center gap-1 mb-1">
+                                  <BarChart2 size={12} className="text-black/40" />
+                                  <span className="text-[10px] font-black tracking-widest text-black/40 uppercase">
+                                    {t("dash_method")}
+                                  </span>
+                                </div>
+                                <p className="text-sm font-black text-black uppercase">{t("dash_method_val")}</p>
+                              </div>
+                            </div>
+            
+                            {/* Launch button */}
+                            <Button
+                              size="lg"
+                              onClick={onStartTest}
+                              className="w-full text-lg py-8 uppercase italic"
+                            >
+                              <Play size={16} className="fill-current" />
+                              {t("dash_launch_env")}
+                            </Button>
+            
+                            {/* Footer */}
+                            <p className="text-center text-[10px] font-black tracking-widest text-black/40 uppercase mt-4">
+                              {t("dash_auth_clinical")}
+                            </p>
+                          </div>
+                        </motion.div>
+                      </div>
                     </div>
-                    <p className="text-[13px] font-extrabold text-foreground">18 Mins</p>
-                  </div>
-                  <div className="flex-1 rounded-2xl px-3 py-2.5 bg-muted border border-border">
-                    <div className="flex items-center gap-1 mb-1">
-                      <BarChart2 size={10} className="text-muted-foreground" />
-                      <span className="text-[9px] font-extrabold tracking-widest text-muted-foreground uppercase">
-                        Method
-                      </span>
-                    </div>
-                    <p className="text-[13px] font-extrabold text-foreground">Biometric</p>
-                  </div>
+            
+                    {/* Footer Status */}
+                    <footer className="h-12 bg-white border-t-4 border-black px-8 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 bg-secondary border border-black animate-pulse" />
+                        <span className="text-xs font-black uppercase tracking-widest">{t("dash_system_conn")}</span>
+                      </div>
+                      <span className="text-xs text-black/40 font-black uppercase tracking-widest">{t("dash_terminal_id")}</span>
+                    </footer>
+                  </main>
                 </div>
-
-                {/* Launch button */}
-                <motion.button
-                  whileTap={{ scale: 0.97 }}
-                  whileHover={{ scale: 1.01 }}
-                  onClick={onStartTest}
-                  className="w-full flex items-center justify-center gap-2 rounded-2xl py-3.5 relative overflow-hidden bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
-                >
-                  <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 relative z-10 bg-background/20">
-                    <Play size={10} className="fill-current text-current ml-0.5" />
-                  </div>
-                  <span className="text-[13px] font-extrabold tracking-wide relative z-10">
-                    Launch Environment
-                  </span>
-                </motion.button>
-
-                {/* Footer */}
-                <p className="text-center text-[9px] font-bold tracking-widest text-muted-foreground uppercase mt-3">
-                  Authorized Clinical Use Only
-                </p>
-              </div>
-            </motion.div>
-          </div>
-        </div>
-
-        {/* Footer Status */}
-        <footer className="h-10 bg-card/60 backdrop-blur border-t border-border px-8 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-xs font-bold text-muted-foreground">System Online</span>
-          </div>
-          <span className="text-xs text-muted-foreground font-bold">Terminal ID: 882-NB</span>
-        </footer>
-      </main>
-    </div>
-  );
-}
-
-function NavItem({ icon, label, active = false }: { icon: React.ReactNode, label: string, active?: boolean }) {
-  return (
-    <div className={`
-      flex items-center gap-3 px-4 py-2.5 rounded-xl cursor-pointer transition-all
-      ${active ? 'bg-primary/10 text-primary shadow-sm' : 'text-muted-foreground hover:bg-muted hover:text-foreground'}
-    `}>
-      <span className={active ? 'text-primary' : 'text-muted-foreground'}>{icon}</span>
-      <span className={`hidden lg:block text-sm ${active ? 'font-bold' : 'font-semibold'}`}>{label}</span>
-    </div>
-  );
-}
+              );
+            }
+            
+            function NavItem({ icon, label, active = false }: { icon: React.ReactNode, label: string, active?: boolean }) {
+              return (
+                <div className={`
+                  flex items-center gap-4 px-4 py-3 border-2 border-black transition-all group
+                  ${active ? 'bg-primary text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]' : 'text-black hover:bg-accent shadow-none hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[-2px]'}
+                `}>
+                  <span className={active ? 'text-white' : 'text-black group-hover:scale-110 transition-transform'}>{icon}</span>
+                  <span className={`hidden lg:block text-sm uppercase tracking-widest ${active ? 'font-black' : 'font-bold'}`}>{label}</span>
+                </div>
+              );
+            }
+            

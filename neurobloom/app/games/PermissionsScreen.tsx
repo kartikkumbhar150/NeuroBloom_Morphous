@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { Camera, Mic, ArrowRight, CheckCircle2, XCircle, AlertCircle, Settings2, Video, ShieldCheck, Bluetooth } from 'lucide-react';
 import { useVideo } from "@/context/VideoContext";
 import { useTranslation } from "@/hooks/useTranslation";
+import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
 
 interface PermissionsScreenProps {
   onComplete: () => void;
@@ -90,9 +91,12 @@ export function PermissionsScreen({ onComplete, onBack }: PermissionsScreenProps
                 <p className="text-slate-400 text-[10px] uppercase tracking-[0.2em] font-bold">{t('ps_readiness')}</p>
               </div>
             </div>
-            <div className="flex items-center gap-2 px-3 py-1 bg-white/5 rounded-full border border-white/10">
-              <ShieldCheck size={14} className="text-indigo-400" />
-              <span className="text-[10px] text-white font-bold uppercase tracking-wider">{t('ps_secure')}</span>
+            <div className="flex items-center gap-3">
+              <LanguageSwitcher />
+              <div className="flex items-center gap-2 px-3 py-1 bg-white/5 rounded-full border border-white/10">
+                <ShieldCheck size={14} className="text-indigo-400" />
+                <span className="text-[10px] text-white font-bold uppercase tracking-wider">{t('ps_secure')}</span>
+              </div>
             </div>
           </div>
 
