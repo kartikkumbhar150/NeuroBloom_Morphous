@@ -26,3 +26,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 i18n.cache
+
+# local agent files
+AGENT.md
+TASKS.md

@@ -26,6 +26,9 @@ import {
   Calendar,
 } from "lucide-react";
 import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
+import { Sidebar } from "@/components/Sidebar";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface Assessment {
   id: string;
@@ -291,8 +294,7 @@ function AssessmentCard({
   const totalActivities = cfg?.phases.reduce((s, p) => s + p.activities.length, 0) ?? 15;
   const pct = totalActivities > 0 ? Math.round((progress / totalActivities) * 100) : 0;
 
-  const gradColor0 = cfg?.color[0] ?? "#7C6FF7";
-  const gradColor1 = cfg?.color[1] ?? "#A389F4";
+  const gradColor0 = cfg?.color[0] ?? "#E52521";
 
   const fmtDate = (d: string | null | undefined) => {
     if (!d) return "—";
@@ -318,10 +320,10 @@ function AssessmentCard({
     setProgress(totalActivities);
   };
 
-  const statusStyles: Record<CardStatus, { label: string; textCls: string; bgCls: string }> = {
-    idle: { label: "Not Started", textCls: "text-muted-foreground", bgCls: "bg-muted" },
-    running: { label: "Running", textCls: "text-blue-600", bgCls: "bg-blue-50 dark:bg-blue-950/40" },
-    complete: { label: "Complete", textCls: "text-emerald-600", bgCls: "bg-emerald-50 dark:bg-emerald-950/40" },
+  const statusStyles: Record<CardStatus, { label: string; variant: string; color: string }> = {
+    idle: { label: "Ready", variant: "bg-accent", color: "text-black" },
+    running: { label: "Playing", variant: "bg-secondary", color: "text-white" },
+    complete: { label: "Finished", variant: "bg-[#43B047]", color: "text-white" },
   };
   const ss = statusStyles[status];
 
@@ -330,168 +332,122 @@ function AssessmentCard({
       initial={{ opacity: 0, y: 24 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, type: "spring", stiffness: 110 }}
-      className="bg-card rounded-3xl overflow-hidden shadow-md relative border border-border"
+      className="bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] overflow-hidden relative group hover:translate-y-[-4px] transition-all"
     >
-      {/* Top gradient bar */}
-      <div className="h-1.5 w-full" style={{ background: `linear-gradient(90deg, ${gradColor0}, ${gradColor1})` }} />
+      {/* Top bar */}
+      <div className="h-2 w-full bg-primary" />
 
-      {/* Background glow */}
-      <div className="absolute inset-0 overflow-hidden rounded-3xl pointer-events-none">
-        <div className="absolute -top-10 -right-10 w-48 h-48 rounded-full blur-3xl" style={{ background: gradColor0 + "18" }} />
-      </div>
-
-      {/* Floating decorative symbols */}
+      {/* Floating symbols */}
       {cfg?.floaters.slice(0, 3).map((el, i) => (
         <FloatingSymbol key={i} el={el} color={gradColor0} />
       ))}
 
-      <div className="p-5 relative z-10 space-y-4">
-        {/* Status badge + End button */}
+      <div className="p-6 relative z-10 space-y-6">
+        {/* Status badge */}
         <div className="flex items-center justify-between">
-          <span className={`text-[10px] font-extrabold tracking-widest uppercase px-3 py-1 rounded-full flex items-center gap-1.5 ${ss.bgCls} ${ss.textCls}`}>
-            <span className="w-1.5 h-1.5 rounded-full bg-current inline-block" />
-            {ss.label}
-          </span>
+          <div className={`px-4 py-1 border-2 border-black ${ss.variant} ${ss.color} shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]`}>
+            <span className="text-xs font-black uppercase tracking-widest">{ss.label}</span>
+          </div>
           <button
             onClick={() => {
               if (confirm(`End learning path for ${childName}?`)) onEndPath();
             }}
-            className="px-3 py-1.5 rounded-xl text-[11px] font-bold text-red-400 hover:text-red-600 hover:bg-red-50 border border-red-100 transition-colors flex items-center gap-1.5"
+            className="text-primary hover:scale-110 transition-transform"
           >
-            <XCircle size={12} />
-            End
+            <XCircle size={20} />
           </button>
         </div>
 
-        {/* Child name */}
+        {/* Child Info */}
         <div>
-          <h3 className="text-[20px] font-extrabold text-foreground leading-tight">{childName}</h3>
-          <p className="text-[11px] text-muted-foreground mt-0.5">
-            Age {age} &middot; {gender.charAt(0).toUpperCase() + gender.slice(1)}
-            {isPending && <span className="ml-2 text-purple-500 font-bold">(AI Pending)</span>}
+          <h3 className="text-2xl font-black text-black uppercase italic tracking-tighter leading-none">{childName}</h3>
+          <p className="text-xs font-black text-black/40 mt-1 uppercase tracking-widest">
+            Age {age} &middot; {gender}
+            {isPending && <span className="ml-2 text-primary">(AI Pending)</span>}
           </p>
         </div>
 
-        {/* Disability type */}
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-[11px] font-bold text-muted-foreground">Disability type:</span>
-          <span
-            className="text-[11px] font-extrabold px-2.5 py-0.5 rounded-full"
-            style={{ background: gradColor0 + "22", color: gradColor0 }}
-          >
-            {cfg?.label ?? disability}
-          </span>
-          {isPending && (
-            <span className="text-[9px] font-bold text-muted-foreground italic">(predicted)</span>
-          )}
+        {/* Disability Type */}
+        <div className="bg-muted border-2 border-black p-3 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] flex items-center gap-3">
+          <div className="bg-white border-2 border-black p-1.5 shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">
+            {cfg?.icon}
+          </div>
+          <div>
+            <p className="text-[10px] font-black text-black/40 uppercase tracking-widest leading-none mb-1">Condition</p>
+            <p className="text-sm font-black text-black uppercase">{cfg?.label ?? disability}</p>
+          </div>
         </div>
 
         {/* Progress */}
-        <div>
-          <div className="flex items-center justify-between mb-1.5">
-            <span className="text-[10px] font-extrabold text-muted-foreground uppercase tracking-widest">Progress</span>
-            <span className="text-[10px] font-extrabold" style={{ color: gradColor0 }}>
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-black text-black/40 uppercase tracking-widest">Quest Progress</span>
+            <span className="text-[10px] font-black text-black uppercase">
               {progress}/{totalActivities} &middot; {pct}%
             </span>
           </div>
-          <div className="h-2 rounded-full bg-muted overflow-hidden">
+          <div className="h-4 border-2 border-black bg-muted overflow-hidden shadow-[inset_2px_2px_0px_0px_rgba(0,0,0,0.1)]">
             <motion.div
-              className="h-full rounded-full"
-              style={{ background: `linear-gradient(90deg, ${gradColor0}, ${gradColor1})` }}
+              className="h-full bg-secondary border-r-2 border-black"
               animate={{ width: `${pct}%` }}
-              transition={{ duration: 0.6, ease: "easeOut" }}
+              transition={{ duration: 0.6 }}
             />
           </div>
         </div>
 
-        {/* Date boxes */}
-        <div className="grid grid-cols-3 gap-2">
-          <div className="bg-muted rounded-2xl px-3 py-2.5 border border-border">
-            <div className="flex items-center gap-1 mb-1">
-              <Calendar size={9} className="text-muted-foreground" />
-              <span className="text-[9px] font-extrabold text-muted-foreground uppercase tracking-widest">Created</span>
-            </div>
-            <p className="text-[11px] font-extrabold text-foreground">{fmtDate(createdAt)}</p>
+        {/* Dates */}
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-muted border-2 border-black p-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+            <p className="text-[9px] font-black text-black/40 uppercase leading-none mb-1">Started</p>
+            <p className="text-[10px] font-black text-black uppercase">{fmtDate(startDate)}</p>
           </div>
-          <div className="bg-muted rounded-2xl px-3 py-2.5 border border-border">
-            <div className="flex items-center gap-1 mb-1">
-              <Play size={9} className="text-muted-foreground" />
-              <span className="text-[9px] font-extrabold text-muted-foreground uppercase tracking-widest">Started</span>
-            </div>
-            <p className="text-[11px] font-extrabold text-foreground">{fmtDate(startDate)}</p>
-          </div>
-          <div className="bg-muted rounded-2xl px-3 py-2.5 border border-border">
-            <div className="flex items-center gap-1 mb-1">
-              <CheckCircle size={9} className="text-muted-foreground" />
-              <span className="text-[9px] font-extrabold text-muted-foreground uppercase tracking-widest">
-                {status === "complete" ? "Completed" : "End Date"}
-              </span>
-            </div>
-            <p className="text-[11px] font-extrabold text-foreground">{fmtDate(endDate)}</p>
+          <div className="bg-muted border-2 border-black p-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+            <p className="text-[9px] font-black text-black/40 uppercase leading-none mb-1">Target</p>
+            <p className="text-[10px] font-black text-black uppercase">{fmtDate(endDate)}</p>
           </div>
         </div>
 
-        {/* View Report */}
-        {reportUrl ? (
-          <a
-            href={reportUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="flex items-center gap-2 px-4 py-3 rounded-2xl text-[13px] font-bold text-muted-foreground hover:bg-muted/80 transition-colors bg-muted border border-border"
-          >
-            <FileText size={14} style={{ color: gradColor0 }} />
-            View Report
-          </a>
-        ) : (
-          <div className="flex items-center gap-2 px-4 py-3 rounded-2xl text-[13px] font-bold text-muted-foreground bg-muted border border-border opacity-50 cursor-not-allowed">
-            <FileText size={14} className="text-muted-foreground" />
-            No Report Yet
-          </div>
-        )}
-
-        {/* Action button */}
-        {status === "idle" && (
-          <motion.button
-            whileTap={{ scale: 0.97 }}
-            whileHover={{ scale: 1.01 }}
-            onClick={handleStart}
-            className="w-full flex items-center justify-center gap-2 rounded-2xl py-3.5 relative overflow-hidden"
-            style={{ background: "#1A1A2E" }}
-          >
-            <motion.div
-              className="absolute inset-0 opacity-20"
-              style={{ background: `linear-gradient(90deg, transparent, ${gradColor1}, transparent)` }}
-              animate={{ x: ["-100%", "100%"] }}
-              transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
-            />
-            <div
-              className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 relative z-10"
-              style={{ background: `linear-gradient(90deg, ${gradColor0}, ${gradColor1})` }}
+        {/* Footer Actions */}
+        <div className="pt-2 space-y-3">
+          {reportUrl && (
+            <Button
+              variant="outline"
+              className="w-full text-xs py-5 uppercase tracking-widest"
+              asChild
             >
-              <Play size={10} className="fill-white text-white ml-0.5" />
+              <a href={reportUrl} target="_blank">
+                <FileText size={14} className="mr-2" />
+                View Scroll
+              </a>
+            </Button>
+          )}
+
+          {status === "idle" && (
+            <Button
+              onClick={handleStart}
+              className="w-full py-6 text-sm uppercase italic tracking-wider"
+            >
+              <Play size={14} className="fill-current" />
+              Begin Quest
+            </Button>
+          )}
+
+          {status === "running" && (
+            <Button
+              onClick={handleComplete}
+              className="w-full py-6 text-sm bg-secondary text-white uppercase italic tracking-wider"
+            >
+              <RefreshCw size={14} className="animate-spin" />
+              Continue Adventure
+            </Button>
+          )}
+
+          {status === "complete" && (
+            <div className="w-full py-3 bg-[#43B047] border-4 border-black text-white text-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+              <span className="text-sm font-black uppercase italic tracking-wider">Quest Cleared!</span>
             </div>
-            <span className="text-[13px] font-extrabold text-white tracking-wide relative z-10">Start</span>
-          </motion.button>
-        )}
-
-        {status === "running" && (
-          <motion.button
-            whileTap={{ scale: 0.97 }}
-            whileHover={{ scale: 1.01 }}
-            onClick={handleComplete}
-            className="w-full flex items-center justify-center gap-2 rounded-2xl py-3.5 bg-blue-600 hover:bg-blue-700 text-white transition-colors"
-          >
-            <RefreshCw size={14} className="animate-spin" />
-            <span className="text-[13px] font-extrabold tracking-wide">Running… Mark Complete</span>
-          </motion.button>
-        )}
-
-        {status === "complete" && (
-          <div className="w-full flex items-center justify-center gap-2 rounded-2xl py-3.5 bg-emerald-500 text-white">
-            <CheckCircle size={14} />
-            <span className="text-[13px] font-extrabold tracking-wide">Completed!</span>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </motion.div>
   );
@@ -567,29 +523,8 @@ export default function PersonalisedPathPage() {
   });
 
   return (
-    <div className="h-screen w-full bg-background text-foreground flex overflow-hidden">
-      {/* ─ Sidebar ─ */}
-      <aside className="w-20 lg:w-64 bg-card border-r border-border flex flex-col">
-        <div className="p-6 mb-4 flex items-center gap-3">
-          <div className="w-10 h-10 bg-primary rounded-2xl flex items-center justify-center shadow-lg shadow-primary/20">
-            <Activity className="text-primary-foreground w-5 h-5" />
-          </div>
-          <span className="hidden lg:block font-extrabold text-lg tracking-tight text-foreground">NeuroBloom</span>
-        </div>
-
-        <nav className="flex-1 px-3 space-y-1">
-          <Link href="/dashboard"><NavItem icon={<LayoutDashboard size={18} />} label="Overview" /></Link>
-          <Link href="/assessments"><NavItem icon={<FileText size={18} />} label="Reports" /></Link>
-          <Link href="/patients"><NavItem icon={<Users size={18} />} label="Patient List" /></Link>
-          <Link href="/analytics"><NavItem icon={<TrendingUp size={18} />} label="Analytics" /></Link>
-          <Link href="/personalised-path"><NavItem icon={<Compass size={18} />} label="Personalised Path" active /></Link>
-        </nav>
-
-        <div className="p-3 border-t border-border space-y-1">
-          <NavItem icon={<Settings size={18} />} label="Settings" />
-          <NavItem icon={<HelpCircle size={18} />} label="Support" />
-        </div>
-      </aside>
+    <div className="h-screen w-full bg-background text-foreground flex overflow-hidden font-sans">
+      <Sidebar />
 
       {/* ─ Main Content ─ */}
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden bg-background">
@@ -597,37 +532,36 @@ export default function PersonalisedPathPage() {
         <div className="px-8 pt-10 pb-4 flex-shrink-0 bg-background">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-[22px] font-extrabold text-foreground leading-tight">Personalised Paths</h1>
-              <p className="text-sm text-muted-foreground mt-1">
-                {totalCards} personalised {totalCards === 1 ? "quest" : "quests"} ready to explore
+              <h1 className="text-4xl font-black text-black uppercase italic tracking-tighter">Personalised Paths</h1>
+              <p className="text-sm font-black text-black/40 mt-1 uppercase tracking-widest">
+                {totalCards} {totalCards === 1 ? "Quest" : "Quests"} Unlocked
               </p>
             </div>
             <div className="flex items-center gap-3">
               <LanguageSwitcher />
             </div>
           </div>
-          <div className="flex items-center gap-3 flex-wrap mt-4">
-            <div className="flex items-center gap-2 bg-card rounded-2xl px-4 py-2.5 border border-border shadow-sm">
-              <Search size={14} className="text-muted-foreground" />
+          
+          <div className="flex items-center gap-4 flex-wrap mt-8">
+            <div className="flex items-center gap-3 bg-white border-4 border-black px-6 py-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex-1 min-w-[300px]">
+              <Search size={18} className="text-black" />
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search child or condition…"
-                className="w-52 bg-transparent text-sm outline-none text-foreground placeholder:text-muted-foreground"
+                placeholder="Search Hero or Quest..."
+                className="w-full bg-transparent text-sm font-black uppercase outline-none placeholder:text-black/20"
               />
             </div>
-            <button className="bg-card rounded-2xl p-2.5 border border-border shadow-sm hover:bg-muted transition-colors">
-              <SlidersHorizontal size={16} className="text-muted-foreground" />
-            </button>
-            <div className="flex gap-2 flex-wrap">
+            
+            <div className="flex gap-3 flex-wrap">
               {visibleFilters.map((f) => (
                 <button
                   key={f}
                   onClick={() => setFilter(f)}
-                  className={`px-4 py-1.5 rounded-full text-xs font-extrabold tracking-wide transition-all ${
+                  className={`px-6 py-2 border-4 border-black text-xs font-black uppercase tracking-widest transition-all ${
                     filter === f
-                      ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
-                      : "bg-card text-muted-foreground border border-border hover:bg-muted"
+                      ? "bg-accent text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] translate-y-[-2px]"
+                      : "bg-white text-black hover:bg-muted active:translate-y-[2px] active:shadow-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
                   }`}
                 >
                   {f}
@@ -636,8 +570,9 @@ export default function PersonalisedPathPage() {
             </div>
           </div>
         </div>
+
         {/* Content area */}
-        <div className="flex-1 overflow-y-auto px-8 pb-28" style={{ scrollbarWidth: "none" }}>
+        <div className="flex-1 overflow-y-auto px-8 pb-28 pt-6">
           <AnimatePresence mode="wait">
             {loading ? (
               <motion.div
@@ -645,10 +580,12 @@ export default function PersonalisedPathPage() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="flex flex-col items-center justify-center py-24 gap-3"
+                className="flex flex-col items-center justify-center py-24 gap-6"
               >
-                <span className="text-5xl animate-pulse">🧠</span>
-                <p className="text-[13px] font-bold text-muted-foreground">Loading learning paths...</p>
+                <div className="w-20 h-20 bg-accent border-4 border-black rounded-lg flex items-center justify-center animate-bounce shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                  <span className="text-4xl font-black text-black">?</span>
+                </div>
+                <p className="text-xl font-black text-black uppercase italic tracking-widest">Loading World...</p>
               </motion.div>
             ) : totalCards === 0 ? (
               <motion.div
@@ -656,18 +593,18 @@ export default function PersonalisedPathPage() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="flex flex-col items-center justify-center py-16 gap-3"
+                className="flex flex-col items-center justify-center py-16 gap-6"
               >
-                <span className="text-5xl">🎮</span>
-                <h4 className="text-lg font-extrabold text-foreground">No Quests Yet</h4>
-                <p className="text-[13px] text-muted-foreground max-w-sm text-center leading-relaxed">
-                  Personalised learning quests will appear here once a child&apos;s test report is generated.
+                <div className="text-8xl">🎮</div>
+                <h4 className="text-3xl font-black text-black uppercase italic">No Quests Found</h4>
+                <p className="text-sm font-bold text-black/40 max-w-sm text-center uppercase tracking-widest">
+                  Finish an assessment to unlock your personalized learning adventure!
                 </p>
               </motion.div>
             ) : (
               <motion.div
                 key="list"
-                className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 max-w-7xl mx-auto pt-6"
+                className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 max-w-7xl mx-auto"
               >
                 {filteredCards.map((card, i) => (
                   <AssessmentCard
@@ -689,38 +626,14 @@ export default function PersonalisedPathPage() {
         </div>
 
         {/* Footer */}
-        <footer className="h-10 bg-card/60 backdrop-blur border-t border-border px-8 flex items-center justify-between">
+        <footer className="h-12 bg-white border-t-4 border-black px-8 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-xs font-bold text-muted-foreground">System Online</span>
+            <div className="w-3 h-3 bg-[#43B047] border border-black animate-pulse" />
+            <span className="text-xs font-black uppercase tracking-widest">System Online</span>
           </div>
-          <span className="text-xs text-muted-foreground font-bold">NeuroBloom v4.0</span>
+          <span className="text-xs text-black/40 font-black uppercase tracking-widest">NeuroBloom v4.0</span>
         </footer>
       </main>
-    </div>
-  );
-}
-
-/* ─── Nav Item ─────────────────────────────────────────────────────────────── */
-function NavItem({
-  icon,
-  label,
-  active = false,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  active?: boolean;
-}) {
-  return (
-    <div
-      className={`flex items-center gap-3 px-4 py-2.5 rounded-xl cursor-pointer transition-all ${
-        active
-          ? "bg-primary/10 text-primary shadow-sm"
-          : "text-muted-foreground hover:bg-muted hover:text-foreground"
-      }`}
-    >
-      <span className={active ? "text-primary" : "text-muted-foreground"}>{icon}</span>
-      <span className={`hidden lg:block text-sm ${active ? "font-bold" : "font-semibold"}`}>{label}</span>
     </div>
   );
 }

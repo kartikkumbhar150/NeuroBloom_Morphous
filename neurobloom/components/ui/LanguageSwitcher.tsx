@@ -16,9 +16,9 @@ export function LanguageSwitcher() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" className="gap-2 text-gray-600">
-          <Globe className="h-4 w-4" />
-          <span className="uppercase text-xs font-bold">{language}</span>
+        <Button variant="outline" size="sm" className="gap-2 bg-white h-auto py-2">
+          <Globe className="h-4 w-4 text-secondary" />
+          <span className="uppercase text-xs font-black tracking-widest">{language}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">

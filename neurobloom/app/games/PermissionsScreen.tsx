@@ -6,6 +6,7 @@ import { Camera, Mic, ArrowRight, CheckCircle2, XCircle, AlertCircle, Settings2,
 import { useVideo } from "@/context/VideoContext";
 import { useTranslation } from "@/hooks/useTranslation";
 import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
+import { Button } from "@/components/ui/button";
 
 interface PermissionsScreenProps {
   onComplete: () => void;
@@ -72,195 +73,196 @@ export function PermissionsScreen({ onComplete, onBack }: PermissionsScreenProps
 
   const canProceed = cameraPermission === 'granted' && micPermission === 'granted' && btPermission === 'granted';
 
-  return (
-    <div className="h-screen w-full bg-[#f8fafc] flex items-center justify-center p-6 overflow-hidden font-sans">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.98 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-5xl" 
-      >
-        <div className="bg-white rounded-[1.5rem] shadow-2xl shadow-slate-200 border border-slate-200 overflow-hidden">
-          
-          <div className="bg-slate-900 px-10 py-5 flex justify-between items-center">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-indigo-500/10 rounded-lg border border-indigo-500/20">
-                <Settings2 className="text-indigo-400" size={20} />
+    return (
+      <div className="h-screen w-full bg-[#5C94FC] flex items-center justify-center p-6 overflow-hidden font-sans relative">
+        {/* Background Clouds */}
+        <div className="absolute top-20 left-10 w-32 h-10 bg-white rounded-full opacity-60 blur-sm" />
+        <div className="absolute top-40 right-20 w-40 h-12 bg-white rounded-full opacity-40 blur-md" />
+        
+        {/* Grass floor */}
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-[#43B047] border-t-8 border-black" />
+  
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="w-full max-w-5xl relative z-10" 
+        >
+          <div className="bg-white border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] overflow-hidden">
+            
+            <div className="bg-foreground px-10 py-8 flex justify-between items-center border-b-4 border-black">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-secondary border-2 border-white rounded-lg flex items-center justify-center shadow-[2px_2px_0px_0px_rgba(255,255,255,1)]">
+                  <Settings2 className="text-white" size={28} />
+                </div>
+                <div>
+                  <h1 className="text-3xl font-black text-white uppercase italic tracking-tighter">{t('ps_calibration')}</h1>
+                  <p className="text-white/40 text-[10px] uppercase tracking-[0.2em] font-black mt-1">{t('ps_readiness')}</p>
+                </div>
               </div>
-              <div>
-                <h1 className="text-lg font-bold text-white tracking-tight">{t('ps_calibration')}</h1>
-                <p className="text-slate-400 text-[10px] uppercase tracking-[0.2em] font-bold">{t('ps_readiness')}</p>
+              <div className="flex items-center gap-4">
+                <LanguageSwitcher />
+                <div className="flex items-center gap-2 px-4 py-1.5 bg-primary border-2 border-white shadow-[2px_2px_0px_0px_rgba(255,255,255,1)]">
+                  <ShieldCheck size={18} className="text-white" />
+                  <span className="text-[10px] text-white font-black uppercase tracking-widest">{t('ps_secure')}</span>
+                </div>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <LanguageSwitcher />
-              <div className="flex items-center gap-2 px-3 py-1 bg-white/5 rounded-full border border-white/10">
-                <ShieldCheck size={14} className="text-indigo-400" />
-                <span className="text-[10px] text-white font-bold uppercase tracking-wider">{t('ps_secure')}</span>
+  
+            <div className="p-10">
+              <div className="flex items-center gap-4 px-6 py-4 bg-muted border-4 border-black mb-10 shadow-[inset_4px_4px_0px_0px_rgba(0,0,0,0.1)]">
+                <AlertCircle size={24} className="text-primary animate-bounce" />
+                <p className="text-sm text-black font-black uppercase tracking-tight">
+                  {t('ps_warning')}
+                </p>
+              </div>
+  
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+                
+                {/* Camera */}
+                <div className={`p-8 border-4 border-black transition-all shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] ${
+                  cameraPermission === 'granted' ? 'bg-[#43B047]/10' : 
+                  cameraPermission === 'denied' ? 'bg-primary/10' : 'bg-white'
+                }`}>
+                  <div className="flex flex-col items-center text-center space-y-6">
+                    <div className={`w-16 h-16 border-4 border-black flex items-center justify-center transition-colors shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] ${
+                      cameraPermission === 'granted' ? 'bg-[#43B047]' : 
+                      cameraPermission === 'denied' ? 'bg-primary' : 'bg-muted'
+                    }`}>
+                      <Video size={28} className={cameraPermission === 'pending' ? 'text-black/40' : 'text-white'} />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-black text-black uppercase italic tracking-tighter">{t('ps_optical')}</h3>
+                      <p className="text-[10px] text-black/40 mt-2 font-black uppercase tracking-widest leading-relaxed">{t('ps_optical_desc')}</p>
+                    </div>
+                    
+                    {cameraPermission === 'pending' ? (
+                      <button 
+                        onClick={requestCameraPermission}
+                        disabled={requestingCamera}
+                        className="w-full py-3 bg-white border-2 border-black text-[10px] font-black uppercase tracking-widest hover:bg-muted active:translate-y-1 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+                      >
+                        {requestingCamera ? t('ps_initializing') : t('ps_enable_camera')}
+                      </button>
+                    ) : (
+                      <div className={`flex items-center gap-2 text-xs font-black uppercase tracking-widest ${
+                        cameraPermission === 'granted' ? 'text-[#43B047]' : 'text-primary'
+                      }`}>
+                        {cameraPermission === 'granted' ? <CheckCircle2 size={18} /> : <XCircle size={18} />}
+                        {cameraPermission === 'granted' ? t('ps_configured') : t('ps_blocked')}
+                      </div>
+                    )}
+                  </div>
+                </div>
+  
+                {/* Microphone */}
+                <div className={`p-8 border-4 border-black transition-all shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] ${
+                  micPermission === 'granted' ? 'bg-[#43B047]/10' : 
+                  micPermission === 'denied' ? 'bg-primary/10' : 'bg-white'
+                }`}>
+                  <div className="flex flex-col items-center text-center space-y-6">
+                    <div className={`w-16 h-16 border-4 border-black flex items-center justify-center transition-colors shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] ${
+                      micPermission === 'granted' ? 'bg-[#43B047]' : 
+                      micPermission === 'denied' ? 'bg-primary' : 'bg-muted'
+                    }`}>
+                      <Mic size={28} className={micPermission === 'pending' ? 'text-black/40' : 'text-white'} />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-black text-black uppercase italic tracking-tighter">{t('ps_acoustic')}</h3>
+                      <p className="text-[10px] text-black/40 mt-2 font-black uppercase tracking-widest leading-relaxed">{t('ps_acoustic_desc')}</p>
+                    </div>
+  
+                    {micPermission === 'pending' ? (
+                      <button 
+                        onClick={requestMicPermission}
+                        disabled={requestingMic}
+                        className="w-full py-3 bg-white border-2 border-black text-[10px] font-black uppercase tracking-widest hover:bg-muted active:translate-y-1 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+                      >
+                        {requestingMic ? t('ps_initializing') : t('ps_enable_mic')}
+                      </button>
+                    ) : (
+                      <div className={`flex items-center gap-2 text-xs font-black uppercase tracking-widest ${
+                        micPermission === 'granted' ? 'text-[#43B047]' : 'text-primary'
+                      }`}>
+                        {micPermission === 'granted' ? <CheckCircle2 size={18} /> : <XCircle size={18} />}
+                        {micPermission === 'granted' ? t('ps_configured') : t('ps_blocked')}
+                      </div>
+                    )}
+                  </div>
+                </div>
+  
+                {/* Neural Link (Bluetooth) */}
+                <div className={`p-8 border-4 border-black transition-all shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] ${
+                  btPermission === 'granted' ? 'bg-[#43B047]/10' : 'bg-white'
+                }`}>
+                  <div className="flex flex-col items-center text-center space-y-6">
+                    <div className={`w-16 h-16 border-4 border-black flex items-center justify-center transition-colors shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] ${
+                      btPermission === 'granted' ? 'bg-[#43B047]' : 'bg-muted'
+                    }`}>
+                      <Bluetooth size={28} className={btPermission === 'pending' ? 'text-black/40' : 'text-white'} />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-black text-black uppercase italic tracking-tighter">{t('ps_neural')}</h3>
+                      <p className="text-[10px] text-black/40 mt-2 font-black uppercase tracking-widest leading-relaxed">{t('ps_neural_desc')}</p>
+                    </div>
+  
+                    {btPermission === 'pending' ? (
+                      <button 
+                        onClick={requestBluetoothPermission}
+                        disabled={requestingBt}
+                        className="w-full py-3 bg-white border-2 border-black text-[10px] font-black uppercase tracking-widest hover:bg-muted active:translate-y-1 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+                      >
+                        {requestingBt ? t('ps_scanning') : t('ps_pair_device')}
+                      </button>
+                    ) : (
+                      <div className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-[#43B047]">
+                        <CheckCircle2 size={18} /> {t('ps_linked')}
+                      </div>
+                    )}
+                  </div>
+                </div>
+  
+              </div>
+  
+              <div className="pt-8 border-t-4 border-black">
+                <Button
+                  size="lg"
+                  onClick={handleProceed}
+                  disabled={!canProceed}
+                  className="w-full py-10 text-2xl uppercase italic shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] active:shadow-none"
+                >
+                  {canProceed ? t('ps_launch') : t('ps_hw_setup')}
+                  {canProceed && <ArrowRight size={28} className="ml-4" />}
+                </Button>
+                
+                <p className="text-center text-[10px] text-black/40 mt-6 leading-relaxed font-black uppercase tracking-[0.2em]">
+                  {t('ps_validation')}
+                </p>
               </div>
             </div>
           </div>
-
-          <div className="p-8">
-            <div className="flex items-center gap-3 px-5 py-3 bg-indigo-50 border border-indigo-100 rounded-xl mb-8">
-              <AlertCircle size={16} className="text-indigo-600" />
-              <p className="text-[12px] text-indigo-900 font-medium">
-                {t('ps_warning')}
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-              
-              {/* Asli Camera */}
-              <div className={`p-6 rounded-2xl border-2 transition-all ${
-                cameraPermission === 'granted' ? 'bg-emerald-50/30 border-emerald-500/20' : 
-                cameraPermission === 'denied' ? 'bg-red-50/30 border-red-500/20' : 'bg-slate-50 border-slate-100'
-              }`}>
-                <div className="flex flex-col items-center text-center space-y-4">
-                  <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${
-                    cameraPermission === 'granted' ? 'bg-emerald-500' : 
-                    cameraPermission === 'denied' ? 'bg-red-500' : 'bg-slate-200'
-                  }`}>
-                    <Video size={20} className={cameraPermission === 'pending' ? 'text-slate-600' : 'text-white'} />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-bold text-slate-900 uppercase tracking-tight">{t('ps_optical')}</h3>
-                    <p className="text-[11px] text-slate-500 mt-1 font-medium leading-relaxed">{t('ps_optical_desc')}</p>
-                  </div>
-                  
-                  {cameraPermission === 'pending' ? (
-                    <button 
-                      onClick={requestCameraPermission}
-                      disabled={requestingCamera}
-                      className="w-full py-2.5 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-700 hover:bg-slate-50 transition-all shadow-sm"
-                    >
-                      {requestingCamera ? t('ps_initializing') : t('ps_enable_camera')}
-                    </button>
-                  ) : (
-                    <div className={`flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider ${
-                      cameraPermission === 'granted' ? 'text-emerald-600' : 'text-red-600'
-                    }`}>
-                      {cameraPermission === 'granted' ? <CheckCircle2 size={14} /> : <XCircle size={14} />}
-                      {cameraPermission === 'granted' ? t('ps_configured') : t('ps_blocked')}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Asli Microphone */}
-              <div className={`p-6 rounded-2xl border-2 transition-all ${
-                micPermission === 'granted' ? 'bg-emerald-50/30 border-emerald-500/20' : 
-                micPermission === 'denied' ? 'bg-red-50/30 border-red-500/20' : 'bg-slate-50 border-slate-100'
-              }`}>
-                <div className="flex flex-col items-center text-center space-y-4">
-                  <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${
-                    micPermission === 'granted' ? 'bg-emerald-500' : 
-                    micPermission === 'denied' ? 'bg-red-500' : 'bg-slate-200'
-                  }`}>
-                    <Mic size={20} className={micPermission === 'pending' ? 'text-slate-600' : 'text-white'} />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-bold text-slate-900 uppercase tracking-tight">{t('ps_acoustic')}</h3>
-                    <p className="text-[11px] text-slate-500 mt-1 font-medium leading-relaxed">{t('ps_acoustic_desc')}</p>
-                  </div>
-
-                  {micPermission === 'pending' ? (
-                    <button 
-                      onClick={requestMicPermission}
-                      disabled={requestingMic}
-                      className="w-full py-2.5 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-700 hover:bg-slate-50 transition-all shadow-sm"
-                    >
-                      {requestingMic ? t('ps_initializing') : t('ps_enable_mic')}
-                    </button>
-                  ) : (
-                    <div className={`flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider ${
-                      micPermission === 'granted' ? 'text-emerald-600' : 'text-red-600'
-                    }`}>
-                      {micPermission === 'granted' ? <CheckCircle2 size={14} /> : <XCircle size={14} />}
-                      {micPermission === 'granted' ? t('ps_configured') : t('ps_blocked')}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Fake Bluetooth */}
-              <div className={`p-6 rounded-2xl border-2 transition-all ${
-                btPermission === 'granted' ? 'bg-emerald-50/30 border-emerald-500/20' : 'bg-slate-50 border-slate-100'
-              }`}>
-                <div className="flex flex-col items-center text-center space-y-4">
-                  <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${
-                    btPermission === 'granted' ? 'bg-emerald-500' : 'bg-slate-200'
-                  }`}>
-                    <Bluetooth size={20} className={btPermission === 'pending' ? 'text-slate-600' : 'text-white'} />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-bold text-slate-900 uppercase tracking-tight">{t('ps_neural')}</h3>
-                    <p className="text-[11px] text-slate-500 mt-1 font-medium leading-relaxed">{t('ps_neural_desc')}</p>
-                  </div>
-
-                  {btPermission === 'pending' ? (
-                    <button 
-                      onClick={requestBluetoothPermission}
-                      disabled={requestingBt}
-                      className="w-full py-2.5 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-700 hover:bg-slate-50 transition-all shadow-sm"
-                    >
-                      {requestingBt ? t('ps_scanning') : t('ps_pair_device')}
-                    </button>
-                  ) : (
-                    <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-emerald-600">
-                      <CheckCircle2 size={14} /> {t('ps_linked')}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-            </div>
-
-            <div className="pt-6 border-t border-slate-100">
-              <motion.button
-                whileHover={canProceed ? { scale: 1.01 } : {}}
-                whileTap={canProceed ? { scale: 0.99 } : {}}
-                onClick={handleProceed}
-                disabled={!canProceed}
-                className={`w-full py-4 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-3 shadow-xl ${
-                  canProceed 
-                    ? 'bg-indigo-600 text-white shadow-indigo-100 hover:bg-indigo-700' 
-                    : 'bg-slate-100 text-slate-400 cursor-not-allowed shadow-none'
-                }`}
-              >
-                {canProceed ? t('ps_launch') : t('ps_hw_setup')}
-                {canProceed && <ArrowRight size={18} />}
-              </motion.button>
-              
-              <p className="text-center text-[10px] text-slate-400 mt-4 leading-relaxed font-bold uppercase tracking-widest">
-                {t('ps_validation')}
-              </p>
-            </div>
+  
+          <div className="mt-10 flex justify-center items-center gap-8">
+             <Step label={t('sf_step_info')} completed />
+             <div className="w-16 h-1 bg-black/10" />
+             <Step label={t('tc_step_consent')} completed />
+             <div className="w-16 h-1 bg-black/10" />
+             <Step label={t('ps_step_hw')} active />
           </div>
-        </div>
-
-        <div className="mt-8 flex justify-center items-center gap-8">
-           <Step label={t('sf_step_info')} completed />
-           <div className="w-12 h-[1px] bg-indigo-600" />
-           <Step label={t('tc_step_consent')} completed />
-           <div className="w-12 h-[1px] bg-indigo-600" />
-           <Step label={t('ps_step_hw')} active />
-        </div>
-      </motion.div>
-    </div>
-  );
-}
-
-function Step({ label, active = false, completed = false }: { label: string, active?: boolean, completed?: boolean }) {
-  return (
-    <div className="flex items-center gap-2">
-      <div className={`w-2.5 h-2.5 rounded-full transition-all ${
-        completed ? 'bg-indigo-600' : 
-        active ? 'bg-indigo-600 ring-4 ring-indigo-50' : 
-        'bg-slate-300'
-      }`} />
-      <span className={`text-[10px] font-bold uppercase tracking-widest ${active || completed ? 'text-slate-900' : 'text-slate-400'}`}>
-        {label}
-      </span>
-    </div>
-  );
-}
+        </motion.div>
+      </div>
+    );
+  }
+  
+  function Step({ label, active = false, completed = false }: { label: string, active?: boolean, completed?: boolean }) {
+    return (
+      <div className="flex items-center gap-3">
+        <div className={`w-4 h-4 border-2 border-black rotate-45 transition-all ${
+          completed || active ? 'bg-accent shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]' : 'bg-white/20'
+        }`} />
+        <span className={`text-xs font-black uppercase tracking-widest ${active || completed ? 'text-white' : 'text-white/40'}`}>
+          {label}
+        </span>
+      </div>
+    );
+  }
+  

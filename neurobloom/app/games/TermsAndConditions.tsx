@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
+import { Button } from "@/components/ui/button";
 
 interface TermsAndConditionsProps {
   onAccept: () => void;
@@ -22,173 +23,172 @@ export function TermsAndConditions({ onAccept }: TermsAndConditionsProps) {
   const { t } = useTranslation();
   const [accepted, setAccepted] = useState(false);
 
-  return (
-    <div className="relative h-screen w-full bg-gradient-to-br from-indigo-50 via-slate-50 to-white flex items-center justify-center p-6 overflow-hidden font-sans">
-      
-      {/* Ambient medical glow */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(99,102,241,0.15),transparent_40%),radial-gradient(circle_at_80%_80%,rgba(56,189,248,0.12),transparent_40%)]" />
-
-      <motion.div
-        initial={{ opacity: 0, scale: 0.97 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.6 }}
-        className="relative w-full max-w-3xl z-10"
-      >
-        <div className="bg-white/80 backdrop-blur-xl rounded-[1.75rem] shadow-[0_40px_80px_-20px_rgba(0,0,0,0.12)] border border-white/50 overflow-hidden">
-
-          {/* Header */}
-          <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 px-10 py-6 flex justify-between items-center border-b border-white/10">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-indigo-500/10 rounded-lg border border-indigo-500/20">
-                <ShieldCheck className="text-indigo-400" size={20} />
-              </div>
-              <div>
-                <h1 className="text-xl font-black text-white tracking-tight">
-                  {t('tc_title')}
-                </h1>
-                <p className="text-indigo-300 text-[10px] uppercase tracking-[0.25em] font-black">
-                  {t('tc_subtitle')}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <LanguageSwitcher />
-              <div className="hidden sm:flex items-center gap-2 px-3 py-1 bg-emerald-500/10 rounded-full border border-emerald-500/20">
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider">
-                  {t('tc_hipaa')}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Content */}
-          <div className="p-8">
-
-            {/* Terms Box */}
-            <div className="bg-gradient-to-b from-white to-slate-50 border border-slate-200/70 rounded-2xl p-6 mb-6 max-h-64 overflow-y-auto shadow-inner">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-slate-600">
-
-                {[
-                  {
-                    title: t('tc_data_usage'),
-                    icon: <Eye size={14} className="text-indigo-600" />,
-                    text: t('tc_data_usage_desc'),
-                  },
-                  {
-                    title: t('tc_privacy'),
-                    icon: <Lock size={14} className="text-indigo-600" />,
-                    text: t('tc_privacy_desc'),
-                  },
-                  {
-                    title: t('tc_medical'),
-                    icon: <Scale size={14} className="text-indigo-600" />,
-                    text: t('tc_medical_desc'),
-                  },
-                  {
-                    title: t('tc_guardian'),
-                    icon: <CheckCircle2 size={14} className="text-indigo-600" />,
-                    text: t('tc_guardian_desc'),
-                  },
-                ].map((item, i) => (
-                  <motion.section
-                    key={i}
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.1 }}
-                  >
-                    <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest mb-2 flex items-center gap-2">
-                      {item.icon}
-                      {item.title}
-                    </h3>
-                    <p className="text-[13px] leading-relaxed">
-                      {item.text}
-                    </p>
-                  </motion.section>
-                ))}
-
-              </div>
-            </div>
-
-            {/* Accept Row */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-6 border-t border-slate-100 pt-6">
-              <label className="flex items-center gap-3 cursor-pointer group">
-                <input
-                  type="checkbox"
-                  className="sr-only"
-                  checked={accepted}
-                  onChange={() => setAccepted(!accepted)}
-                />
-                <div
-                  className={`w-7 h-7 rounded-lg border-2 transition-all flex items-center justify-center shadow-sm ${
-                    accepted
-                      ? "bg-indigo-600 border-indigo-600 shadow-indigo-300/40"
-                      : "border-slate-300 bg-white group-hover:border-indigo-400"
-                  }`}
-                >
-                  {accepted && <CheckCircle2 size={14} className="text-white" />}
+    return (
+      <div className="h-screen w-full bg-[#5C94FC] flex items-center justify-center p-6 overflow-hidden font-sans relative">
+        {/* Background Clouds */}
+        <div className="absolute top-20 left-10 w-32 h-10 bg-white rounded-full opacity-60 blur-sm" />
+        <div className="absolute top-40 right-20 w-40 h-12 bg-white rounded-full opacity-40 blur-md" />
+        
+        {/* Grass floor */}
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-[#43B047] border-t-8 border-black" />
+  
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="relative w-full max-w-3xl z-10"
+        >
+          <div className="bg-white border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] overflow-hidden">
+  
+            {/* Header */}
+            <div className="bg-foreground px-10 py-8 flex justify-between items-center border-b-4 border-black">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-primary border-2 border-white rounded-lg flex items-center justify-center shadow-[2px_2px_0px_0px_rgba(255,255,255,1)]">
+                  <ShieldCheck className="text-white" size={28} />
                 </div>
-                <span className="text-xs font-bold text-slate-500 uppercase tracking-tight">
-                  {t('tc_accept')}
-                </span>
-              </label>
-
-              <motion.button
-                whileHover={accepted ? { scale: 1.05 } : {}}
-                whileTap={accepted ? { scale: 0.97 } : {}}
-                onClick={onAccept}
-                disabled={!accepted}
-                className={`px-10 py-4 rounded-xl font-bold text-sm transition-all flex items-center gap-3 ${
-                  accepted
-                    ? "bg-gradient-to-r from-indigo-600 to-indigo-500 text-white shadow-[0_20px_40px_-10px_rgba(99,102,241,0.6)] hover:from-indigo-700 hover:to-indigo-600"
-                    : "bg-slate-100 text-slate-400 cursor-not-allowed"
-                }`}
-              >
-                {t('tc_proceed')}
-                <ArrowRight size={18} />
-              </motion.button>
+                <div>
+                  <h1 className="text-3xl font-black text-white uppercase italic tracking-tighter">
+                    {t('tc_title')}
+                  </h1>
+                  <p className="text-white/40 text-[10px] uppercase tracking-[0.25em] font-black mt-1">
+                    {t('tc_subtitle')}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                <LanguageSwitcher />
+                <div className="hidden sm:flex items-center gap-2 px-4 py-1.5 bg-accent border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                  <div className="w-2 h-2 bg-[#43B047] border border-black animate-pulse" />
+                  <span className="text-[10px] text-black font-black uppercase tracking-widest">
+                    {t('tc_hipaa')}
+                  </span>
+                </div>
+              </div>
+            </div>
+  
+            {/* Content */}
+            <div className="p-10">
+  
+              {/* Terms Box */}
+              <div className="bg-muted border-4 border-black p-8 mb-10 max-h-72 overflow-y-auto shadow-[inset_4px_4px_0px_0px_rgba(0,0,0,0.1)] custom-scrollbar">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-black">
+  
+                  {[
+                    {
+                      title: t('tc_data_usage'),
+                      icon: <Eye size={18} className="text-primary" />,
+                      text: t('tc_data_usage_desc'),
+                    },
+                    {
+                      title: t('tc_privacy'),
+                      icon: <Lock size={18} className="text-secondary" />,
+                      text: t('tc_privacy_desc'),
+                    },
+                    {
+                      title: t('tc_medical'),
+                      icon: <Scale size={18} className="text-accent" />,
+                      text: t('tc_medical_desc'),
+                    },
+                    {
+                      title: t('tc_guardian'),
+                      icon: <CheckCircle2 size={18} className="text-[#43B047]" />,
+                      text: t('tc_guardian_desc'),
+                    },
+                  ].map((item, i) => (
+                    <motion.section
+                      key={i}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.1 }}
+                      className="bg-white border-2 border-black p-4 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]"
+                    >
+                      <h3 className="text-xs font-black text-black uppercase tracking-widest mb-3 flex items-center gap-2">
+                        {item.icon}
+                        {item.title}
+                      </h3>
+                      <p className="text-[12px] leading-relaxed font-bold text-black/60 uppercase">
+                        {item.text}
+                      </p>
+                    </motion.section>
+                  ))}
+  
+                </div>
+              </div>
+  
+              {/* Accept Row */}
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-8 border-t-4 border-black pt-10">
+                <label className="flex items-center gap-4 cursor-pointer group">
+                  <input
+                    type="checkbox"
+                    className="sr-only"
+                    checked={accepted}
+                    onChange={() => setAccepted(!accepted)}
+                  />
+                  <div
+                    className={`w-8 h-8 border-4 border-black transition-all flex items-center justify-center shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] ${
+                      accepted
+                        ? "bg-secondary"
+                        : "bg-white group-hover:bg-muted"
+                    }`}
+                  >
+                    {accepted && <CheckCircle2 size={20} className="text-white font-black" />}
+                  </div>
+                  <span className="text-xs font-black text-black uppercase tracking-widest">
+                    {t('tc_accept')}
+                  </span>
+                </label>
+  
+                <Button
+                  size="lg"
+                  onClick={onAccept}
+                  disabled={!accepted}
+                  className="py-8 px-12 text-lg uppercase italic shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]"
+                >
+                  {t('tc_proceed')}
+                  <ArrowRight size={20} className="ml-2" />
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
-
-        {/* Stepper */}
-        <div className="mt-10 flex justify-center items-center gap-10 bg-white/60 backdrop-blur-lg px-8 py-4 rounded-full shadow-lg border border-white">
-          <Step label={t('sf_step_info')} completed />
-          <Step label={t('tc_step_consent')} active />
-          <Step label={t('sf_step_assessment')} />
-        </div>
-      </motion.div>
-    </div>
-  );
-}
-
-function Step({
-  label,
-  active = false,
-  completed = false,
-}: {
-  label: string;
-  active?: boolean;
-  completed?: boolean;
-}) {
-  return (
-    <div className="flex items-center gap-2">
-      <div
-        className={`w-3 h-3 rounded-full ${
-          completed
-            ? "bg-indigo-600"
-            : active
-            ? "bg-indigo-600 ring-4 ring-indigo-100"
-            : "bg-slate-300"
-        }`}
-      />
-      <span
-        className={`text-[10px] font-black uppercase tracking-widest ${
-          active || completed ? "text-slate-900" : "text-slate-400"
-        }`}
-      >
-        {label}
-      </span>
-    </div>
-  );
-}
+  
+          {/* Stepper */}
+          <div className="mt-10 flex justify-center items-center gap-8">
+            <Step label={t('sf_step_info')} completed />
+            <div className="w-16 h-1 bg-black/10" />
+            <Step label={t('tc_step_consent')} active />
+            <div className="w-16 h-1 bg-black/10" />
+            <Step label={t('sf_step_assessment')} />
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+  
+  function Step({
+    label,
+    active = false,
+    completed = false,
+  }: {
+    label: string;
+    active?: boolean;
+    completed?: boolean;
+  }) {
+    return (
+      <div className="flex items-center gap-3">
+        <div
+          className={`w-4 h-4 border-2 border-black rotate-45 transition-all ${
+            completed || active
+              ? "bg-accent shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+              : "bg-white/20"
+          }`}
+        />
+        <span
+          className={`text-xs font-black uppercase tracking-widest ${
+            active || completed ? "text-white" : "text-white/40"
+          }`}
+        >
+          {label}
+        </span>
+      </div>
+    );
+  }
+  
