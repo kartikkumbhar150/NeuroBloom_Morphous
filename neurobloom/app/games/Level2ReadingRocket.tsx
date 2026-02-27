@@ -2,14 +2,25 @@
 
 import { useState } from 'react';
 import { motion } from "framer-motion";
-import { Mic, Check, Square } from 'lucide-react';
-import { useRef, useEffect } from "react";
+import { Mic, Square } from 'lucide-react';
+import { useRef } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 
 
 interface Level2Props {
   onComplete: () => void;
   onProgress: (gameIndex: number) => void;
+}
+
+// Inline spinner component
+function ButtonSpinner() {
+  return (
+    <motion.div
+      animate={{ rotate: 360 }}
+      transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }}
+      className="w-8 h-8 border-4 border-white border-t-transparent rounded-full"
+    />
+  );
 }
 
 export function Level2ReadingRocket({ onComplete, onProgress }: Level2Props) {
@@ -65,8 +76,8 @@ export function Level2ReadingRocket({ onComplete, onProgress }: Level2Props) {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               sessionId,
-              payload: currentGame === 0 
-                ? { test2_audio1: url } 
+              payload: currentGame === 0
+                ? { test2_audio1: url }
                 : { test2_audio2: url }
             })
           });
@@ -103,13 +114,61 @@ export function Level2ReadingRocket({ onComplete, onProgress }: Level2Props) {
     }
   };
 
+  // Shared record/stop button used in both games
+  const RecordButton = () => (
+    <motion.button
+      whileHover={!isSaving ? { scale: 1.05, y: -4 } : {}}
+      whileTap={!isSaving ? { scale: 0.95, y: 0 } : {}}
+      onClick={isRecording ? finishRecording : startRecording}
+      disabled={isSaving}
+      className={`relative ${
+        isSaving
+          ? 'bg-secondary opacity-80 cursor-not-allowed'
+          : isRecording
+          ? 'bg-primary'
+          : 'bg-secondary'
+      } text-white px-12 py-8 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] active:shadow-none transition-all`}
+    >
+      {isSaving ? (
+        // Saving / uploading state — show spinner inside button
+        <div className="flex items-center gap-4">
+          <ButtonSpinner />
+          <span className="text-2xl font-black uppercase tracking-wide">Saving...</span>
+        </div>
+      ) : isRecording ? (
+        <div className="flex items-center gap-4">
+          <motion.div
+            animate={{ scale: [1, 1.2, 1] }}
+            transition={{ duration: 0.5, repeat: Infinity }}
+          >
+            <Square className="w-10 h-10 fill-white" />
+          </motion.div>
+          <span className="text-2xl font-black uppercase tracking-wide">{t('game_r1_btn_stop')}</span>
+        </div>
+      ) : (
+        <div className="flex items-center gap-4">
+          <Mic className="w-10 h-10" />
+          <span className="text-2xl font-black uppercase tracking-wide">{t('game_r1_btn_start')}</span>
+        </div>
+      )}
+
+      {isRecording && !isSaving && (
+        <motion.div
+          className="absolute inset-0 border-4 border-white"
+          animate={{ scale: [1, 1.1, 1], opacity: [0.5, 0, 0.5] }}
+          transition={{ duration: 1, repeat: Infinity }}
+        />
+      )}
+    </motion.button>
+  );
+
   const games = [
     // Reading 1
     <div key="reading1" className="text-center max-w-2xl mx-auto px-4">
       <h2 className="text-4xl font-black text-black mb-6 uppercase tracking-tight">
         {t('game_r1_title1')}
       </h2>
-      
+
       <motion.div
         animate={{ y: [0, -20, 0] }}
         transition={{ duration: 1, repeat: Infinity }}
@@ -129,42 +188,7 @@ export function Level2ReadingRocket({ onComplete, onProgress }: Level2Props) {
       </p>
 
       {!hasRecorded ? (
-        <motion.button
-          whileHover={{ scale: 1.05, y: -4 }}
-          whileTap={{ scale: 0.95, y: 0 }}
-          onClick={isRecording ? finishRecording : startRecording}
-          disabled={isSaving}
-          className={`relative ${
-            isRecording
-              ? 'bg-primary'
-              : 'bg-secondary'
-          } text-white px-12 py-8 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] active:shadow-none transition-all`}
-        >
-          {isRecording ? (
-            <div className="flex items-center gap-4">
-              <motion.div
-                animate={{ scale: [1, 1.2, 1] }}
-                transition={{ duration: 0.5, repeat: Infinity }}
-              >
-                <Square className="w-10 h-10 fill-white" />
-              </motion.div>
-              <span className="text-2xl font-black uppercase tracking-wide">{t('game_r1_btn_stop')}</span>
-            </div>
-          ) : (
-            <div className="flex items-center gap-4">
-              <Mic className="w-10 h-10" />
-              <span className="text-2xl font-black uppercase tracking-wide">{t('game_r1_btn_start')}</span>
-            </div>
-          )}
-
-          {isRecording && (
-            <motion.div
-              className="absolute inset-0 border-4 border-white"
-              animate={{ scale: [1, 1.1, 1], opacity: [0.5, 0, 0.5] }}
-              transition={{ duration: 1, repeat: Infinity }}
-            />
-          )}
-        </motion.button>
+        <RecordButton />
       ) : (
         <motion.button
           initial={{ scale: 0 }}
@@ -184,7 +208,7 @@ export function Level2ReadingRocket({ onComplete, onProgress }: Level2Props) {
       <h2 className="text-4xl font-black text-black mb-6 uppercase tracking-tight">
         {t('game_r1_title2')}
       </h2>
-      
+
       <motion.div
         animate={{ rotate: [0, 360] }}
         transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
@@ -204,34 +228,7 @@ export function Level2ReadingRocket({ onComplete, onProgress }: Level2Props) {
       </p>
 
       {!hasRecorded ? (
-        <motion.button
-          whileHover={{ scale: 1.05, y: -4 }}
-          whileTap={{ scale: 0.95, y: 0 }}
-          onClick={isRecording ? finishRecording : startRecording}
-          disabled={isSaving}
-          className={`relative ${
-            isRecording
-              ? 'bg-primary'
-              : 'bg-secondary'
-          } text-white px-12 py-8 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] active:shadow-none transition-all`}
-        >
-          {isRecording ? (
-            <div className="flex items-center gap-4">
-              <motion.div
-                animate={{ scale: [1, 1.2, 1] }}
-                transition={{ duration: 0.5, repeat: Infinity }}
-              >
-                <Square className="w-10 h-10 fill-white" />
-              </motion.div>
-              <span className="text-2xl font-black uppercase tracking-wide">{t('game_r1_btn_stop')}</span>
-            </div>
-          ) : (
-            <div className="flex items-center gap-4">
-              <Mic className="w-10 h-10" />
-              <span className="text-2xl font-black uppercase tracking-wide">{t('game_r1_btn_start')}</span>
-            </div>
-          )}
-        </motion.button>
+        <RecordButton />
       ) : (
         <motion.button
           initial={{ scale: 0 }}
@@ -247,18 +244,17 @@ export function Level2ReadingRocket({ onComplete, onProgress }: Level2Props) {
     </div>,
   ];
 
-    return (
-      <div className="relative">
-        <motion.div
-          key={currentGame}
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.9 }}
-          transition={{ duration: 0.3 }}
-        >
-          {games[currentGame]}
-        </motion.div>
-      </div>
-    );
-  }
-  
+  return (
+    <div className="relative">
+      <motion.div
+        key={currentGame}
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.9 }}
+        transition={{ duration: 0.3 }}
+      >
+        {games[currentGame]}
+      </motion.div>
+    </div>
+  );
+}

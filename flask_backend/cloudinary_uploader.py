@@ -12,5 +12,5 @@ cloudinary.config(
 )
 
 def upload_to_cloudinary(path):
-    r = cloudinary.uploader.upload(path, resource_type="raw")
+    r = cloudinary.uploader.upload(path, resource_type="image", overwrite=True)
     return r["secure_url"]

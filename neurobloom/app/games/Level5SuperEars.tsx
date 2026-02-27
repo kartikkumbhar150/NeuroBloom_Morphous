@@ -24,6 +24,7 @@ export function Level5SuperEars({ onComplete, onProgress }: Level5Props) {
   const reactions = useRef<number[]>([]);
   const questionStartTime = useRef(0);
   const beepAudio = useRef<HTMLAudioElement | null>(null);
+  const backgroundNoiseAudio = useRef<HTMLAudioElement | null>(null);
   const playingAudio = useRef<HTMLAudioElement | null>(null);
   const gaaaAudio = useRef<HTMLAudioElement | null>(null);
   const kaaaAudio = useRef<HTMLAudioElement | null>(null);
@@ -31,6 +32,8 @@ export function Level5SuperEars({ onComplete, onProgress }: Level5Props) {
   useEffect(() => {
     beepAudio.current = new Audio("/sounds/beep.mp3");
     beepAudio.current.preload = "auto";
+    backgroundNoiseAudio.current = new Audio("/sounds/background_noise.mp3");
+    backgroundNoiseAudio.current.preload = "auto";
     playingAudio.current = new Audio("/sounds/playing.mp3");
     playingAudio.current.preload = "auto";
     gaaaAudio.current = new Audio("/sounds/gaaa.mp3");
@@ -44,7 +47,7 @@ export function Level5SuperEars({ onComplete, onProgress }: Level5Props) {
   }, [currentGame]);
 
   const unlockAudio = async () => {
-    const sounds = [beepAudio.current, playingAudio.current, gaaaAudio.current, kaaaAudio.current];
+    const sounds = [beepAudio.current, backgroundNoiseAudio.current, playingAudio.current, gaaaAudio.current, kaaaAudio.current];
     for (let sound of sounds) {
       if (!sound) continue;
       try {
@@ -57,7 +60,6 @@ export function Level5SuperEars({ onComplete, onProgress }: Level5Props) {
 
   const handleAnswer = async (isCorrect: boolean, answerIndex?: number) => {
     setSelectedAnswer(answerIndex ?? null);
-    //setFeedback(isCorrect ? 'correct' : 'incorrect');
 
     const score = isCorrect ? 1 : 0;
     const timeTaken = Math.floor((Date.now() - questionStartTime.current) / 1000);
@@ -90,10 +92,19 @@ export function Level5SuperEars({ onComplete, onProgress }: Level5Props) {
     reactions.current = [];
     let count = 0;
 
+    // Start background noise looping immediately
+    if (backgroundNoiseAudio.current) {
+      backgroundNoiseAudio.current.loop = true;
+      backgroundNoiseAudio.current.currentTime = 0;
+      backgroundNoiseAudio.current.play();
+    }
+
     const interval = setInterval(() => {
       count++;
       setBeepCount(count);
       beepStartTime.current = Date.now();
+
+      // Play beep on top of the already-playing background noise
       if (beepAudio.current) {
         beepAudio.current.currentTime = 0;
         beepAudio.current.play();
@@ -102,6 +113,13 @@ export function Level5SuperEars({ onComplete, onProgress }: Level5Props) {
       if (count >= 5) {
         clearInterval(interval);
         setTimeout(async () => {
+          // Stop background noise after the 5th beep
+          if (backgroundNoiseAudio.current) {
+            backgroundNoiseAudio.current.pause();
+            backgroundNoiseAudio.current.loop = false;
+            backgroundNoiseAudio.current.currentTime = 0;
+          }
+
           const sessionId = localStorage.getItem("sessionId");
           await fetch("/api/session/save", {
             method: "POST",
@@ -126,13 +144,26 @@ export function Level5SuperEars({ onComplete, onProgress }: Level5Props) {
     }, 1500);
   };
 
-  const playSound = (type: "playing" | "gaaa" | "kaaa") => {
-    setSoundPlaying(true);
-    let audio = type === "playing" ? playingAudio.current : type === "gaaa" ? gaaaAudio.current : kaaaAudio.current;
-    if (!audio) return;
-    audio.currentTime = 0;
-    audio.play();
-    audio.onended = () => setSoundPlaying(false);
+  const playSound = (type: "playing" | "gaaaKaaa") => {
+    if (type === "playing") {
+      setSoundPlaying(true);
+      if (!playingAudio.current) return;
+      playingAudio.current.currentTime = 0;
+      playingAudio.current.play();
+      playingAudio.current.onended = () => setSoundPlaying(false);
+    } else {
+      // Play gaaa then kaaa sequentially
+      setSoundPlaying(true);
+      if (!gaaaAudio.current || !kaaaAudio.current) return;
+      gaaaAudio.current.currentTime = 0;
+      gaaaAudio.current.play();
+      gaaaAudio.current.onended = () => {
+        if (!kaaaAudio.current) return;
+        kaaaAudio.current.currentTime = 0;
+        kaaaAudio.current.play();
+        kaaaAudio.current.onended = () => setSoundPlaying(false);
+      };
+    }
   };
 
   const games = [
@@ -260,22 +291,25 @@ export function Level5SuperEars({ onComplete, onProgress }: Level5Props) {
 
       <div className="bg-white border-4 border-black p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] max-w-lg w-full text-center relative">
         <p className="text-xl font-black text-black mb-8 uppercase tracking-widest">{t('game_se3_compare')}</p>
-        <div className="flex gap-6 justify-center mb-10">
-          {['gaaa', 'kaaa'].map((type) => (
-            <motion.button
-              key={type}
-              whileHover={{ scale: 1.05, y: -4 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => playSound(type as any)}
-              className="bg-muted border-4 border-black p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-white transition-all group w-32"
-            >
-              <div className="bg-primary border-2 border-black w-12 h-12 flex items-center justify-center text-white mx-auto mb-4 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] group-hover:scale-110 transition-transform">
-                <Volume2 size={24} />
-              </div>
-              <span className="text-xl font-black text-black uppercase tracking-tighter">"{type}"</span>
-            </motion.button>
-          ))}
+
+        {/* Single play button that plays gaaa then kaaa sequentially */}
+        <div className="flex justify-center mb-10">
+          <motion.button
+            whileHover={{ scale: 1.05, y: -4 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => playSound('gaaaKaaa')}
+            disabled={soundPlaying}
+            className={`bg-muted border-4 border-black px-10 py-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-white transition-all flex items-center gap-4 ${soundPlaying ? 'opacity-60 cursor-not-allowed' : ''}`}
+          >
+            <div className="bg-primary border-2 border-black w-12 h-12 flex items-center justify-center text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+              <Volume2 className={`w-6 h-6 ${soundPlaying ? 'animate-bounce' : ''}`} size={24} />
+            </div>
+            <span className="text-2xl font-black text-black uppercase tracking-tighter">
+              {soundPlaying ? t('game_se2_btn_play') + '...' : t('game_se2_btn_play')}
+            </span>
+          </motion.button>
         </div>
+
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           {[
             { label: t('game_se3_same'), val: false, variant: 'outline' },
@@ -341,4 +375,3 @@ export function Level5SuperEars({ onComplete, onProgress }: Level5Props) {
       </div>
     );
   }
-  

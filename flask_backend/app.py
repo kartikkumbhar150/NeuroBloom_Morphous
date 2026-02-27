@@ -25,12 +25,14 @@ from utils.image import download_image
 from utils.model import predict as predict_math
 from utils.model2 import predict as predict_reading
 from utils.model3 import predict as predict_emotion
-from utils.model3 import predict as predict_emotion
 from utils.report_db import ensure_disabilities_column, save_report_url
 from utils.speech import transcribe
 from utils.test5_model import predict_test5
 from utils.test6_model import predict_test6
 from utils.video_download import cleanup_video, download_video_from_url
+
+# ── NEW: Video behavioral analysis ───────────────────────────────
+from utils.video_analysis import run_video_analysis_for_session
 
 # ---------------------------------------------------------------------------
 # Logging
@@ -79,6 +81,14 @@ def detect_disabilities(data: dict) -> list[str]:
     hw_risk = str(data.get("handwriting", {}).get("handwriting_risk", "NORMAL")).upper()
     if hw_risk != "NORMAL":
         found.append("dysgraphia")
+
+    # ── NEW: include ASD/ADHD from video analysis ─────────────────
+    video = data.get("video_analysis", {})
+    if video.get("risk_category") in ("moderate", "high"):
+        if video.get("eye_contact_deficit") or video.get("flat_affect_detected"):
+            found.append("asd_risk")
+        if video.get("sustained_attention_failure") or video.get("high_impulsivity"):
+            found.append("adhd_risk")
 
     return found
 
@@ -417,32 +427,30 @@ def test5(session_id, row):
 
 
 # ---------------------------------------------------------------------------
-# Video / Behavioural Analysis
+# ★ NEW: Video Behavioral Analysis (ASD / ADHD / Engagement / Stress)
 # ---------------------------------------------------------------------------
 
-@app.route("/predict/video", methods=["POST"])
+@app.route("/predict/video_analysis", methods=["POST"])
 @require_session
-def predict_video(session_id, row):
-    video_url = row[-1]
-    if not video_url:
-        return jsonify({"error": "No video URL found for this session"}), 400
+def video_analysis(session_id, row):
+    """
+    Analyzes a session's recorded video for behavioral markers of
+    ASD, ADHD, stress, engagement, attention, gaze, and hyperactivity.
 
-    local_path = download_video_from_url(video_url)
-    if not local_path:
-        return jsonify({"error": "Video download failed"}), 500
+    Request body:
+        {"session_id": "<id>"}
 
-    try:
-        report = process_video_logic(local_path)
-        return jsonify(report)
-    except Exception as exc:
-        logger.exception("Video processing error for session %s", session_id)
-        return jsonify({"error": str(exc)}), 500
-    finally:
-        cleanup_video(local_path)
+    The video URL is read automatically from the DB row.
+    Configure VIDEO_URL_ROW_INDEX in utils/video_analysis.py
+    to match your DB column order (default = last column, -1).
+
+    Response: full behavioral metrics JSON — see utils/video_analysis.py
+    """
+    return run_video_analysis_for_session(session_id, row)
 
 
 # ---------------------------------------------------------------------------
-# Full Report
+# Full Report (updated to include video analysis)
 # ---------------------------------------------------------------------------
 
 @app.route("/predict/full_report", methods=["POST"])
@@ -455,18 +463,17 @@ def full_report():
     logger.info("Full report requested for session: %s", session_id)
 
     full_json = {
-        "session_id": session_id,
-        "math":        _post("dyscalculia", session_id),
-        "reading":     _post("reading_disability", session_id),
-        "emotion":     _post("emotion", session_id),
-        "hearing":     _post("test5", session_id),
-        "cognition":   _post("test6", session_id),
-        "handwriting": _post("handwriting", session_id),
+        "session_id":    session_id,
+        "math":          _post("dyscalculia",       session_id),
+        "reading":       _post("reading_disability", session_id),
+        "emotion":       _post("emotion",            session_id),
+        "hearing":       _post("test5",              session_id),
+        "cognition":     _post("test6",              session_id),
+        "handwriting":   _post("handwriting",        session_id),
+        "video_analysis":_post("video_analysis",     session_id),   # ← NEW
     }
 
-    # Ensure schema is ready
     ensure_disabilities_column()
-
     disabilities = detect_disabilities(full_json)
     logger.info("Disabilities detected for %s: %s", session_id, disabilities)
 
@@ -491,9 +498,9 @@ def full_report():
     logger.info("Report URL saved for session %s: %s", session_id, url)
 
     return jsonify({
-        "status": "completed",
-        "report_url": url,
-        "disabilities": disabilities,
+        "status":      "completed",
+        "report_url":  url,
+        "disabilities":disabilities,
     })
 
 
