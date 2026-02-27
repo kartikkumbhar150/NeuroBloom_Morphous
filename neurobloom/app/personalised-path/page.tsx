@@ -199,7 +199,7 @@ const DISABILITY_CONFIG: Record<
     description: "Handwriting Skills · 60 Day Plan",
     duration: "60 Days",
     method: "Hands-On",
-    color: ["#FF7043", "#FFA07A"],
+    color: ["#7C6FF7", "#A389F4"],
     icon: <PenTool size={20} />,
     floaters: [
       { symbol: "✏️", x: "66%", y: "8%", size: "16px", delay: 0, duration: 2.5 },
@@ -307,8 +307,7 @@ function LessonPhaseCard({
       initial={{ opacity: 0, y: 24 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.09, type: "spring", stiffness: 110 }}
-      className="bg-white rounded-3xl overflow-hidden shadow-md relative"
-      style={{ border: "1px solid #EDEDF5" }}
+      className="bg-card rounded-3xl overflow-hidden shadow-md relative border border-border"
     >
       {/* Top gradient line */}
       <div className="h-1 w-full" style={{ background: `linear-gradient(90deg, ${phaseColor[0]}, ${phaseColor[1]})` }} />
@@ -328,8 +327,8 @@ function LessonPhaseCard({
         {/* Top row: status badge + shield */}
         <div className="flex items-center justify-between mb-3">
           {locked ? (
-            <div className="flex items-center gap-1.5 bg-gray-100 text-gray-500 px-3 py-1 rounded-full">
-              <Lock size={10} className="text-gray-400" />
+            <div className="flex items-center gap-1.5 bg-muted text-muted-foreground px-3 py-1 rounded-full">
+              <Lock size={10} className="text-muted-foreground" />
               <span className="text-[10px] font-extrabold tracking-widest uppercase">Locked</span>
             </div>
           ) : (
@@ -348,39 +347,39 @@ function LessonPhaseCard({
         </div>
 
         {/* Title & subtitle */}
-        <h3 className="text-[17px] font-extrabold text-[#1A1A2E] leading-tight mb-0.5">
+        <h3 className="text-[17px] font-extrabold text-foreground leading-tight mb-0.5">
           Lesson {lessonNumber}:{" "}
           <span style={{ color: phaseColor[0] }}>{phase.title}</span>
         </h3>
-        <p className="text-[11px] text-gray-400 mb-4">
+        <p className="text-[11px] text-muted-foreground mb-4">
           {childName} &middot; {phase.days}
         </p>
 
         {/* Stat boxes */}
         <div className="flex gap-2 mb-4">
-          <div className="flex-1 rounded-2xl px-3 py-2.5" style={{ background: "#F7F6FF", border: "1px solid #EDEDF5" }}>
+          <div className="flex-1 rounded-2xl px-3 py-2.5 bg-muted border border-border">
             <div className="flex items-center gap-1 mb-1">
-              <Clock size={10} className="text-gray-400" />
-              <span className="text-[9px] font-extrabold tracking-widest text-gray-400 uppercase">Duration</span>
+              <Clock size={10} className="text-muted-foreground" />
+              <span className="text-[9px] font-extrabold tracking-widest text-muted-foreground uppercase">Duration</span>
             </div>
-            <p className="text-[13px] font-extrabold text-[#1A1A2E]">20 Days</p>
+            <p className="text-[13px] font-extrabold text-foreground">20 Days</p>
           </div>
-          <div className="flex-1 rounded-2xl px-3 py-2.5" style={{ background: "#F7F6FF", border: "1px solid #EDEDF5" }}>
+          <div className="flex-1 rounded-2xl px-3 py-2.5 bg-muted border border-border">
             <div className="flex items-center gap-1 mb-1">
-              <BarChart2 size={10} className="text-gray-400" />
-              <span className="text-[9px] font-extrabold tracking-widest text-gray-400 uppercase">Activities</span>
+              <BarChart2 size={10} className="text-muted-foreground" />
+              <span className="text-[9px] font-extrabold tracking-widest text-muted-foreground uppercase">Activities</span>
             </div>
-            <p className="text-[13px] font-extrabold text-[#1A1A2E]">{total} Tasks</p>
+            <p className="text-[13px] font-extrabold text-foreground">{total} Tasks</p>
           </div>
         </div>
 
         {/* Progress bar */}
         <div className="mb-4">
           <div className="flex items-center justify-between mb-1.5">
-            <span className="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest">Progress</span>
+            <span className="text-[10px] font-extrabold text-muted-foreground uppercase tracking-widest">Progress</span>
             <span className="text-[10px] font-extrabold" style={{ color: phaseColor[0] }}>{progress}/{total} · {pct}%</span>
           </div>
-          <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
+          <div className="h-2 rounded-full bg-muted overflow-hidden">
             <motion.div
               className="h-full rounded-full"
               style={{ background: `linear-gradient(90deg, ${phaseColor[0]}, ${phaseColor[1]})` }}
@@ -393,7 +392,7 @@ function LessonPhaseCard({
 
         {/* Start / Locked button */}
         {locked ? (
-          <button disabled className="w-full flex items-center justify-center gap-2 bg-gray-100 text-gray-400 rounded-2xl py-3.5 cursor-not-allowed mb-2">
+          <button disabled className="w-full flex items-center justify-center gap-2 bg-muted text-muted-foreground rounded-2xl py-3.5 cursor-not-allowed mb-2">
             <Lock size={14} />
             <span className="text-[13px] font-extrabold">Locked</span>
           </button>
@@ -493,28 +492,27 @@ function PendingCard({
       initial={{ opacity: 0, y: 24 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, type: "spring", stiffness: 110 }}
-      className="bg-white rounded-3xl overflow-hidden shadow-md relative"
-      style={{ border: "1px solid #EDEDF5" }}
+      className="bg-card rounded-3xl overflow-hidden shadow-md relative border border-border"
     >
       {/* Top gradient line */}
-      <div className="h-1 w-full" style={{ background: "linear-gradient(90deg, #F59E0B, #F97316)" }} />
+      <div className="h-1 w-full" style={{ background: "linear-gradient(90deg, #7C6FF7, #A389F4)" }} />
 
       {/* Background glow */}
       <div className="absolute inset-0 overflow-hidden rounded-3xl pointer-events-none">
-        <div className="absolute -top-10 -right-10 w-48 h-48 rounded-full blur-3xl" style={{ background: "#F59E0B22" }} />
+        <div className="absolute -top-10 -right-10 w-48 h-48 rounded-full blur-3xl" style={{ background: "#7C6FF722" }} />
       </div>
 
       {/* Floating symbols */}
       {pendingFloaters.map((el, i) => (
-        <FloatingSymbol key={i} el={el} color="#F59E0B" />
+        <FloatingSymbol key={i} el={el} color="#7C6FF7" />
       ))}
 
       {/* Card content */}
       <div className="p-4 relative z-10">
         {/* Top row: badge + end path */}
         <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-1.5 bg-amber-100 text-amber-700 px-3 py-1 rounded-full">
-            <Sparkles size={10} className="text-amber-600" />
+          <div className="flex items-center gap-1.5 bg-purple-100 text-purple-700 px-3 py-1 rounded-full">
+            <Sparkles size={10} className="text-purple-600" />
             <span className="text-[10px] font-extrabold tracking-widest uppercase">
               Scan Needed
             </span>
@@ -523,9 +521,9 @@ function PendingCard({
             <motion.div
               whileHover={{ scale: 1.1, rotate: 10 }}
               className="w-9 h-9 rounded-full flex items-center justify-center"
-              style={{ background: "#FFF7ED" }}
+              style={{ background: "#F0EEFF" }}
             >
-              <Shield size={16} className="text-amber-500" />
+              <Shield size={16} className="text-purple-500" />
             </motion.div>
             <button
               onClick={() => {
@@ -541,33 +539,33 @@ function PendingCard({
         </div>
 
         {/* Title */}
-        <h3 className="text-[17px] font-extrabold text-[#1A1A2E] leading-tight mb-0.5">
+        <h3 className="text-[17px] font-extrabold text-foreground leading-tight mb-0.5">
           AI Analysis:{" "}
-          <span className="text-amber-600">{childName}</span>
+          <span className="text-purple-600">{childName}</span>
         </h3>
-        <p className="text-[11px] text-gray-400 mb-4">
+        <p className="text-[11px] text-muted-foreground mb-4">
           Age {age} &middot; {gender.charAt(0).toUpperCase() + gender.slice(1)} &middot; Pending Discovery
         </p>
 
         {/* Stat boxes */}
         <div className="flex gap-2 mb-4">
-          <div className="flex-1 rounded-2xl px-3 py-2.5" style={{ background: "#F7F6FF", border: "1px solid #EDEDF5" }}>
+          <div className="flex-1 rounded-2xl px-3 py-2.5 bg-muted border border-border">
             <div className="flex items-center gap-1 mb-1">
-              <FileText size={10} className="text-gray-400" />
-              <span className="text-[9px] font-extrabold tracking-widest text-gray-400 uppercase">
+              <FileText size={10} className="text-muted-foreground" />
+              <span className="text-[9px] font-extrabold tracking-widest text-muted-foreground uppercase">
                 Report
               </span>
             </div>
-            <p className="text-[13px] font-extrabold text-[#1A1A2E]">Ready</p>
+            <p className="text-[13px] font-extrabold text-foreground">Ready</p>
           </div>
-          <div className="flex-1 rounded-2xl px-3 py-2.5" style={{ background: "#F7F6FF", border: "1px solid #EDEDF5" }}>
+          <div className="flex-1 rounded-2xl px-3 py-2.5 bg-muted border border-border">
             <div className="flex items-center gap-1 mb-1">
-              <BarChart2 size={10} className="text-gray-400" />
-              <span className="text-[9px] font-extrabold tracking-widest text-gray-400 uppercase">
+              <BarChart2 size={10} className="text-muted-foreground" />
+              <span className="text-[9px] font-extrabold tracking-widest text-muted-foreground uppercase">
                 Status
               </span>
             </div>
-            <p className="text-[13px] font-extrabold text-amber-600">AI Pending</p>
+            <p className="text-[13px] font-extrabold text-purple-600">AI Pending</p>
           </div>
         </div>
 
@@ -576,10 +574,9 @@ function PendingCard({
           href={reportUrl}
           target="_blank"
           rel="noreferrer"
-          className="flex items-center gap-2 px-4 py-3 rounded-2xl text-[13px] font-bold text-gray-500 hover:bg-amber-50 transition-colors mb-3"
-          style={{ background: "#F7F6FF", border: "1px solid #EDEDF5" }}
+          className="flex items-center gap-2 px-4 py-3 rounded-2xl text-[13px] font-bold text-muted-foreground hover:bg-muted transition-colors mb-3 bg-muted border border-border"
         >
-          <FileText size={14} className="text-amber-500" />
+          <FileText size={14} className="text-purple-500" />
           View Existing Report
         </a>
 
@@ -600,7 +597,7 @@ function PendingCard({
         >
           <motion.div
             className="absolute inset-0 opacity-20"
-            style={{ background: "linear-gradient(90deg, transparent, #FFA07A, transparent)" }}
+            style={{ background: "linear-gradient(90deg, transparent, #A389F4, transparent)" }}
             animate={{ x: ["-100%", "100%"] }}
             transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
           />
@@ -651,8 +648,7 @@ function DisabilityCard({
     >
       {/* Quest header card */}
       <div
-        className="bg-white rounded-3xl overflow-hidden shadow-md relative"
-        style={{ border: "1px solid #EDEDF5" }}
+        className="bg-card rounded-3xl overflow-hidden shadow-md relative border border-border"
       >
         <div className="h-1 w-full" style={{ background: `linear-gradient(90deg, ${cfg.color[0]}, ${cfg.color[1]})` }} />
 
@@ -682,39 +678,39 @@ function DisabilityCard({
             </div>
           </div>
 
-          <h3 className="text-[19px] font-extrabold text-[#1A1A2E] leading-tight mb-0.5">
+          <h3 className="text-[19px] font-extrabold text-foreground leading-tight mb-0.5">
             {cfg.questName}:{" "}
             <span style={{ color: cfg.color[0] }}>{childName}</span>
           </h3>
-          <p className="text-[11px] text-gray-400 mb-4">
+          <p className="text-[11px] text-muted-foreground mb-4">
             {cfg.description} &middot; Age {age} &middot; {gender.charAt(0).toUpperCase() + gender.slice(1)}
           </p>
 
           {/* Stat boxes */}
           <div className="flex gap-2 mb-4">
-            <div className="flex-1 rounded-2xl px-3 py-2.5" style={{ background: "#F7F6FF", border: "1px solid #EDEDF5" }}>
+            <div className="flex-1 rounded-2xl px-3 py-2.5 bg-muted border border-border">
               <div className="flex items-center gap-1 mb-1">
-                <Clock size={10} className="text-gray-400" />
-                <span className="text-[9px] font-extrabold tracking-widest text-gray-400 uppercase">Duration</span>
+                <Clock size={10} className="text-muted-foreground" />
+                <span className="text-[9px] font-extrabold tracking-widest text-muted-foreground uppercase">Duration</span>
               </div>
-              <p className="text-[13px] font-extrabold text-[#1A1A2E]">{cfg.duration}</p>
+              <p className="text-[13px] font-extrabold text-foreground">{cfg.duration}</p>
             </div>
-            <div className="flex-1 rounded-2xl px-3 py-2.5" style={{ background: "#F7F6FF", border: "1px solid #EDEDF5" }}>
+            <div className="flex-1 rounded-2xl px-3 py-2.5 bg-muted border border-border">
               <div className="flex items-center gap-1 mb-1">
-                <BarChart2 size={10} className="text-gray-400" />
-                <span className="text-[9px] font-extrabold tracking-widest text-gray-400 uppercase">Activities</span>
+                <BarChart2 size={10} className="text-muted-foreground" />
+                <span className="text-[9px] font-extrabold tracking-widest text-muted-foreground uppercase">Activities</span>
               </div>
-              <p className="text-[13px] font-extrabold text-[#1A1A2E]">{totalActivities} Tasks</p>
+              <p className="text-[13px] font-extrabold text-foreground">{totalActivities} Tasks</p>
             </div>
           </div>
 
           {/* Progress bar */}
           <div className="mb-4">
             <div className="flex items-center justify-between mb-1.5">
-              <span className="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest">Overall Progress</span>
+              <span className="text-[10px] font-extrabold text-muted-foreground uppercase tracking-widest">Overall Progress</span>
               <span className="text-[10px] font-extrabold" style={{ color: cfg.color[0] }}>0/{totalActivities} · 0%</span>
             </div>
-            <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
+            <div className="h-2 rounded-full bg-muted overflow-hidden">
               <div className="h-full rounded-full w-0 transition-all" style={{ background: `linear-gradient(90deg, ${cfg.color[0]}, ${cfg.color[1]})` }} />
             </div>
           </div>
@@ -724,8 +720,7 @@ function DisabilityCard({
             href={reportUrl}
             target="_blank"
             rel="noreferrer"
-            className="flex items-center gap-2 px-4 py-3 rounded-2xl text-[13px] font-bold text-gray-500 hover:bg-gray-50 transition-colors mb-3"
-            style={{ background: "#F7F6FF", border: "1px solid #EDEDF5" }}
+            className="flex items-center gap-2 px-4 py-3 rounded-2xl text-[13px] font-bold text-muted-foreground hover:bg-muted transition-colors mb-3 bg-muted border border-border"
           >
             <FileText size={14} style={{ color: cfg.color[0] }} />
             View Full Report
@@ -793,12 +788,10 @@ export default function PersonalisedPathPage() {
       .catch(() => setLoading(false));
   }, []);
 
-  const withReports = assessments.filter((a) => a.report_url);
-
-  const withDisabilities = withReports.filter(
+  const withDisabilities = assessments.filter(
     (a) => Array.isArray(a.disabilities) && a.disabilities.length > 0
   );
-  const pendingAnalysis = withReports.filter(
+  const pendingAnalysis = assessments.filter(
     (a) => !Array.isArray(a.disabilities) || a.disabilities.length === 0
   );
 
@@ -850,14 +843,14 @@ export default function PersonalisedPathPage() {
   });
 
   return (
-    <div className="h-screen w-full bg-[#F5F2FF] text-slate-900 flex overflow-hidden">
+    <div className="h-screen w-full bg-background text-foreground flex overflow-hidden">
       {/* ─ Sidebar ─ */}
-      <aside className="w-20 lg:w-64 bg-white border-r border-slate-200 flex flex-col">
+      <aside className="w-20 lg:w-64 bg-card border-r border-border flex flex-col">
         <div className="p-6 mb-4 flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-200">
-            <Activity className="text-white w-5 h-5" />
+          <div className="w-10 h-10 bg-primary rounded-2xl flex items-center justify-center shadow-lg shadow-primary/20">
+            <Activity className="text-primary-foreground w-5 h-5" />
           </div>
-          <span className="hidden lg:block font-extrabold text-lg tracking-tight text-slate-800">NeuroBloom</span>
+          <span className="hidden lg:block font-extrabold text-lg tracking-tight text-foreground">NeuroBloom</span>
         </div>
 
         <nav className="flex-1 px-3 space-y-1">
@@ -868,35 +861,39 @@ export default function PersonalisedPathPage() {
           <Link href="/personalised-path"><NavItem icon={<Compass size={18} />} label="Personalised Path" active /></Link>
         </nav>
 
-        <div className="p-3 border-t border-slate-100 space-y-1">
+        <div className="p-3 border-t border-border space-y-1">
           <NavItem icon={<Settings size={18} />} label="Settings" />
           <NavItem icon={<HelpCircle size={18} />} label="Support" />
         </div>
       </aside>
 
       {/* ─ Main Content ─ */}
-      <main className="flex-1 flex flex-col min-w-0 overflow-hidden bg-[#F5F2FF]">
+      <main className="flex-1 flex flex-col min-w-0 overflow-hidden bg-background">
         {/* ─ Page Header ─ */}
-        <div className="px-8 pt-8 pb-5 border-b border-slate-200/60 bg-white/60 backdrop-blur">
-          <div className="flex items-center justify-between mb-0.5">
-            <h1 className="text-2xl font-extrabold text-[#1A1A2E]">Personalised Paths</h1>
-            <LanguageSwitcher />
+        <div className="px-8 pt-10 pb-4 flex-shrink-0 bg-background">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-[22px] font-extrabold text-foreground leading-tight">Personalised Paths</h1>
+              <p className="text-sm text-muted-foreground mt-1">
+                {totalCards} personalised {totalCards === 1 ? "quest" : "quests"} ready to explore
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              <LanguageSwitcher />
+            </div>
           </div>
-          <p className="text-sm text-gray-400 mb-5">
-            {totalCards} personalised {totalCards === 1 ? "quest" : "quests"} ready to explore
-          </p>
-          <div className="flex items-center gap-3 flex-wrap">
-            <div className="flex items-center gap-2 bg-white rounded-2xl px-4 py-2.5 border border-[#EDEDF5] shadow-sm">
-              <Search size={14} className="text-gray-400" />
+          <div className="flex items-center gap-3 flex-wrap mt-4">
+            <div className="flex items-center gap-2 bg-card rounded-2xl px-4 py-2.5 border border-border shadow-sm">
+              <Search size={14} className="text-muted-foreground" />
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search child or condition…"
-                className="w-52 bg-transparent text-sm outline-none text-gray-700 placeholder-gray-400"
+                className="w-52 bg-transparent text-sm outline-none text-foreground placeholder:text-muted-foreground"
               />
             </div>
-            <button className="bg-white rounded-2xl p-2.5 border border-[#EDEDF5] shadow-sm hover:bg-gray-50 transition-colors">
-              <SlidersHorizontal size={16} className="text-gray-500" />
+            <button className="bg-card rounded-2xl p-2.5 border border-border shadow-sm hover:bg-muted transition-colors">
+              <SlidersHorizontal size={16} className="text-muted-foreground" />
             </button>
             <div className="flex gap-2 flex-wrap">
               {visibleFilters.map((f) => (
@@ -905,8 +902,8 @@ export default function PersonalisedPathPage() {
                   onClick={() => setFilter(f)}
                   className={`px-4 py-1.5 rounded-full text-xs font-extrabold tracking-wide transition-all ${
                     filter === f
-                      ? "bg-[#7C6FF7] text-white shadow-md shadow-purple-200"
-                      : "bg-white text-gray-500 border border-[#EDEDF5] hover:bg-gray-50"
+                      ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
+                      : "bg-card text-muted-foreground border border-border hover:bg-muted"
                   }`}
                 >
                   {f}
@@ -927,7 +924,7 @@ export default function PersonalisedPathPage() {
                 className="flex flex-col items-center justify-center py-24 gap-3"
               >
                 <span className="text-5xl animate-pulse">🧠</span>
-                <p className="text-[13px] font-bold text-gray-400">Loading learning paths...</p>
+                <p className="text-[13px] font-bold text-muted-foreground">Loading learning paths...</p>
               </motion.div>
             ) : totalCards === 0 ? (
               <motion.div
@@ -938,8 +935,8 @@ export default function PersonalisedPathPage() {
                 className="flex flex-col items-center justify-center py-16 gap-3"
               >
                 <span className="text-5xl">🎮</span>
-                <h4 className="text-lg font-extrabold text-gray-600">No Quests Yet</h4>
-                <p className="text-[13px] text-gray-400 max-w-sm text-center leading-relaxed">
+                <h4 className="text-lg font-extrabold text-foreground">No Quests Yet</h4>
+                <p className="text-[13px] text-muted-foreground max-w-sm text-center leading-relaxed">
                   Personalised learning quests will appear here once a child&apos;s test report is generated.
                 </p>
               </motion.div>
@@ -987,12 +984,12 @@ export default function PersonalisedPathPage() {
         </div>
 
         {/* Footer */}
-        <footer className="h-10 bg-white/60 backdrop-blur border-t border-slate-200/50 px-8 flex items-center justify-between">
+        <footer className="h-10 bg-card/60 backdrop-blur border-t border-border px-8 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-xs font-bold text-gray-400">System Online</span>
+            <span className="text-xs font-bold text-muted-foreground">System Online</span>
           </div>
-          <span className="text-xs text-gray-300 font-bold">NeuroBloom v4.0</span>
+          <span className="text-xs text-muted-foreground font-bold">NeuroBloom v4.0</span>
         </footer>
       </main>
     </div>
@@ -1013,11 +1010,11 @@ function NavItem({
     <div
       className={`flex items-center gap-3 px-4 py-2.5 rounded-xl cursor-pointer transition-all ${
         active
-          ? "bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-700 shadow-sm"
-          : "text-slate-400 hover:bg-slate-50 hover:text-slate-600"
+          ? "bg-primary/10 text-primary shadow-sm"
+          : "text-muted-foreground hover:bg-muted hover:text-foreground"
       }`}
     >
-      <span className={active ? "text-indigo-600" : "text-slate-400"}>{icon}</span>
+      <span className={active ? "text-primary" : "text-muted-foreground"}>{icon}</span>
       <span className={`hidden lg:block text-sm ${active ? "font-bold" : "font-semibold"}`}>{label}</span>
     </div>
   );
