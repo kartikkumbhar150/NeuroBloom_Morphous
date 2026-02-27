@@ -152,16 +152,23 @@ export default function AssessmentsPage() {
                           {item.age} <span className="text-[10px] text-muted-foreground ml-1 uppercase">{t("assess_years")}</span>
                         </td>
                         <td className="px-6 py-4 text-right">
-                          <a
-                            href={item.report_url}
-                            download
-                            target="_blank"
-                            className="inline-flex items-center gap-2 px-4 py-2 bg-card border border-border rounded-lg text-xs font-bold text-foreground hover:border-primary hover:text-primary hover:shadow-sm transition-all"
-                          >
-                            <FileDown size={14} />
-                            {t("assess_download_pdf")}
-                            <ChevronRight size={12} className="opacity-30" />
-                          </a>
+                          {item.report_url ? (
+                            <a
+                              href={item.report_url}
+                              download
+                              target="_blank"
+                              className="inline-flex items-center gap-2 px-4 py-2 bg-card border border-border rounded-lg text-xs font-bold text-foreground hover:border-primary hover:text-primary hover:shadow-sm transition-all"
+                            >
+                              <FileDown size={14} />
+                              {t("assess_download_pdf")}
+                              <ChevronRight size={12} className="opacity-30" />
+                            </a>
+                          ) : (
+                            <span className="inline-flex items-center gap-2 px-4 py-2 bg-muted border border-border rounded-lg text-xs font-bold text-muted-foreground cursor-default">
+                              <FileText size={14} />
+                              No Report Yet
+                            </span>
+                          )}
                         </td>
                       </motion.tr>
                     ))

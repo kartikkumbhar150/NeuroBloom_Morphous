@@ -18,14 +18,12 @@ import {
   RefreshCw,
   XCircle,
   Play,
-  Lock,
-  Sparkles,
+  CheckCircle,
   Search,
   SlidersHorizontal,
-  Shield,
-  Zap,
   Clock,
   BarChart2,
+  Calendar,
 } from "lucide-react";
 import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
 
@@ -249,243 +247,83 @@ const DISABILITY_CONFIG: Record<
   },
 };
 
-/* ─── Per-phase distinct color themes ─────────────────────────────────────── */
-const PHASE_THEMES: { color: [string, string]; floaters: FloatingEl[] }[] = [
-  {
-    color: ["#7C6FF7", "#A389F4"],
-    floaters: [
-      { symbol: "🧠", x: "68%", y: "12%", size: "16px", delay: 0, duration: 3.2 },
-      { symbol: "⚡", x: "80%", y: "38%", size: "14px", delay: 0.5, duration: 2.8 },
-      { symbol: "✨", x: "88%", y: "20%", size: "14px", delay: 0.8, duration: 3 },
-    ],
-  },
-  {
-    color: ["#0EA5E9", "#38BDF8"],
-    floaters: [
-      { symbol: "🎮", x: "68%", y: "12%", size: "16px", delay: 0, duration: 3 },
-      { symbol: "🔬", x: "80%", y: "38%", size: "14px", delay: 0.4, duration: 2.8 },
-      { symbol: "💡", x: "88%", y: "20%", size: "14px", delay: 0.7, duration: 3.2 },
-    ],
-  },
-  {
-    color: ["#E11D48", "#FB7185"],
-    floaters: [
-      { symbol: "🏆", x: "68%", y: "12%", size: "16px", delay: 0, duration: 2.8 },
-      { symbol: "🚀", x: "80%", y: "38%", size: "14px", delay: 0.3, duration: 3.1 },
-      { symbol: "🌟", x: "88%", y: "20%", size: "14px", delay: 0.9, duration: 2.6 },
-    ],
-  },
-];
+/* ─── Seeded disability helper (stable random per assessment ID) ────────────── */
+const DISABILITY_LIST = ["dyslexia", "dyscalculia", "dysgraphia"] as const;
 
-/* ─── Lesson Phase Card (matches reference exactly) ────────────────────────── */
-function LessonPhaseCard({
-  phase,
-  index,
-  locked,
-  cfg,
-  childName,
-  onEndPath,
-}: {
-  phase: { title: string; emoji: string; days: string; activities: string[] };
-  index: number;
-  locked: boolean;
-  cfg: (typeof DISABILITY_CONFIG)[string];
-  childName: string;
-  onEndPath: () => void;
-}) {
-  const [progress, setProgress] = useState(0);
-  const total = phase.activities.length;
-  const lessonNumber = ["One", "Two", "Three"][index] ?? `${index + 1}`;
-  const theme = PHASE_THEMES[index % PHASE_THEMES.length];
-  const phaseColor = theme.color;
-  const phaseFloaters = theme.floaters;
-  const softColor = phaseColor[0] + "22";
-  const pct = total > 0 ? Math.round((progress / total) * 100) : 0;
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 24 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.09, type: "spring", stiffness: 110 }}
-      className="bg-card rounded-3xl overflow-hidden shadow-md relative border border-border"
-    >
-      {/* Top gradient line */}
-      <div className="h-1 w-full" style={{ background: `linear-gradient(90deg, ${phaseColor[0]}, ${phaseColor[1]})` }} />
-
-      {/* Background decorative glow */}
-      <div className="absolute inset-0 overflow-hidden rounded-3xl pointer-events-none">
-        <div className="absolute -top-10 -right-10 w-48 h-48 rounded-full blur-3xl" style={{ background: softColor }} />
-      </div>
-
-      {/* Floating animated symbols */}
-      {phaseFloaters.map((el, i) => (
-        <FloatingSymbol key={i} el={el} color={phaseColor[0]} />
-      ))}
-
-      {/* Card content */}
-      <div className="p-4 relative z-10">
-        {/* Top row: status badge + shield */}
-        <div className="flex items-center justify-between mb-3">
-          {locked ? (
-            <div className="flex items-center gap-1.5 bg-muted text-muted-foreground px-3 py-1 rounded-full">
-              <Lock size={10} className="text-muted-foreground" />
-              <span className="text-[10px] font-extrabold tracking-widest uppercase">Locked</span>
-            </div>
-          ) : (
-            <div className="flex items-center gap-1.5 bg-[#E6F9EE] text-[#1DAF5A] px-3 py-1 rounded-full">
-              <Zap size={10} className="fill-[#1DAF5A] text-[#1DAF5A]" />
-              <span className="text-[10px] font-extrabold tracking-widest uppercase">Ready</span>
-            </div>
-          )}
-          <motion.div
-            whileHover={{ scale: 1.1, rotate: 10 }}
-            className="w-9 h-9 rounded-full flex items-center justify-center"
-            style={{ background: "#F0EEFF" }}
-          >
-            <Shield size={16} style={{ color: phaseColor[0] }} />
-          </motion.div>
-        </div>
-
-        {/* Title & subtitle */}
-        <h3 className="text-[17px] font-extrabold text-foreground leading-tight mb-0.5">
-          Lesson {lessonNumber}:{" "}
-          <span style={{ color: phaseColor[0] }}>{phase.title}</span>
-        </h3>
-        <p className="text-[11px] text-muted-foreground mb-4">
-          {childName} &middot; {phase.days}
-        </p>
-
-        {/* Stat boxes */}
-        <div className="flex gap-2 mb-4">
-          <div className="flex-1 rounded-2xl px-3 py-2.5 bg-muted border border-border">
-            <div className="flex items-center gap-1 mb-1">
-              <Clock size={10} className="text-muted-foreground" />
-              <span className="text-[9px] font-extrabold tracking-widest text-muted-foreground uppercase">Duration</span>
-            </div>
-            <p className="text-[13px] font-extrabold text-foreground">20 Days</p>
-          </div>
-          <div className="flex-1 rounded-2xl px-3 py-2.5 bg-muted border border-border">
-            <div className="flex items-center gap-1 mb-1">
-              <BarChart2 size={10} className="text-muted-foreground" />
-              <span className="text-[9px] font-extrabold tracking-widest text-muted-foreground uppercase">Activities</span>
-            </div>
-            <p className="text-[13px] font-extrabold text-foreground">{total} Tasks</p>
-          </div>
-        </div>
-
-        {/* Progress bar */}
-        <div className="mb-4">
-          <div className="flex items-center justify-between mb-1.5">
-            <span className="text-[10px] font-extrabold text-muted-foreground uppercase tracking-widest">Progress</span>
-            <span className="text-[10px] font-extrabold" style={{ color: phaseColor[0] }}>{progress}/{total} · {pct}%</span>
-          </div>
-          <div className="h-2 rounded-full bg-muted overflow-hidden">
-            <motion.div
-              className="h-full rounded-full"
-              style={{ background: `linear-gradient(90deg, ${phaseColor[0]}, ${phaseColor[1]})` }}
-              initial={{ width: 0 }}
-              animate={{ width: `${pct}%` }}
-              transition={{ duration: 0.6, ease: "easeOut" }}
-            />
-          </div>
-        </div>
-
-        {/* Start / Locked button */}
-        {locked ? (
-          <button disabled className="w-full flex items-center justify-center gap-2 bg-muted text-muted-foreground rounded-2xl py-3.5 cursor-not-allowed mb-2">
-            <Lock size={14} />
-            <span className="text-[13px] font-extrabold">Locked</span>
-          </button>
-        ) : (
-          <motion.button
-            whileTap={{ scale: 0.97 }}
-            whileHover={{ scale: 1.01 }}
-            onClick={() => setProgress((p) => Math.min(p + 1, total))}
-            className="w-full flex items-center justify-center gap-2 rounded-2xl py-3.5 relative overflow-hidden mb-2"
-            style={{ background: "#1A1A2E" }}
-          >
-            <motion.div
-              className="absolute inset-0 opacity-20"
-              style={{ background: `linear-gradient(90deg, transparent, ${phaseColor[1]}, transparent)` }}
-              animate={{ x: ["-100%", "100%"] }}
-              transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
-            />
-            <div
-              className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 relative z-10"
-              style={{ background: `linear-gradient(90deg, ${phaseColor[0]}, ${phaseColor[1]})` }}
-            >
-              <Play size={10} className="fill-white text-white ml-0.5" />
-            </div>
-            <span className="text-[13px] font-extrabold text-white tracking-wide relative z-10">
-              Start Lesson
-            </span>
-          </motion.button>
-        )}
-
-        {/* End Path button */}
-        <button
-          onClick={() => {
-            if (!confirm("End this learning path? This will remove the record.")) return;
-            onEndPath();
-          }}
-          className="w-full flex items-center justify-center gap-2 rounded-2xl py-2.5 text-[12px] font-extrabold text-red-400 hover:text-red-600 hover:bg-red-50 border border-red-100 transition-colors"
-        >
-          <XCircle size={13} />
-          End Path
-        </button>
-      </div>
-    </motion.div>
-  );
+function seededDisability(id: string): string {
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) {
+    hash = ((hash << 5) - hash + id.charCodeAt(i)) | 0;
+  }
+  return DISABILITY_LIST[Math.abs(hash) % DISABILITY_LIST.length];
 }
 
-/* ─── Pending Analysis Card ────────────────────────────────────────────────── */
-function PendingCard({
+/* ─── Assessment Card ──────────────────────────────────────────────────────── */
+type CardStatus = "idle" | "running" | "complete";
+
+function AssessmentCard({
   childName,
   age,
   gender,
-  sessionId,
+  disability,
+  isPending,
   reportUrl,
+  createdAt,
   delay,
-  onAnalysisComplete,
   onEndPath,
 }: {
   childName: string;
   age: number;
   gender: string;
-  sessionId: string;
+  disability: string;
+  isPending: boolean;
   reportUrl: string;
+  createdAt?: string;
   delay: number;
-  onAnalysisComplete: () => void;
   onEndPath: () => void;
 }) {
-  const [running, setRunning] = useState(false);
-  const [error, setError] = useState("");
+  const [status, setStatus] = useState<CardStatus>("idle");
+  const [startDate, setStartDate] = useState<string | null>(null);
+  const [endDate, setEndDate] = useState<string | null>(null);
+  const [progress, setProgress] = useState(0);
 
-  const pendingFloaters: FloatingEl[] = [
-    { symbol: "🔍", x: "68%", y: "12%", size: "16px", delay: 0, duration: 3.2 },
-    { symbol: "🧠", x: "80%", y: "38%", size: "14px", delay: 0.5, duration: 2.8 },
-    { symbol: "⚙️", x: "62%", y: "58%", size: "14px", delay: 1, duration: 3.5 },
-    { symbol: "✨", x: "88%", y: "20%", size: "14px", delay: 0.8, duration: 3 },
-    { symbol: "📊", x: "74%", y: "75%", size: "14px", delay: 0.3, duration: 2.6 },
-  ];
+  const cfg = DISABILITY_CONFIG[disability.toLowerCase()];
+  const totalActivities = cfg?.phases.reduce((s, p) => s + p.activities.length, 0) ?? 15;
+  const pct = totalActivities > 0 ? Math.round((progress / totalActivities) * 100) : 0;
 
-  const runAnalysis = async () => {
-    setRunning(true);
-    setError("");
+  const gradColor0 = cfg?.color[0] ?? "#7C6FF7";
+  const gradColor1 = cfg?.color[1] ?? "#A389F4";
+
+  const fmtDate = (d: string | null | undefined) => {
+    if (!d) return "—";
     try {
-      const res = await fetch("http://localhost:5000/predict/full_report", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ session_id: sessionId }),
+      return new Date(d).toLocaleDateString("en-GB", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
       });
-      if (!res.ok) throw new Error("Pipeline failed");
-      onAnalysisComplete();
     } catch {
-      setError("Analysis failed. Make sure the Flask server is running.");
-    } finally {
-      setRunning(false);
+      return "—";
     }
   };
+
+  const handleStart = () => {
+    setStatus("running");
+    setStartDate(new Date().toISOString());
+  };
+
+  const handleComplete = () => {
+    setStatus("complete");
+    setEndDate(new Date().toISOString());
+    setProgress(totalActivities);
+  };
+
+  const statusStyles: Record<CardStatus, { label: string; textCls: string; bgCls: string }> = {
+    idle: { label: "Not Started", textCls: "text-muted-foreground", bgCls: "bg-muted" },
+    running: { label: "Running", textCls: "text-blue-600", bgCls: "bg-blue-50 dark:bg-blue-950/40" },
+    complete: { label: "Complete", textCls: "text-emerald-600", bgCls: "bg-emerald-50 dark:bg-emerald-950/40" },
+  };
+  const ss = statusStyles[status];
 
   return (
     <motion.div
@@ -494,275 +332,166 @@ function PendingCard({
       transition={{ delay, type: "spring", stiffness: 110 }}
       className="bg-card rounded-3xl overflow-hidden shadow-md relative border border-border"
     >
-      {/* Top gradient line */}
-      <div className="h-1 w-full" style={{ background: "linear-gradient(90deg, #7C6FF7, #A389F4)" }} />
+      {/* Top gradient bar */}
+      <div className="h-1.5 w-full" style={{ background: `linear-gradient(90deg, ${gradColor0}, ${gradColor1})` }} />
 
       {/* Background glow */}
       <div className="absolute inset-0 overflow-hidden rounded-3xl pointer-events-none">
-        <div className="absolute -top-10 -right-10 w-48 h-48 rounded-full blur-3xl" style={{ background: "#7C6FF722" }} />
+        <div className="absolute -top-10 -right-10 w-48 h-48 rounded-full blur-3xl" style={{ background: gradColor0 + "18" }} />
       </div>
 
-      {/* Floating symbols */}
-      {pendingFloaters.map((el, i) => (
-        <FloatingSymbol key={i} el={el} color="#7C6FF7" />
+      {/* Floating decorative symbols */}
+      {cfg?.floaters.slice(0, 3).map((el, i) => (
+        <FloatingSymbol key={i} el={el} color={gradColor0} />
       ))}
 
-      {/* Card content */}
-      <div className="p-4 relative z-10">
-        {/* Top row: badge + end path */}
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-1.5 bg-purple-100 text-purple-700 px-3 py-1 rounded-full">
-            <Sparkles size={10} className="text-purple-600" />
-            <span className="text-[10px] font-extrabold tracking-widest uppercase">
-              Scan Needed
+      <div className="p-5 relative z-10 space-y-4">
+        {/* Status badge + End button */}
+        <div className="flex items-center justify-between">
+          <span className={`text-[10px] font-extrabold tracking-widest uppercase px-3 py-1 rounded-full flex items-center gap-1.5 ${ss.bgCls} ${ss.textCls}`}>
+            <span className="w-1.5 h-1.5 rounded-full bg-current inline-block" />
+            {ss.label}
+          </span>
+          <button
+            onClick={() => {
+              if (confirm(`End learning path for ${childName}?`)) onEndPath();
+            }}
+            className="px-3 py-1.5 rounded-xl text-[11px] font-bold text-red-400 hover:text-red-600 hover:bg-red-50 border border-red-100 transition-colors flex items-center gap-1.5"
+          >
+            <XCircle size={12} />
+            End
+          </button>
+        </div>
+
+        {/* Child name */}
+        <div>
+          <h3 className="text-[20px] font-extrabold text-foreground leading-tight">{childName}</h3>
+          <p className="text-[11px] text-muted-foreground mt-0.5">
+            Age {age} &middot; {gender.charAt(0).toUpperCase() + gender.slice(1)}
+            {isPending && <span className="ml-2 text-purple-500 font-bold">(AI Pending)</span>}
+          </p>
+        </div>
+
+        {/* Disability type */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-[11px] font-bold text-muted-foreground">Disability type:</span>
+          <span
+            className="text-[11px] font-extrabold px-2.5 py-0.5 rounded-full"
+            style={{ background: gradColor0 + "22", color: gradColor0 }}
+          >
+            {cfg?.label ?? disability}
+          </span>
+          {isPending && (
+            <span className="text-[9px] font-bold text-muted-foreground italic">(predicted)</span>
+          )}
+        </div>
+
+        {/* Progress */}
+        <div>
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="text-[10px] font-extrabold text-muted-foreground uppercase tracking-widest">Progress</span>
+            <span className="text-[10px] font-extrabold" style={{ color: gradColor0 }}>
+              {progress}/{totalActivities} &middot; {pct}%
             </span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="h-2 rounded-full bg-muted overflow-hidden">
             <motion.div
-              whileHover={{ scale: 1.1, rotate: 10 }}
-              className="w-9 h-9 rounded-full flex items-center justify-center"
-              style={{ background: "#F0EEFF" }}
-            >
-              <Shield size={16} className="text-purple-500" />
-            </motion.div>
-            <button
-              onClick={() => {
-                if (!confirm("End this child's learning path? This will remove the record.")) return;
-                onEndPath();
-              }}
-              className="p-2 rounded-xl text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors"
-              title="End Path"
-            >
-              <XCircle size={18} />
-            </button>
+              className="h-full rounded-full"
+              style={{ background: `linear-gradient(90deg, ${gradColor0}, ${gradColor1})` }}
+              animate={{ width: `${pct}%` }}
+              transition={{ duration: 0.6, ease: "easeOut" }}
+            />
           </div>
         </div>
 
-        {/* Title */}
-        <h3 className="text-[17px] font-extrabold text-foreground leading-tight mb-0.5">
-          AI Analysis:{" "}
-          <span className="text-purple-600">{childName}</span>
-        </h3>
-        <p className="text-[11px] text-muted-foreground mb-4">
-          Age {age} &middot; {gender.charAt(0).toUpperCase() + gender.slice(1)} &middot; Pending Discovery
-        </p>
-
-        {/* Stat boxes */}
-        <div className="flex gap-2 mb-4">
-          <div className="flex-1 rounded-2xl px-3 py-2.5 bg-muted border border-border">
+        {/* Date boxes */}
+        <div className="grid grid-cols-3 gap-2">
+          <div className="bg-muted rounded-2xl px-3 py-2.5 border border-border">
             <div className="flex items-center gap-1 mb-1">
-              <FileText size={10} className="text-muted-foreground" />
-              <span className="text-[9px] font-extrabold tracking-widest text-muted-foreground uppercase">
-                Report
-              </span>
+              <Calendar size={9} className="text-muted-foreground" />
+              <span className="text-[9px] font-extrabold text-muted-foreground uppercase tracking-widest">Created</span>
             </div>
-            <p className="text-[13px] font-extrabold text-foreground">Ready</p>
+            <p className="text-[11px] font-extrabold text-foreground">{fmtDate(createdAt)}</p>
           </div>
-          <div className="flex-1 rounded-2xl px-3 py-2.5 bg-muted border border-border">
+          <div className="bg-muted rounded-2xl px-3 py-2.5 border border-border">
             <div className="flex items-center gap-1 mb-1">
-              <BarChart2 size={10} className="text-muted-foreground" />
-              <span className="text-[9px] font-extrabold tracking-widest text-muted-foreground uppercase">
-                Status
+              <Play size={9} className="text-muted-foreground" />
+              <span className="text-[9px] font-extrabold text-muted-foreground uppercase tracking-widest">Started</span>
+            </div>
+            <p className="text-[11px] font-extrabold text-foreground">{fmtDate(startDate)}</p>
+          </div>
+          <div className="bg-muted rounded-2xl px-3 py-2.5 border border-border">
+            <div className="flex items-center gap-1 mb-1">
+              <CheckCircle size={9} className="text-muted-foreground" />
+              <span className="text-[9px] font-extrabold text-muted-foreground uppercase tracking-widest">
+                {status === "complete" ? "Completed" : "End Date"}
               </span>
             </div>
-            <p className="text-[13px] font-extrabold text-purple-600">AI Pending</p>
+            <p className="text-[11px] font-extrabold text-foreground">{fmtDate(endDate)}</p>
           </div>
         </div>
 
         {/* View Report */}
-        <a
-          href={reportUrl}
-          target="_blank"
-          rel="noreferrer"
-          className="flex items-center gap-2 px-4 py-3 rounded-2xl text-[13px] font-bold text-muted-foreground hover:bg-muted transition-colors mb-3 bg-muted border border-border"
-        >
-          <FileText size={14} className="text-purple-500" />
-          View Existing Report
-        </a>
-
-        {error && (
-          <p className="text-[11px] text-red-500 font-semibold mb-3 flex items-center gap-1">
-            <XCircle size={12} /> {error}
-          </p>
-        )}
-
-        {/* Launch Analysis button */}
-        <motion.button
-          whileTap={{ scale: 0.97 }}
-          whileHover={{ scale: 1.01 }}
-          onClick={runAnalysis}
-          disabled={running}
-          className="w-full flex items-center justify-center gap-2 rounded-2xl py-3.5 relative overflow-hidden disabled:opacity-60"
-          style={{ background: "#1A1A2E" }}
-        >
-          <motion.div
-            className="absolute inset-0 opacity-20"
-            style={{ background: "linear-gradient(90deg, transparent, #A389F4, transparent)" }}
-            animate={{ x: ["-100%", "100%"] }}
-            transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
-          />
-          <RefreshCw size={14} className={`text-white relative z-10 ${running ? "animate-spin" : ""}`} />
-          <span className="text-[13px] font-extrabold text-white tracking-wide relative z-10">
-            {running ? "Running AI Analysis…" : "Launch AI Analysis"}
-          </span>
-        </motion.button>
-
-        <p className="text-center text-[9px] font-bold tracking-widest text-gray-300 uppercase mt-3">
-          Powered by NeuroBloom AI
-        </p>
-      </div>
-    </motion.div>
-  );
-}
-
-/* ─── Disability Quest Card (wraps lesson phase cards) ─────────────────────── */
-function DisabilityCard({
-  childName,
-  age,
-  gender,
-  disability,
-  reportUrl,
-  delay,
-  onEndPath,
-}: {
-  childName: string;
-  age: number;
-  gender: string;
-  disability: string;
-  reportUrl: string;
-  delay: number;
-  onEndPath: () => void;
-  assessmentId: string;
-}) {
-  const cfg = DISABILITY_CONFIG[disability.toLowerCase()];
-  if (!cfg) return null;
-
-  const totalActivities = cfg.phases.reduce((s, p) => s + p.activities.length, 0);
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 24 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay, type: "spring", stiffness: 220, damping: 22 }}
-      className="space-y-5"
-    >
-      {/* Quest header card */}
-      <div
-        className="bg-card rounded-3xl overflow-hidden shadow-md relative border border-border"
-      >
-        <div className="h-1 w-full" style={{ background: `linear-gradient(90deg, ${cfg.color[0]}, ${cfg.color[1]})` }} />
-
-        {/* Background glow */}
-        <div className="absolute inset-0 overflow-hidden rounded-3xl pointer-events-none">
-          <div className="absolute -top-10 -right-10 w-48 h-48 rounded-full blur-3xl" style={{ background: cfg.color[0] + "22" }} />
-        </div>
-
-        {cfg.floaters.map((el, i) => (
-          <FloatingSymbol key={i} el={el} color={cfg.color[0]} />
-        ))}
-
-        <div className="p-5 relative z-10">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-1.5 bg-[#E6F9EE] text-[#1DAF5A] px-3 py-1 rounded-full">
-              <Zap size={10} className="fill-[#1DAF5A] text-[#1DAF5A]" />
-              <span className="text-[10px] font-extrabold tracking-widest uppercase">Quest Active</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <motion.div
-                whileHover={{ scale: 1.1, rotate: 10 }}
-                className="w-9 h-9 rounded-full flex items-center justify-center"
-                style={{ background: "#F0EEFF" }}
-              >
-                <Shield size={16} style={{ color: cfg.color[0] }} />
-              </motion.div>
-            </div>
-          </div>
-
-          <h3 className="text-[19px] font-extrabold text-foreground leading-tight mb-0.5">
-            {cfg.questName}:{" "}
-            <span style={{ color: cfg.color[0] }}>{childName}</span>
-          </h3>
-          <p className="text-[11px] text-muted-foreground mb-4">
-            {cfg.description} &middot; Age {age} &middot; {gender.charAt(0).toUpperCase() + gender.slice(1)}
-          </p>
-
-          {/* Stat boxes */}
-          <div className="flex gap-2 mb-4">
-            <div className="flex-1 rounded-2xl px-3 py-2.5 bg-muted border border-border">
-              <div className="flex items-center gap-1 mb-1">
-                <Clock size={10} className="text-muted-foreground" />
-                <span className="text-[9px] font-extrabold tracking-widest text-muted-foreground uppercase">Duration</span>
-              </div>
-              <p className="text-[13px] font-extrabold text-foreground">{cfg.duration}</p>
-            </div>
-            <div className="flex-1 rounded-2xl px-3 py-2.5 bg-muted border border-border">
-              <div className="flex items-center gap-1 mb-1">
-                <BarChart2 size={10} className="text-muted-foreground" />
-                <span className="text-[9px] font-extrabold tracking-widest text-muted-foreground uppercase">Activities</span>
-              </div>
-              <p className="text-[13px] font-extrabold text-foreground">{totalActivities} Tasks</p>
-            </div>
-          </div>
-
-          {/* Progress bar */}
-          <div className="mb-4">
-            <div className="flex items-center justify-between mb-1.5">
-              <span className="text-[10px] font-extrabold text-muted-foreground uppercase tracking-widest">Overall Progress</span>
-              <span className="text-[10px] font-extrabold" style={{ color: cfg.color[0] }}>0/{totalActivities} · 0%</span>
-            </div>
-            <div className="h-2 rounded-full bg-muted overflow-hidden">
-              <div className="h-full rounded-full w-0 transition-all" style={{ background: `linear-gradient(90deg, ${cfg.color[0]}, ${cfg.color[1]})` }} />
-            </div>
-          </div>
-
-          {/* View Report */}
+        {reportUrl ? (
           <a
             href={reportUrl}
             target="_blank"
             rel="noreferrer"
-            className="flex items-center gap-2 px-4 py-3 rounded-2xl text-[13px] font-bold text-muted-foreground hover:bg-muted transition-colors mb-3 bg-muted border border-border"
+            className="flex items-center gap-2 px-4 py-3 rounded-2xl text-[13px] font-bold text-muted-foreground hover:bg-muted/80 transition-colors bg-muted border border-border"
           >
-            <FileText size={14} style={{ color: cfg.color[0] }} />
-            View Full Report
+            <FileText size={14} style={{ color: gradColor0 }} />
+            View Report
           </a>
+        ) : (
+          <div className="flex items-center gap-2 px-4 py-3 rounded-2xl text-[13px] font-bold text-muted-foreground bg-muted border border-border opacity-50 cursor-not-allowed">
+            <FileText size={14} className="text-muted-foreground" />
+            No Report Yet
+          </div>
+        )}
 
-          {/* Start Quest button */}
+        {/* Action button */}
+        {status === "idle" && (
           <motion.button
             whileTap={{ scale: 0.97 }}
             whileHover={{ scale: 1.01 }}
+            onClick={handleStart}
             className="w-full flex items-center justify-center gap-2 rounded-2xl py-3.5 relative overflow-hidden"
             style={{ background: "#1A1A2E" }}
           >
             <motion.div
               className="absolute inset-0 opacity-20"
-              style={{ background: `linear-gradient(90deg, transparent, ${cfg.color[1]}, transparent)` }}
+              style={{ background: `linear-gradient(90deg, transparent, ${gradColor1}, transparent)` }}
               animate={{ x: ["-100%", "100%"] }}
               transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
             />
             <div
               className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 relative z-10"
-              style={{ background: `linear-gradient(90deg, ${cfg.color[0]}, ${cfg.color[1]})` }}
+              style={{ background: `linear-gradient(90deg, ${gradColor0}, ${gradColor1})` }}
             >
               <Play size={10} className="fill-white text-white ml-0.5" />
             </div>
-            <span className="text-[13px] font-extrabold text-white tracking-wide relative z-10">Start Quest</span>
+            <span className="text-[13px] font-extrabold text-white tracking-wide relative z-10">Start</span>
           </motion.button>
-        </div>
-      </div>
+        )}
 
-      {/* Phase lesson cards — 3-column grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {cfg.phases.map((phase, i) => (
-          <LessonPhaseCard
-            key={i}
-            phase={phase}
-            index={i}
-            locked={i > 0}
-            cfg={cfg}
-            childName={childName}
-            onEndPath={onEndPath}
-          />
-        ))}
+        {status === "running" && (
+          <motion.button
+            whileTap={{ scale: 0.97 }}
+            whileHover={{ scale: 1.01 }}
+            onClick={handleComplete}
+            className="w-full flex items-center justify-center gap-2 rounded-2xl py-3.5 bg-blue-600 hover:bg-blue-700 text-white transition-colors"
+          >
+            <RefreshCw size={14} className="animate-spin" />
+            <span className="text-[13px] font-extrabold tracking-wide">Running… Mark Complete</span>
+          </motion.button>
+        )}
+
+        {status === "complete" && (
+          <div className="w-full flex items-center justify-center gap-2 rounded-2xl py-3.5 bg-emerald-500 text-white">
+            <CheckCircle size={14} />
+            <span className="text-[13px] font-extrabold tracking-wide">Completed!</span>
+          </div>
+        )}
       </div>
     </motion.div>
   );
@@ -788,39 +517,34 @@ export default function PersonalisedPathPage() {
       .catch(() => setLoading(false));
   }, []);
 
-  const withDisabilities = assessments.filter(
-    (a) => Array.isArray(a.disabilities) && a.disabilities.length > 0
-  );
-  const pendingAnalysis = assessments.filter(
-    (a) => !Array.isArray(a.disabilities) || a.disabilities.length === 0
-  );
+  // Build unified card list — each assessment gets one card with a disability
+  const allCards = assessments.flatMap((a) => {
+    const hasDis = Array.isArray(a.disabilities) && a.disabilities.length > 0;
+    if (hasDis) {
+      return (a.disabilities as string[]).map((d) => ({
+        ...a,
+        disability: d,
+        isPending: false,
+      }));
+    }
+    return [{ ...a, disability: seededDisability(a.id), isPending: true }];
+  });
 
-  const cards = withDisabilities.flatMap((a) =>
-    (a.disabilities as string[]).map((d) => ({ ...a, disability: d }))
-  );
+  const filteredCards = (() => {
+    let c = allCards;
+    if (filter === "Pending") c = c.filter((x) => x.isPending);
+    else if (filter !== "All")
+      c = c.filter((x) => x.disability.toLowerCase() === filter.toLowerCase());
+    if (search)
+      c = c.filter(
+        (x) =>
+          x.child_name.toLowerCase().includes(search.toLowerCase()) ||
+          x.disability.toLowerCase().includes(search.toLowerCase())
+      );
+    return c;
+  })();
 
-  // Filter + search logic
-  const filteredCards =
-    filter === "All" || filter === "Pending"
-      ? cards
-      : cards.filter((c) => c.disability.toLowerCase() === filter.toLowerCase());
-
-  const searchFiltered = search
-    ? filteredCards.filter(
-        (c) =>
-          c.child_name.toLowerCase().includes(search.toLowerCase()) ||
-          c.disability.toLowerCase().includes(search.toLowerCase())
-      )
-    : filteredCards;
-
-  const showPending = filter === "All" || filter === "Pending";
-  const searchPending = search
-    ? pendingAnalysis.filter((a) =>
-        a.child_name.toLowerCase().includes(search.toLowerCase())
-      )
-    : pendingAnalysis;
-
-  const totalCards = cards.length + pendingAnalysis.length;
+  const totalCards = allCards.length;
 
   const handleDelete = async (id: string) => {
     try {
@@ -837,9 +561,9 @@ export default function PersonalisedPathPage() {
   };
 
   const visibleFilters = FILTERS.filter((f) => {
-    if (f === "Pending") return pendingAnalysis.length > 0;
     if (f === "All") return true;
-    return cards.some((c) => c.disability.toLowerCase() === f.toLowerCase());
+    if (f === "Pending") return allCards.some((x) => x.isPending);
+    return allCards.some((x) => x.disability.toLowerCase() === f.toLowerCase());
   });
 
   return (
@@ -941,43 +665,24 @@ export default function PersonalisedPathPage() {
                 </p>
               </motion.div>
             ) : (
-              <motion.div key="list" className="space-y-10 max-w-6xl mx-auto pt-6">
-                {searchFiltered.map((card, i) => (
-                  <DisabilityCard
+              <motion.div
+                key="list"
+                className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 max-w-7xl mx-auto pt-6"
+              >
+                {filteredCards.map((card, i) => (
+                  <AssessmentCard
                     key={`${card.id}-${card.disability}`}
-                    assessmentId={card.id}
                     childName={card.child_name}
                     age={card.age}
                     gender={card.gender}
                     disability={card.disability}
+                    isPending={card.isPending}
                     reportUrl={card.report_url}
-                    delay={i * 0.07}
+                    createdAt={card.created_at}
+                    delay={i * 0.05}
                     onEndPath={() => handleDelete(card.id)}
                   />
                 ))}
-                {showPending && searchPending.length > 0 && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-                    {searchPending.map((a, i) => (
-                      <PendingCard
-                        key={`pending-${a.id}`}
-                        childName={a.child_name}
-                        age={a.age}
-                        gender={a.gender}
-                        sessionId={a.id}
-                        reportUrl={a.report_url}
-                        delay={(searchFiltered.length + i) * 0.07}
-                        onEndPath={() => handleDelete(a.id)}
-                        onAnalysisComplete={() => {
-                          setLoading(true);
-                          fetch("/api/assessments")
-                            .then((r) => r.json())
-                            .then((data: Assessment[]) => { setAssessments(data); setLoading(false); })
-                            .catch(() => setLoading(false));
-                        }}
-                      />
-                    ))}
-                  </div>
-                )}
               </motion.div>
             )}
           </AnimatePresence>
