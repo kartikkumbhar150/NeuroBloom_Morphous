@@ -11,7 +11,6 @@ import {
   Scale,
 } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
-import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
 
 interface TermsAndConditionsProps {
   onAccept: () => void;
@@ -51,14 +50,11 @@ export function TermsAndConditions({ onAccept }: TermsAndConditionsProps) {
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <LanguageSwitcher />
-              <div className="hidden sm:flex items-center gap-2 px-3 py-1 bg-emerald-500/10 rounded-full border border-emerald-500/20">
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider">
-                  {t('tc_hipaa')}
-                </span>
-              </div>
+            <div className="hidden sm:flex items-center gap-2 px-3 py-1 bg-emerald-500/10 rounded-full border border-emerald-500/20">
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider">
+                {t('tc_hipaa')}
+              </span>
             </div>
           </div>
 

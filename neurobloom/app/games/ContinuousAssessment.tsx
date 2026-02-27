@@ -11,7 +11,6 @@ import { Level5SuperEars } from '../games/Level5SuperEars';
 import { Level6EagleEyes } from '../games/Level6EagleEyes';
 import { StudentData } from './StudentForm';
 import { useTranslation } from "@/hooks/useTranslation";
-import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
 
 interface ContinuousAssessmentProps {
   studentData: StudentData;
@@ -209,14 +208,11 @@ export function ContinuousAssessment({ studentData, onComplete }: ContinuousAsse
                 <p className="text-xs text-gray-600">{t('ca_age')} {studentData.age} • {t('ca_assessment')}</p>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <LanguageSwitcher />
-              <div className="text-right">
-                <p className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">{t('ca_level')} {currentLevel} {t('ca_of')} 6</p>
-                <p className="text-lg font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600">
-                  {selectedLevel.name}
-                </p>
-              </div>
+            <div className="text-right">
+              <p className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">{t('ca_level')} {currentLevel} {t('ca_of')} 6</p>
+              <p className="text-lg font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600">
+                {selectedLevel.name}
+              </p>
             </div>
           </div>
 

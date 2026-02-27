@@ -3,8 +3,6 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { useTranslation } from "@/hooks/useTranslation";
-import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
 import {
   Activity,
   LayoutDashboard,
@@ -20,6 +18,7 @@ import {
   RefreshCw,
   XCircle,
   Play,
+  Lock,
   Sparkles,
   Search,
   SlidersHorizontal,
@@ -27,9 +26,6 @@ import {
   Zap,
   Clock,
   BarChart2,
-  User,
-  Calendar,
-  CheckCircle2,
 } from "lucide-react";
 
 interface Assessment {
@@ -42,7 +38,7 @@ interface Assessment {
   created_at?: string;
 }
 
-/* â”€â”€â”€ Floating symbol element â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ─── Floating symbol element ──────────────────────────────────────────────── */
 interface FloatingEl {
   symbol: string;
   x: string;
@@ -53,12 +49,12 @@ interface FloatingEl {
   rotate?: number;
 }
 
-function FloatingSymbol({ el, className }: { el: FloatingEl; className?: string }) {
+function FloatingSymbol({ el, color }: { el: FloatingEl; color: string }) {
   const isRotating = el.rotate !== undefined;
   return (
     <motion.div
-      className={`absolute pointer-events-none select-none font-extrabold ${className ?? ""}`}
-      style={{ left: el.x, top: el.y, fontSize: el.size, opacity: 0.55, zIndex: 1 }}
+      className="absolute pointer-events-none select-none font-extrabold"
+      style={{ left: el.x, top: el.y, fontSize: el.size, color, opacity: 0.55, zIndex: 1 }}
       animate={isRotating ? { y: [0, -8, 0], rotate: [0, el.rotate ?? 360] } : { y: [0, -7, 0] }}
       transition={{
         duration: el.duration,
@@ -73,7 +69,7 @@ function FloatingSymbol({ el, className }: { el: FloatingEl; className?: string 
   );
 }
 
-/* â”€â”€â”€ Disability config â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ─── Disability config ────────────────────────────────────────────────────── */
 const DISABILITY_CONFIG: Record<
   string,
   {
@@ -91,23 +87,23 @@ const DISABILITY_CONFIG: Record<
   dyslexia: {
     label: "Dyslexia",
     questName: "Reading Quest",
-    description: "Reading Support Â· 60 Day Plan",
+    description: "Reading Support · 60 Day Plan",
     duration: "60 Days",
     method: "Interactive",
     color: ["#7C6FF7", "#A389F4"],
     icon: <BookOpen size={20} />,
     floaters: [
-      { symbol: "ðŸ“–", x: "68%", y: "12%", size: "16px", delay: 0, duration: 3.2 },
-      { symbol: "ðŸ”¤", x: "80%", y: "38%", size: "14px", delay: 0.5, duration: 2.8 },
+      { symbol: "📖", x: "68%", y: "12%", size: "16px", delay: 0, duration: 3.2 },
+      { symbol: "🔤", x: "80%", y: "38%", size: "14px", delay: 0.5, duration: 2.8 },
       { symbol: "abc", x: "62%", y: "58%", size: "10px", delay: 1, duration: 3.5 },
-      { symbol: "ðŸ§©", x: "74%", y: "75%", size: "14px", delay: 0.3, duration: 2.6 },
-      { symbol: "ðŸ“š", x: "88%", y: "20%", size: "14px", delay: 0.8, duration: 3 },
+      { symbol: "🧩", x: "74%", y: "75%", size: "14px", delay: 0.3, duration: 2.6 },
+      { symbol: "📚", x: "88%", y: "20%", size: "14px", delay: 0.8, duration: 3 },
     ],
     phases: [
       {
         title: "Phonics Foundation",
-        emoji: "ðŸ”¤",
-        days: "Days 1 â€“ 20",
+        emoji: "🔤",
+        days: "Days 1 – 20",
         activities: [
           "Letter Sound Matching Game",
           "Rhyme Builder Challenge",
@@ -118,8 +114,8 @@ const DISABILITY_CONFIG: Record<
       },
       {
         title: "Word Decoding",
-        emoji: "ðŸ§©",
-        days: "Days 21 â€“ 40",
+        emoji: "🧩",
+        days: "Days 21 – 40",
         activities: [
           "Word Puzzle Tiles",
           "Sight Word Flash Cards",
@@ -130,8 +126,8 @@ const DISABILITY_CONFIG: Record<
       },
       {
         title: "Fluency & Comprehension",
-        emoji: "ðŸš€",
-        days: "Days 41 â€“ 60",
+        emoji: "🚀",
+        days: "Days 41 – 60",
         activities: [
           "Audio Story + Quiz Game",
           "Word Hunt Adventure",
@@ -145,23 +141,23 @@ const DISABILITY_CONFIG: Record<
   dyscalculia: {
     label: "Dyscalculia",
     questName: "Math Adventure",
-    description: "Number Skills Â· 60 Day Plan",
+    description: "Number Skills · 60 Day Plan",
     duration: "60 Days",
     method: "Visual",
     color: ["#2E7D32", "#66BB6A"],
     icon: <Calculator size={20} />,
     floaters: [
-      { symbol: "ðŸ”¢", x: "65%", y: "10%", size: "16px", delay: 0, duration: 3 },
-      { symbol: "+âˆ’", x: "78%", y: "30%", size: "14px", delay: 0.5, duration: 2.8 },
-      { symbol: "ðŸ§®", x: "68%", y: "55%", size: "16px", delay: 0.9, duration: 3.4 },
+      { symbol: "🔢", x: "65%", y: "10%", size: "16px", delay: 0, duration: 3 },
+      { symbol: "+−", x: "78%", y: "30%", size: "14px", delay: 0.5, duration: 2.8 },
+      { symbol: "🧮", x: "68%", y: "55%", size: "16px", delay: 0.9, duration: 3.4 },
       { symbol: "123", x: "85%", y: "18%", size: "11px", delay: 0.2, duration: 3 },
-      { symbol: "âš¡", x: "72%", y: "75%", size: "14px", delay: 0.7, duration: 2.6 },
+      { symbol: "⚡", x: "72%", y: "75%", size: "14px", delay: 0.7, duration: 2.6 },
     ],
     phases: [
       {
         title: "Number Sense",
-        emoji: "ðŸ”¢",
-        days: "Days 1 â€“ 20",
+        emoji: "🔢",
+        days: "Days 1 – 20",
         activities: [
           "Counting Objects Game",
           "Number Line Jump",
@@ -172,8 +168,8 @@ const DISABILITY_CONFIG: Record<
       },
       {
         title: "Basic Operations",
-        emoji: "âš¡",
-        days: "Days 21 â€“ 40",
+        emoji: "⚡",
+        days: "Days 21 – 40",
         activities: [
           "Addition Adventure Island",
           "Subtraction Spaceship",
@@ -184,8 +180,8 @@ const DISABILITY_CONFIG: Record<
       },
       {
         title: "Applied Math",
-        emoji: "ðŸ†",
-        days: "Days 41 â€“ 60",
+        emoji: "🏆",
+        days: "Days 41 – 60",
         activities: [
           "Word Problem Detective",
           "Multiplication Magic Forest",
@@ -199,23 +195,23 @@ const DISABILITY_CONFIG: Record<
   dysgraphia: {
     label: "Dysgraphia",
     questName: "Writing Wizard",
-    description: "Handwriting Skills Â· 60 Day Plan",
+    description: "Handwriting Skills · 60 Day Plan",
     duration: "60 Days",
     method: "Hands-On",
     color: ["#FF7043", "#FFA07A"],
     icon: <PenTool size={20} />,
     floaters: [
-      { symbol: "âœï¸", x: "66%", y: "8%", size: "16px", delay: 0, duration: 2.5 },
-      { symbol: "âœ‹", x: "80%", y: "30%", size: "16px", delay: 0.4, duration: 3 },
-      { symbol: "ðŸŒŸ", x: "68%", y: "55%", size: "14px", delay: 0.8, duration: 2.8 },
-      { symbol: "ðŸ“", x: "86%", y: "18%", size: "14px", delay: 0.2, duration: 3.5 },
-      { symbol: "âœï¸", x: "74%", y: "75%", size: "14px", delay: 1.1, duration: 2.6 },
+      { symbol: "✏️", x: "66%", y: "8%", size: "16px", delay: 0, duration: 2.5 },
+      { symbol: "✋", x: "80%", y: "30%", size: "16px", delay: 0.4, duration: 3 },
+      { symbol: "🌟", x: "68%", y: "55%", size: "14px", delay: 0.8, duration: 2.8 },
+      { symbol: "📝", x: "86%", y: "18%", size: "14px", delay: 0.2, duration: 3.5 },
+      { symbol: "✍️", x: "74%", y: "75%", size: "14px", delay: 1.1, duration: 2.6 },
     ],
     phases: [
       {
         title: "Fine Motor Warm-Up",
-        emoji: "âœ‹",
-        days: "Days 1 â€“ 20",
+        emoji: "✋",
+        days: "Days 1 – 20",
         activities: [
           "Dot-to-Dot Tracing Game",
           "Grip & Draw Challenge",
@@ -226,8 +222,8 @@ const DISABILITY_CONFIG: Record<
       },
       {
         title: "Letter Formation",
-        emoji: "âœï¸",
-        days: "Days 21 â€“ 40",
+        emoji: "✏️",
+        days: "Days 21 – 40",
         activities: [
           "Letter Tracing Wizard",
           "Alphabet Writing Race",
@@ -238,8 +234,8 @@ const DISABILITY_CONFIG: Record<
       },
       {
         title: "Writing Fluency",
-        emoji: "ðŸŒŸ",
-        days: "Days 41 â€“ 60",
+        emoji: "🌟",
+        days: "Days 41 – 60",
         activities: [
           "Sentence Builder Game",
           "Story Starters & Writing",
@@ -252,253 +248,141 @@ const DISABILITY_CONFIG: Record<
   },
 };
 
-/* â”€â”€â”€ Path Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
-type PathStatus = "not_started" | "running" | "complete";
+/* ─── Per-phase distinct color themes ─────────────────────────────────────── */
+const PHASE_THEMES: { color: [string, string]; floaters: FloatingEl[] }[] = [
+  {
+    color: ["#7C6FF7", "#A389F4"],
+    floaters: [
+      { symbol: "🧠", x: "68%", y: "12%", size: "16px", delay: 0, duration: 3.2 },
+      { symbol: "⚡", x: "80%", y: "38%", size: "14px", delay: 0.5, duration: 2.8 },
+      { symbol: "✨", x: "88%", y: "20%", size: "14px", delay: 0.8, duration: 3 },
+    ],
+  },
+  {
+    color: ["#0EA5E9", "#38BDF8"],
+    floaters: [
+      { symbol: "🎮", x: "68%", y: "12%", size: "16px", delay: 0, duration: 3 },
+      { symbol: "🔬", x: "80%", y: "38%", size: "14px", delay: 0.4, duration: 2.8 },
+      { symbol: "💡", x: "88%", y: "20%", size: "14px", delay: 0.7, duration: 3.2 },
+    ],
+  },
+  {
+    color: ["#E11D48", "#FB7185"],
+    floaters: [
+      { symbol: "🏆", x: "68%", y: "12%", size: "16px", delay: 0, duration: 2.8 },
+      { symbol: "🚀", x: "80%", y: "38%", size: "14px", delay: 0.3, duration: 3.1 },
+      { symbol: "🌟", x: "88%", y: "20%", size: "14px", delay: 0.9, duration: 2.6 },
+    ],
+  },
+];
 
-const DISABILITY_TYPES_LIST = ["dyslexia", "dyscalculia", "dysgraphia"] as const;
-
-function hashId(id: string): number {
-  let h = 0;
-  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) & 0xffff;
-  return h;
-}
-
-function PathCard({
-  assessmentId,
+/* ─── Lesson Phase Card (matches reference exactly) ────────────────────────── */
+function LessonPhaseCard({
+  phase,
+  index,
+  locked,
+  cfg,
   childName,
-  age,
-  gender,
-  disability,
-  reportUrl,
-  createdAt,
-  delay,
   onEndPath,
-  onAnalysisComplete,
 }: {
-  assessmentId: string;
+  phase: { title: string; emoji: string; days: string; activities: string[] };
+  index: number;
+  locked: boolean;
+  cfg: (typeof DISABILITY_CONFIG)[string];
   childName: string;
-  age: number;
-  gender: string;
-  disability: string | null;
-  reportUrl: string;
-  createdAt?: string;
-  delay: number;
   onEndPath: () => void;
-  onAnalysisComplete?: () => void;
 }) {
-  const [status, setStatus] = useState<PathStatus>("not_started");
-  const [startDate, setStartDate] = useState<Date | null>(null);
-  const [endDate, setEndDate] = useState<Date | null>(null);
   const [progress, setProgress] = useState(0);
-  const [runningAnalysis, setRunningAnalysis] = useState(false);
-  const [analysisError, setAnalysisError] = useState("");
-
-  // Stable random disability if not provided
-  const resolvedDisability =
-    disability ?? DISABILITY_TYPES_LIST[hashId(assessmentId) % 3];
-  const cfg = DISABILITY_CONFIG[resolvedDisability.toLowerCase()];
-  const isPending = !disability;
-  const totalActivities = cfg
-    ? cfg.phases.reduce((s, p) => s + p.activities.length, 0)
-    : 15;
-  const pct = totalActivities > 0 ? Math.round((progress / totalActivities) * 100) : 0;
-
-  const handleStart = () => {
-    setStatus("running");
-    setStartDate(new Date());
-  };
-
-  const handleProgress = () => {
-    if (status !== "running") return;
-    const next = Math.min(progress + 1, totalActivities);
-    setProgress(next);
-    if (next >= totalActivities) {
-      setStatus("complete");
-      setEndDate(new Date());
-    }
-  };
-
-  const runAnalysis = async () => {
-    setRunningAnalysis(true);
-    setAnalysisError("");
-    try {
-      const res = await fetch("http://localhost:5000/predict/full_report", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ session_id: assessmentId }),
-      });
-      if (!res.ok) throw new Error("Pipeline failed");
-      onAnalysisComplete?.();
-    } catch {
-      setAnalysisError("Analysis failed. Make sure the Flask server is running.");
-    } finally {
-      setRunningAnalysis(false);
-    }
-  };
-
-  const fmt = (d: Date | null, fallbackIso?: string) => {
-    if (!d && fallbackIso) {
-      try {
-        return new Date(fallbackIso).toLocaleDateString("en-GB", {
-          day: "numeric",
-          month: "short",
-          year: "numeric",
-        });
-      } catch {
-        return "â€”";
-      }
-    }
-    if (!d) return "â€”";
-    return d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
-  };
-
-  const statusConfig = {
-    not_started: {
-      label: "Not Started",
-      bg: "bg-muted",
-      text: "text-muted-foreground",
-      dot: "bg-muted-foreground",
-    },
-    running: {
-      label: "Running",
-      bg: "bg-primary/10",
-      text: "text-primary",
-      dot: "bg-primary animate-pulse",
-    },
-    complete: {
-      label: "Completed",
-      bg: "bg-emerald-50 dark:bg-emerald-950",
-      text: "text-emerald-700 dark:text-emerald-400",
-      dot: "bg-emerald-500",
-    },
-  };
-  const sc = statusConfig[status];
-
-  const floaters: FloatingEl[] = cfg?.floaters.slice(0, 3) ?? [
-    { symbol: "ðŸ”", x: "70%", y: "10%", size: "16px", delay: 0, duration: 3 },
-    { symbol: "ðŸ§ ", x: "82%", y: "35%", size: "14px", delay: 0.5, duration: 2.8 },
-    { symbol: "âœ¨", x: "88%", y: "18%", size: "14px", delay: 0.8, duration: 3 },
-  ];
+  const total = phase.activities.length;
+  const lessonNumber = ["One", "Two", "Three"][index] ?? `${index + 1}`;
+  const theme = PHASE_THEMES[index % PHASE_THEMES.length];
+  const phaseColor = theme.color;
+  const phaseFloaters = theme.floaters;
+  const softColor = phaseColor[0] + "22";
+  const pct = total > 0 ? Math.round((progress / total) * 100) : 0;
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 24 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay, type: "spring", stiffness: 120, damping: 18 }}
-      className="bg-card rounded-3xl overflow-hidden shadow-md relative border border-border"
+      transition={{ delay: index * 0.09, type: "spring", stiffness: 110 }}
+      className="bg-white rounded-3xl overflow-hidden shadow-md relative"
+      style={{ border: "1px solid #EDEDF5" }}
     >
-      {/* Top accent line */}
-      <div className="h-1 w-full bg-primary" />
+      {/* Top gradient line */}
+      <div className="h-1 w-full" style={{ background: `linear-gradient(90deg, ${phaseColor[0]}, ${phaseColor[1]})` }} />
 
-      {/* Background glow */}
+      {/* Background decorative glow */}
       <div className="absolute inset-0 overflow-hidden rounded-3xl pointer-events-none">
-        <div className="absolute -top-10 -right-10 w-48 h-48 rounded-full blur-3xl bg-primary/10" />
+        <div className="absolute -top-10 -right-10 w-48 h-48 rounded-full blur-3xl" style={{ background: softColor }} />
       </div>
 
-      {/* Floating symbols */}
-      {floaters.map((el, i) => (
-        <FloatingSymbol key={i} el={el} className="text-primary" />
+      {/* Floating animated symbols */}
+      {phaseFloaters.map((el, i) => (
+        <FloatingSymbol key={i} el={el} color={phaseColor[0]} />
       ))}
 
-      <div className="p-5 relative z-10">
-        {/* â”€â”€ Status badge + End button â”€â”€ */}
-        <div className="flex items-center justify-between mb-4">
-          <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full ${sc.bg}`}>
-            <div className={`w-1.5 h-1.5 rounded-full ${sc.dot}`} />
-            <span className={`text-[10px] font-extrabold tracking-widest uppercase ${sc.text}`}>
-              {sc.label}
-            </span>
-          </div>
-          <button
-            onClick={() => {
-              if (!confirm("End this learning path? This will remove the record.")) return;
-              onEndPath();
-            }}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-extrabold text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 border border-red-100 dark:border-red-900/40 transition-colors"
+      {/* Card content */}
+      <div className="p-4 relative z-10">
+        {/* Top row: status badge + shield */}
+        <div className="flex items-center justify-between mb-3">
+          {locked ? (
+            <div className="flex items-center gap-1.5 bg-gray-100 text-gray-500 px-3 py-1 rounded-full">
+              <Lock size={10} className="text-gray-400" />
+              <span className="text-[10px] font-extrabold tracking-widest uppercase">Locked</span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-1.5 bg-[#E6F9EE] text-[#1DAF5A] px-3 py-1 rounded-full">
+              <Zap size={10} className="fill-[#1DAF5A] text-[#1DAF5A]" />
+              <span className="text-[10px] font-extrabold tracking-widest uppercase">Ready</span>
+            </div>
+          )}
+          <motion.div
+            whileHover={{ scale: 1.1, rotate: 10 }}
+            className="w-9 h-9 rounded-full flex items-center justify-center"
+            style={{ background: "#F0EEFF" }}
           >
-            <XCircle size={12} />
-            End
-          </button>
+            <Shield size={16} style={{ color: phaseColor[0] }} />
+          </motion.div>
         </div>
 
-        {/* â”€â”€ User name â”€â”€ */}
-        <div className="flex items-center gap-2.5 mb-0.5">
-          <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-            <User size={15} className="text-primary" />
-          </div>
-          <h3 className="text-[20px] font-extrabold text-card-foreground leading-tight tracking-tight">
-            {childName}
-          </h3>
-        </div>
-        <p className="text-[11px] text-muted-foreground mb-3 pl-[46px]">
-          Age {age} Â· {gender.charAt(0).toUpperCase() + gender.slice(1)}
+        {/* Title & subtitle */}
+        <h3 className="text-[17px] font-extrabold text-[#1A1A2E] leading-tight mb-0.5">
+          Lesson {lessonNumber}:{" "}
+          <span style={{ color: phaseColor[0] }}>{phase.title}</span>
+        </h3>
+        <p className="text-[11px] text-gray-400 mb-4">
+          {childName} &middot; {phase.days}
         </p>
 
-        {/* â”€â”€ Disability type â”€â”€ */}
-        <div className="flex items-center gap-2 mb-4 flex-wrap">
-          <span className="text-[11px] font-bold text-muted-foreground">Disability Type:</span>
-          <div className="flex items-center gap-1.5 bg-primary/10 text-primary px-3 py-0.5 rounded-full">
-            <span className="text-[11px] font-extrabold">
-              {cfg?.label ?? (isPending ? "Detectingâ€¦" : resolvedDisability)}
-            </span>
-          </div>
-          {isPending && (
-            <span className="text-[9px] font-bold text-muted-foreground bg-muted px-2 py-0.5 rounded-full border border-border">
-              AI Scan Needed
-            </span>
-          )}
-        </div>
-
-        {/* â”€â”€ Date info â”€â”€ */}
-        <div className="grid grid-cols-3 gap-2 mb-4">
-          <div className="rounded-2xl px-3 py-2.5 bg-muted border border-border">
+        {/* Stat boxes */}
+        <div className="flex gap-2 mb-4">
+          <div className="flex-1 rounded-2xl px-3 py-2.5" style={{ background: "#F7F6FF", border: "1px solid #EDEDF5" }}>
             <div className="flex items-center gap-1 mb-1">
-              <Calendar size={9} className="text-muted-foreground" />
-              <span className="text-[8px] font-extrabold tracking-widest text-muted-foreground uppercase">
-                Created
-              </span>
+              <Clock size={10} className="text-gray-400" />
+              <span className="text-[9px] font-extrabold tracking-widest text-gray-400 uppercase">Duration</span>
             </div>
-            <p className="text-[11px] font-extrabold text-foreground leading-tight">
-              {fmt(null, createdAt)}
-            </p>
+            <p className="text-[13px] font-extrabold text-[#1A1A2E]">20 Days</p>
           </div>
-          <div className="rounded-2xl px-3 py-2.5 bg-muted border border-border">
+          <div className="flex-1 rounded-2xl px-3 py-2.5" style={{ background: "#F7F6FF", border: "1px solid #EDEDF5" }}>
             <div className="flex items-center gap-1 mb-1">
-              <Play size={9} className="text-muted-foreground" />
-              <span className="text-[8px] font-extrabold tracking-widest text-muted-foreground uppercase">
-                Started
-              </span>
+              <BarChart2 size={10} className="text-gray-400" />
+              <span className="text-[9px] font-extrabold tracking-widest text-gray-400 uppercase">Activities</span>
             </div>
-            <p className="text-[11px] font-extrabold text-foreground leading-tight">
-              {fmt(startDate)}
-            </p>
-          </div>
-          <div className="rounded-2xl px-3 py-2.5 bg-muted border border-border">
-            <div className="flex items-center gap-1 mb-1">
-              <CheckCircle2 size={9} className="text-muted-foreground" />
-              <span className="text-[8px] font-extrabold tracking-widest text-muted-foreground uppercase">
-                Done
-              </span>
-            </div>
-            <p className="text-[11px] font-extrabold text-foreground leading-tight">
-              {fmt(endDate)}
-            </p>
+            <p className="text-[13px] font-extrabold text-[#1A1A2E]">{total} Tasks</p>
           </div>
         </div>
 
-        {/* â”€â”€ Progress â”€â”€ */}
+        {/* Progress bar */}
         <div className="mb-4">
           <div className="flex items-center justify-between mb-1.5">
-            <span className="text-[10px] font-extrabold text-muted-foreground uppercase tracking-widest">
-              Progress
-            </span>
-            <span className="text-[10px] font-extrabold text-primary">
-              {progress}/{totalActivities} Â· {pct}%
-            </span>
+            <span className="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest">Progress</span>
+            <span className="text-[10px] font-extrabold" style={{ color: phaseColor[0] }}>{progress}/{total} · {pct}%</span>
           </div>
-          <div className="h-2 rounded-full bg-muted overflow-hidden">
+          <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
             <motion.div
-              className="h-full rounded-full bg-primary"
+              className="h-full rounded-full"
+              style={{ background: `linear-gradient(90deg, ${phaseColor[0]}, ${phaseColor[1]})` }}
               initial={{ width: 0 }}
               animate={{ width: `${pct}%` }}
               transition={{ duration: 0.6, ease: "easeOut" }}
@@ -506,99 +390,393 @@ function PathCard({
           </div>
         </div>
 
-        {analysisError && (
-          <p className="text-[11px] text-red-500 font-semibold mb-3 flex items-center gap-1">
-            <XCircle size={12} /> {analysisError}
-          </p>
-        )}
-
-        {/* â”€â”€ View Report â”€â”€ */}
-        <a
-          href={reportUrl}
-          target="_blank"
-          rel="noreferrer"
-          className="flex items-center gap-2 px-4 py-2.5 rounded-2xl text-[13px] font-bold text-muted-foreground hover:bg-primary/10 transition-colors mb-3 bg-muted border border-border"
-        >
-          <FileText size={14} className="text-primary" />
-          View Report
-        </a>
-
-        {/* â”€â”€ Main action button â”€â”€ */}
-        {isPending ? (
-          <motion.button
-            whileTap={{ scale: 0.97 }}
-            whileHover={{ scale: 1.01 }}
-            onClick={runAnalysis}
-            disabled={runningAnalysis}
-            className="w-full flex items-center justify-center gap-2 rounded-2xl py-3.5 relative overflow-hidden disabled:opacity-60 bg-primary"
-          >
-            <motion.div
-              className="absolute inset-0 opacity-20 bg-gradient-to-r from-transparent via-white to-transparent"
-              animate={{ x: ["-100%", "100%"] }}
-              transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
-            />
-            <RefreshCw
-              size={14}
-              className={`text-primary-foreground relative z-10 ${runningAnalysis ? "animate-spin" : ""}`}
-            />
-            <span className="text-[13px] font-extrabold text-primary-foreground tracking-wide relative z-10">
-              {runningAnalysis ? "Running AI Analysisâ€¦" : "Launch AI Analysis"}
-            </span>
-          </motion.button>
-        ) : status === "not_started" ? (
-          <motion.button
-            whileTap={{ scale: 0.97 }}
-            whileHover={{ scale: 1.01 }}
-            onClick={handleStart}
-            className="w-full flex items-center justify-center gap-2 rounded-2xl py-3.5 relative overflow-hidden bg-primary"
-          >
-            <motion.div
-              className="absolute inset-0 opacity-20 bg-gradient-to-r from-transparent via-white to-transparent"
-              animate={{ x: ["-100%", "100%"] }}
-              transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
-            />
-            <Play size={14} className="fill-primary-foreground text-primary-foreground relative z-10" />
-            <span className="text-[13px] font-extrabold text-primary-foreground tracking-wide relative z-10">
-              Start
-            </span>
-          </motion.button>
-        ) : status === "running" ? (
-          <motion.button
-            whileTap={{ scale: 0.97 }}
-            whileHover={{ scale: 1.01 }}
-            onClick={handleProgress}
-            className="w-full flex items-center justify-center gap-2 rounded-2xl py-3.5 relative overflow-hidden bg-primary"
-          >
-            <motion.div
-              className="absolute inset-0 opacity-20 bg-gradient-to-r from-transparent via-white to-transparent"
-              animate={{ x: ["-100%", "100%"] }}
-              transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
-            />
-            <div className="w-2 h-2 rounded-full bg-primary-foreground animate-pulse relative z-10" />
-            <span className="text-[13px] font-extrabold text-primary-foreground tracking-wide relative z-10">
-              Running Â· Continue
-            </span>
-          </motion.button>
+        {/* Start / Locked button */}
+        {locked ? (
+          <button disabled className="w-full flex items-center justify-center gap-2 bg-gray-100 text-gray-400 rounded-2xl py-3.5 cursor-not-allowed mb-2">
+            <Lock size={14} />
+            <span className="text-[13px] font-extrabold">Locked</span>
+          </button>
         ) : (
-          <div className="w-full flex items-center justify-center gap-2 rounded-2xl py-3.5 bg-emerald-50 dark:bg-emerald-950 border border-emerald-100 dark:border-emerald-900">
-            <CheckCircle2 size={14} className="text-emerald-600" />
-            <span className="text-[13px] font-extrabold text-emerald-700 dark:text-emerald-400 tracking-wide">
-              Completed!
+          <motion.button
+            whileTap={{ scale: 0.97 }}
+            whileHover={{ scale: 1.01 }}
+            onClick={() => setProgress((p) => Math.min(p + 1, total))}
+            className="w-full flex items-center justify-center gap-2 rounded-2xl py-3.5 relative overflow-hidden mb-2"
+            style={{ background: "#1A1A2E" }}
+          >
+            <motion.div
+              className="absolute inset-0 opacity-20"
+              style={{ background: `linear-gradient(90deg, transparent, ${phaseColor[1]}, transparent)` }}
+              animate={{ x: ["-100%", "100%"] }}
+              transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
+            />
+            <div
+              className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 relative z-10"
+              style={{ background: `linear-gradient(90deg, ${phaseColor[0]}, ${phaseColor[1]})` }}
+            >
+              <Play size={10} className="fill-white text-white ml-0.5" />
+            </div>
+            <span className="text-[13px] font-extrabold text-white tracking-wide relative z-10">
+              Start Lesson
             </span>
-          </div>
+          </motion.button>
         )}
+
+        {/* End Path button */}
+        <button
+          onClick={() => {
+            if (!confirm("End this learning path? This will remove the record.")) return;
+            onEndPath();
+          }}
+          className="w-full flex items-center justify-center gap-2 rounded-2xl py-2.5 text-[12px] font-extrabold text-red-400 hover:text-red-600 hover:bg-red-50 border border-red-100 transition-colors"
+        >
+          <XCircle size={13} />
+          End Path
+        </button>
       </div>
     </motion.div>
   );
 }
+
+/* ─── Pending Analysis Card ────────────────────────────────────────────────── */
+function PendingCard({
+  childName,
+  age,
+  gender,
+  sessionId,
+  reportUrl,
+  delay,
+  onAnalysisComplete,
+  onEndPath,
+}: {
+  childName: string;
+  age: number;
+  gender: string;
+  sessionId: string;
+  reportUrl: string;
+  delay: number;
+  onAnalysisComplete: () => void;
+  onEndPath: () => void;
+}) {
+  const [running, setRunning] = useState(false);
+  const [error, setError] = useState("");
+
+  const pendingFloaters: FloatingEl[] = [
+    { symbol: "🔍", x: "68%", y: "12%", size: "16px", delay: 0, duration: 3.2 },
+    { symbol: "🧠", x: "80%", y: "38%", size: "14px", delay: 0.5, duration: 2.8 },
+    { symbol: "⚙️", x: "62%", y: "58%", size: "14px", delay: 1, duration: 3.5 },
+    { symbol: "✨", x: "88%", y: "20%", size: "14px", delay: 0.8, duration: 3 },
+    { symbol: "📊", x: "74%", y: "75%", size: "14px", delay: 0.3, duration: 2.6 },
+  ];
+
+  const runAnalysis = async () => {
+    setRunning(true);
+    setError("");
+    try {
+      const res = await fetch("http://localhost:5000/predict/full_report", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ session_id: sessionId }),
+      });
+      if (!res.ok) throw new Error("Pipeline failed");
+      onAnalysisComplete();
+    } catch {
+      setError("Analysis failed. Make sure the Flask server is running.");
+    } finally {
+      setRunning(false);
+    }
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 24 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay, type: "spring", stiffness: 110 }}
+      className="bg-white rounded-3xl overflow-hidden shadow-md relative"
+      style={{ border: "1px solid #EDEDF5" }}
+    >
+      {/* Top gradient line */}
+      <div className="h-1 w-full" style={{ background: "linear-gradient(90deg, #F59E0B, #F97316)" }} />
+
+      {/* Background glow */}
+      <div className="absolute inset-0 overflow-hidden rounded-3xl pointer-events-none">
+        <div className="absolute -top-10 -right-10 w-48 h-48 rounded-full blur-3xl" style={{ background: "#F59E0B22" }} />
+      </div>
+
+      {/* Floating symbols */}
+      {pendingFloaters.map((el, i) => (
+        <FloatingSymbol key={i} el={el} color="#F59E0B" />
+      ))}
+
+      {/* Card content */}
+      <div className="p-4 relative z-10">
+        {/* Top row: badge + end path */}
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-1.5 bg-amber-100 text-amber-700 px-3 py-1 rounded-full">
+            <Sparkles size={10} className="text-amber-600" />
+            <span className="text-[10px] font-extrabold tracking-widest uppercase">
+              Scan Needed
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <motion.div
+              whileHover={{ scale: 1.1, rotate: 10 }}
+              className="w-9 h-9 rounded-full flex items-center justify-center"
+              style={{ background: "#FFF7ED" }}
+            >
+              <Shield size={16} className="text-amber-500" />
+            </motion.div>
+            <button
+              onClick={() => {
+                if (!confirm("End this child's learning path? This will remove the record.")) return;
+                onEndPath();
+              }}
+              className="p-2 rounded-xl text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors"
+              title="End Path"
+            >
+              <XCircle size={18} />
+            </button>
+          </div>
+        </div>
+
+        {/* Title */}
+        <h3 className="text-[17px] font-extrabold text-[#1A1A2E] leading-tight mb-0.5">
+          AI Analysis:{" "}
+          <span className="text-amber-600">{childName}</span>
+        </h3>
+        <p className="text-[11px] text-gray-400 mb-4">
+          Age {age} &middot; {gender.charAt(0).toUpperCase() + gender.slice(1)} &middot; Pending Discovery
+        </p>
+
+        {/* Stat boxes */}
+        <div className="flex gap-2 mb-4">
+          <div className="flex-1 rounded-2xl px-3 py-2.5" style={{ background: "#F7F6FF", border: "1px solid #EDEDF5" }}>
+            <div className="flex items-center gap-1 mb-1">
+              <FileText size={10} className="text-gray-400" />
+              <span className="text-[9px] font-extrabold tracking-widest text-gray-400 uppercase">
+                Report
+              </span>
+            </div>
+            <p className="text-[13px] font-extrabold text-[#1A1A2E]">Ready</p>
+          </div>
+          <div className="flex-1 rounded-2xl px-3 py-2.5" style={{ background: "#F7F6FF", border: "1px solid #EDEDF5" }}>
+            <div className="flex items-center gap-1 mb-1">
+              <BarChart2 size={10} className="text-gray-400" />
+              <span className="text-[9px] font-extrabold tracking-widest text-gray-400 uppercase">
+                Status
+              </span>
+            </div>
+            <p className="text-[13px] font-extrabold text-amber-600">AI Pending</p>
+          </div>
+        </div>
+
+        {/* View Report */}
+        <a
+          href={reportUrl}
+          target="_blank"
+          rel="noreferrer"
+          className="flex items-center gap-2 px-4 py-3 rounded-2xl text-[13px] font-bold text-gray-500 hover:bg-amber-50 transition-colors mb-3"
+          style={{ background: "#F7F6FF", border: "1px solid #EDEDF5" }}
+        >
+          <FileText size={14} className="text-amber-500" />
+          View Existing Report
+        </a>
+
+        {error && (
+          <p className="text-[11px] text-red-500 font-semibold mb-3 flex items-center gap-1">
+            <XCircle size={12} /> {error}
+          </p>
+        )}
+
+        {/* Launch Analysis button */}
+        <motion.button
+          whileTap={{ scale: 0.97 }}
+          whileHover={{ scale: 1.01 }}
+          onClick={runAnalysis}
+          disabled={running}
+          className="w-full flex items-center justify-center gap-2 rounded-2xl py-3.5 relative overflow-hidden disabled:opacity-60"
+          style={{ background: "#1A1A2E" }}
+        >
+          <motion.div
+            className="absolute inset-0 opacity-20"
+            style={{ background: "linear-gradient(90deg, transparent, #FFA07A, transparent)" }}
+            animate={{ x: ["-100%", "100%"] }}
+            transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
+          />
+          <RefreshCw size={14} className={`text-white relative z-10 ${running ? "animate-spin" : ""}`} />
+          <span className="text-[13px] font-extrabold text-white tracking-wide relative z-10">
+            {running ? "Running AI Analysis…" : "Launch AI Analysis"}
+          </span>
+        </motion.button>
+
+        <p className="text-center text-[9px] font-bold tracking-widest text-gray-300 uppercase mt-3">
+          Powered by NeuroBloom AI
+        </p>
+      </div>
+    </motion.div>
+  );
 }
 
-/* â”€â”€â”€ Filter pill tabs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ─── Disability Quest Card (wraps lesson phase cards) ─────────────────────── */
+function DisabilityCard({
+  childName,
+  age,
+  gender,
+  disability,
+  reportUrl,
+  delay,
+  onEndPath,
+}: {
+  childName: string;
+  age: number;
+  gender: string;
+  disability: string;
+  reportUrl: string;
+  delay: number;
+  onEndPath: () => void;
+  assessmentId: string;
+}) {
+  const cfg = DISABILITY_CONFIG[disability.toLowerCase()];
+  if (!cfg) return null;
+
+  const totalActivities = cfg.phases.reduce((s, p) => s + p.activities.length, 0);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 24 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay, type: "spring", stiffness: 220, damping: 22 }}
+      className="space-y-5"
+    >
+      {/* Quest header card */}
+      <div
+        className="bg-white rounded-3xl overflow-hidden shadow-md relative"
+        style={{ border: "1px solid #EDEDF5" }}
+      >
+        <div className="h-1 w-full" style={{ background: `linear-gradient(90deg, ${cfg.color[0]}, ${cfg.color[1]})` }} />
+
+        {/* Background glow */}
+        <div className="absolute inset-0 overflow-hidden rounded-3xl pointer-events-none">
+          <div className="absolute -top-10 -right-10 w-48 h-48 rounded-full blur-3xl" style={{ background: cfg.color[0] + "22" }} />
+        </div>
+
+        {cfg.floaters.map((el, i) => (
+          <FloatingSymbol key={i} el={el} color={cfg.color[0]} />
+        ))}
+
+        <div className="p-5 relative z-10">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-1.5 bg-[#E6F9EE] text-[#1DAF5A] px-3 py-1 rounded-full">
+              <Zap size={10} className="fill-[#1DAF5A] text-[#1DAF5A]" />
+              <span className="text-[10px] font-extrabold tracking-widest uppercase">Quest Active</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <motion.div
+                whileHover={{ scale: 1.1, rotate: 10 }}
+                className="w-9 h-9 rounded-full flex items-center justify-center"
+                style={{ background: "#F0EEFF" }}
+              >
+                <Shield size={16} style={{ color: cfg.color[0] }} />
+              </motion.div>
+            </div>
+          </div>
+
+          <h3 className="text-[19px] font-extrabold text-[#1A1A2E] leading-tight mb-0.5">
+            {cfg.questName}:{" "}
+            <span style={{ color: cfg.color[0] }}>{childName}</span>
+          </h3>
+          <p className="text-[11px] text-gray-400 mb-4">
+            {cfg.description} &middot; Age {age} &middot; {gender.charAt(0).toUpperCase() + gender.slice(1)}
+          </p>
+
+          {/* Stat boxes */}
+          <div className="flex gap-2 mb-4">
+            <div className="flex-1 rounded-2xl px-3 py-2.5" style={{ background: "#F7F6FF", border: "1px solid #EDEDF5" }}>
+              <div className="flex items-center gap-1 mb-1">
+                <Clock size={10} className="text-gray-400" />
+                <span className="text-[9px] font-extrabold tracking-widest text-gray-400 uppercase">Duration</span>
+              </div>
+              <p className="text-[13px] font-extrabold text-[#1A1A2E]">{cfg.duration}</p>
+            </div>
+            <div className="flex-1 rounded-2xl px-3 py-2.5" style={{ background: "#F7F6FF", border: "1px solid #EDEDF5" }}>
+              <div className="flex items-center gap-1 mb-1">
+                <BarChart2 size={10} className="text-gray-400" />
+                <span className="text-[9px] font-extrabold tracking-widest text-gray-400 uppercase">Activities</span>
+              </div>
+              <p className="text-[13px] font-extrabold text-[#1A1A2E]">{totalActivities} Tasks</p>
+            </div>
+          </div>
+
+          {/* Progress bar */}
+          <div className="mb-4">
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest">Overall Progress</span>
+              <span className="text-[10px] font-extrabold" style={{ color: cfg.color[0] }}>0/{totalActivities} · 0%</span>
+            </div>
+            <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
+              <div className="h-full rounded-full w-0 transition-all" style={{ background: `linear-gradient(90deg, ${cfg.color[0]}, ${cfg.color[1]})` }} />
+            </div>
+          </div>
+
+          {/* View Report */}
+          <a
+            href={reportUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="flex items-center gap-2 px-4 py-3 rounded-2xl text-[13px] font-bold text-gray-500 hover:bg-gray-50 transition-colors mb-3"
+            style={{ background: "#F7F6FF", border: "1px solid #EDEDF5" }}
+          >
+            <FileText size={14} style={{ color: cfg.color[0] }} />
+            View Full Report
+          </a>
+
+          {/* Start Quest button */}
+          <motion.button
+            whileTap={{ scale: 0.97 }}
+            whileHover={{ scale: 1.01 }}
+            className="w-full flex items-center justify-center gap-2 rounded-2xl py-3.5 relative overflow-hidden"
+            style={{ background: "#1A1A2E" }}
+          >
+            <motion.div
+              className="absolute inset-0 opacity-20"
+              style={{ background: `linear-gradient(90deg, transparent, ${cfg.color[1]}, transparent)` }}
+              animate={{ x: ["-100%", "100%"] }}
+              transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
+            />
+            <div
+              className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 relative z-10"
+              style={{ background: `linear-gradient(90deg, ${cfg.color[0]}, ${cfg.color[1]})` }}
+            >
+              <Play size={10} className="fill-white text-white ml-0.5" />
+            </div>
+            <span className="text-[13px] font-extrabold text-white tracking-wide relative z-10">Start Quest</span>
+          </motion.button>
+        </div>
+      </div>
+
+      {/* Phase lesson cards — 3-column grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {cfg.phases.map((phase, i) => (
+          <LessonPhaseCard
+            key={i}
+            phase={phase}
+            index={i}
+            locked={i > 0}
+            cfg={cfg}
+            childName={childName}
+            onEndPath={onEndPath}
+          />
+        ))}
+      </div>
+    </motion.div>
+  );
+}
+
+/* ─── Filter pill tabs ─────────────────────────────────────────────────────── */
 const FILTERS = ["All", "Dyslexia", "Dyscalculia", "Dysgraphia", "Pending"];
 
-/* â”€â”€â”€ Main Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ─── Main Page ────────────────────────────────────────────────────────────── */
 export default function PersonalisedPathPage() {
-  const { t } = useTranslation();
   const [assessments, setAssessments] = useState<Assessment[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>("All");
@@ -671,53 +849,50 @@ export default function PersonalisedPathPage() {
   });
 
   return (
-    <div className="h-screen w-full bg-background text-foreground flex overflow-hidden">
-      {/* â”€ Sidebar â”€ */}
-      <aside className="w-20 lg:w-64 bg-card border-r border-border flex flex-col">
+    <div className="h-screen w-full bg-[#F5F2FF] text-slate-900 flex overflow-hidden">
+      {/* ─ Sidebar ─ */}
+      <aside className="w-20 lg:w-64 bg-white border-r border-slate-200 flex flex-col">
         <div className="p-6 mb-4 flex items-center gap-3">
-          <div className="w-10 h-10 bg-primary rounded-2xl flex items-center justify-center shadow-lg shadow-primary/20">
-            <Activity className="text-primary-foreground w-5 h-5" />
+          <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-200">
+            <Activity className="text-white w-5 h-5" />
           </div>
-          <span className="hidden lg:block font-extrabold text-lg tracking-tight text-foreground">NeuroBloom</span>
+          <span className="hidden lg:block font-extrabold text-lg tracking-tight text-slate-800">NeuroBloom</span>
         </div>
 
         <nav className="flex-1 px-3 space-y-1">
-          <Link href="/dashboard"><NavItem icon={<LayoutDashboard size={18} />} label={t("nav_overview")} /></Link>
-          <Link href="/assessments"><NavItem icon={<FileText size={18} />} label={t("nav_reports")} /></Link>
-          <Link href="/patients"><NavItem icon={<Users size={18} />} label={t("nav_patients")} /></Link>
-          <Link href="/analytics"><NavItem icon={<TrendingUp size={18} />} label={t("nav_analytics")} /></Link>
-          <Link href="/personalised-path"><NavItem icon={<Compass size={18} />} label={t("nav_personalist")} active /></Link>
+          <Link href="/dashboard"><NavItem icon={<LayoutDashboard size={18} />} label="Overview" /></Link>
+          <Link href="/assessments"><NavItem icon={<FileText size={18} />} label="Reports" /></Link>
+          <Link href="/patients"><NavItem icon={<Users size={18} />} label="Patient List" /></Link>
+          <Link href="/analytics"><NavItem icon={<TrendingUp size={18} />} label="Analytics" /></Link>
+          <Link href="/personalised-path"><NavItem icon={<Compass size={18} />} label="Personalised Path" active /></Link>
         </nav>
 
-        <div className="p-3 border-t border-border space-y-1">
+        <div className="p-3 border-t border-slate-100 space-y-1">
           <NavItem icon={<Settings size={18} />} label="Settings" />
           <NavItem icon={<HelpCircle size={18} />} label="Support" />
         </div>
       </aside>
 
-      {/* â”€ Main Content â”€ */}
-      <main className="flex-1 flex flex-col min-w-0 overflow-hidden bg-background">
-        {/* â”€ Page Header â”€ */}
-        <div className="px-8 pt-8 pb-5 border-b border-border bg-card/60 backdrop-blur">
-          <div className="flex items-center justify-between mb-1">
-            <h1 className="text-2xl font-extrabold text-foreground">{t("path_header")}</h1>
-            <LanguageSwitcher />
-          </div>
-          <p className="text-sm text-muted-foreground mb-5">
+      {/* ─ Main Content ─ */}
+      <main className="flex-1 flex flex-col min-w-0 overflow-hidden bg-[#F5F2FF]">
+        {/* ─ Page Header ─ */}
+        <div className="px-8 pt-8 pb-5 border-b border-slate-200/60 bg-white/60 backdrop-blur">
+          <h1 className="text-2xl font-extrabold text-[#1A1A2E] mb-0.5">Personalised Paths</h1>
+          <p className="text-sm text-gray-400 mb-5">
             {totalCards} personalised {totalCards === 1 ? "quest" : "quests"} ready to explore
           </p>
           <div className="flex items-center gap-3 flex-wrap">
-            <div className="flex items-center gap-2 bg-card rounded-2xl px-4 py-2.5 border border-border shadow-sm">
-              <Search size={14} className="text-muted-foreground" />
+            <div className="flex items-center gap-2 bg-white rounded-2xl px-4 py-2.5 border border-[#EDEDF5] shadow-sm">
+              <Search size={14} className="text-gray-400" />
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search child or conditionâ€¦"
-                className="w-52 bg-transparent text-sm outline-none text-foreground placeholder:text-muted-foreground"
+                placeholder="Search child or condition…"
+                className="w-52 bg-transparent text-sm outline-none text-gray-700 placeholder-gray-400"
               />
             </div>
-            <button className="bg-card rounded-2xl p-2.5 border border-border shadow-sm hover:bg-muted transition-colors">
-              <SlidersHorizontal size={16} className="text-muted-foreground" />
+            <button className="bg-white rounded-2xl p-2.5 border border-[#EDEDF5] shadow-sm hover:bg-gray-50 transition-colors">
+              <SlidersHorizontal size={16} className="text-gray-500" />
             </button>
             <div className="flex gap-2 flex-wrap">
               {visibleFilters.map((f) => (
@@ -726,8 +901,8 @@ export default function PersonalisedPathPage() {
                   onClick={() => setFilter(f)}
                   className={`px-4 py-1.5 rounded-full text-xs font-extrabold tracking-wide transition-all ${
                     filter === f
-                      ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
-                      : "bg-card text-muted-foreground border border-border hover:bg-muted"
+                      ? "bg-[#7C6FF7] text-white shadow-md shadow-purple-200"
+                      : "bg-white text-gray-500 border border-[#EDEDF5] hover:bg-gray-50"
                   }`}
                 >
                   {f}
@@ -747,8 +922,8 @@ export default function PersonalisedPathPage() {
                 exit={{ opacity: 0 }}
                 className="flex flex-col items-center justify-center py-24 gap-3"
               >
-                <span className="text-5xl animate-pulse">ðŸ§ </span>
-                <p className="text-[13px] font-bold text-muted-foreground">Loading learning paths...</p>
+                <span className="text-5xl animate-pulse">🧠</span>
+                <p className="text-[13px] font-bold text-gray-400">Loading learning paths...</p>
               </motion.div>
             ) : totalCards === 0 ? (
               <motion.div
@@ -758,74 +933,69 @@ export default function PersonalisedPathPage() {
                 exit={{ opacity: 0 }}
                 className="flex flex-col items-center justify-center py-16 gap-3"
               >
-                <span className="text-5xl">ðŸŽ®</span>
-                <h4 className="text-lg font-extrabold text-foreground">No Quests Yet</h4>
-                <p className="text-[13px] text-muted-foreground max-w-sm text-center leading-relaxed">
+                <span className="text-5xl">🎮</span>
+                <h4 className="text-lg font-extrabold text-gray-600">No Quests Yet</h4>
+                <p className="text-[13px] text-gray-400 max-w-sm text-center leading-relaxed">
                   Personalised learning quests will appear here once a child&apos;s test report is generated.
                 </p>
               </motion.div>
             ) : (
-              <motion.div key="list" className="max-w-6xl mx-auto pt-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-                  {searchFiltered.map((card, i) => (
-                    <PathCard
-                      key={`${card.id}-${card.disability}`}
-                      assessmentId={card.id}
-                      childName={card.child_name}
-                      age={card.age}
-                      gender={card.gender}
-                      disability={card.disability}
-                      reportUrl={card.report_url}
-                      createdAt={card.created_at}
-                      delay={i * 0.07}
-                      onEndPath={() => handleDelete(card.id)}
-                    />
-                  ))}
-                  {showPending &&
-                    searchPending.map((a, i) => (
-                      <PathCard
+              <motion.div key="list" className="space-y-10 max-w-6xl mx-auto pt-6">
+                {searchFiltered.map((card, i) => (
+                  <DisabilityCard
+                    key={`${card.id}-${card.disability}`}
+                    assessmentId={card.id}
+                    childName={card.child_name}
+                    age={card.age}
+                    gender={card.gender}
+                    disability={card.disability}
+                    reportUrl={card.report_url}
+                    delay={i * 0.07}
+                    onEndPath={() => handleDelete(card.id)}
+                  />
+                ))}
+                {showPending && searchPending.length > 0 && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+                    {searchPending.map((a, i) => (
+                      <PendingCard
                         key={`pending-${a.id}`}
-                        assessmentId={a.id}
                         childName={a.child_name}
                         age={a.age}
                         gender={a.gender}
-                        disability={null}
+                        sessionId={a.id}
                         reportUrl={a.report_url}
-                        createdAt={a.created_at}
                         delay={(searchFiltered.length + i) * 0.07}
                         onEndPath={() => handleDelete(a.id)}
                         onAnalysisComplete={() => {
                           setLoading(true);
                           fetch("/api/assessments")
                             .then((r) => r.json())
-                            .then((data: Assessment[]) => {
-                              setAssessments(data);
-                              setLoading(false);
-                            })
+                            .then((data: Assessment[]) => { setAssessments(data); setLoading(false); })
                             .catch(() => setLoading(false));
                         }}
                       />
                     ))}
-                </div>
+                  </div>
+                )}
               </motion.div>
             )}
           </AnimatePresence>
         </div>
 
         {/* Footer */}
-        <footer className="h-10 bg-card/60 backdrop-blur border-t border-border px-8 flex items-center justify-between">
+        <footer className="h-10 bg-white/60 backdrop-blur border-t border-slate-200/50 px-8 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-xs font-bold text-muted-foreground">System Online</span>
+            <span className="text-xs font-bold text-gray-400">System Online</span>
           </div>
-          <span className="text-xs text-muted-foreground font-bold">NeuroBloom v4.0</span>
+          <span className="text-xs text-gray-300 font-bold">NeuroBloom v4.0</span>
         </footer>
       </main>
     </div>
   );
 }
 
-/* â”€â”€â”€ Nav Item â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ─── Nav Item ─────────────────────────────────────────────────────────────── */
 function NavItem({
   icon,
   label,
@@ -839,11 +1009,11 @@ function NavItem({
     <div
       className={`flex items-center gap-3 px-4 py-2.5 rounded-xl cursor-pointer transition-all ${
         active
-          ? "bg-primary/10 text-primary shadow-sm"
-          : "text-muted-foreground hover:bg-muted hover:text-foreground"
+          ? "bg-gradient-to-r from-indigo-50 to-purple-50 text-indigo-700 shadow-sm"
+          : "text-slate-400 hover:bg-slate-50 hover:text-slate-600"
       }`}
     >
-      <span className={active ? "text-primary" : "text-muted-foreground"}>{icon}</span>
+      <span className={active ? "text-indigo-600" : "text-slate-400"}>{icon}</span>
       <span className={`hidden lg:block text-sm ${active ? "font-bold" : "font-semibold"}`}>{label}</span>
     </div>
   );

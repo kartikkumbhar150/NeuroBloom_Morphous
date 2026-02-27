@@ -5,7 +5,6 @@ import { motion } from "framer-motion";
 import { User, Calendar, Users, ArrowRight, ShieldCheck, CheckCircle2 } from 'lucide-react';
 import { useVideo } from "@/context/VideoContext";
 import { useTranslation } from "@/hooks/useTranslation";
-import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
 
 interface StudentFormProps {
   onNext: (data: StudentData) => void;
@@ -67,12 +66,9 @@ export function StudentForm({ onNext, onBack }: StudentFormProps) {
               <h1 className="text-xl font-bold text-white tracking-tight">{t('sf_patient_registration')}</h1>
               <p className="text-slate-400 text-[10px] uppercase tracking-[0.2em] font-bold mt-1">{t('sf_assessment_intake')}</p>
             </div>
-            <div className="flex items-center gap-3">
-              <LanguageSwitcher />
-              <div className="flex items-center gap-2 px-3 py-1.5 bg-white/5 rounded-lg border border-white/10">
-                <ShieldCheck size={16} className="text-indigo-400" />
-                <span className="text-[10px] text-white font-medium uppercase tracking-wider">{t('sf_secure_portal')}</span>
-              </div>
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-white/5 rounded-lg border border-white/10">
+              <ShieldCheck size={16} className="text-indigo-400" />
+              <span className="text-[10px] text-white font-medium uppercase tracking-wider">{t('sf_secure_portal')}</span>
             </div>
           </div>
 

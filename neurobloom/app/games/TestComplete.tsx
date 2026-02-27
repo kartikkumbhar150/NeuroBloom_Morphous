@@ -6,7 +6,6 @@ import { StudentData } from './StudentForm';
 import { useEffect, useState } from "react";
 import { useVideo } from "@/context/VideoContext";
 import { useTranslation } from "@/hooks/useTranslation";
-import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
 
 interface TestCompleteProps {
   studentData: StudentData;
@@ -32,10 +31,7 @@ export function TestComplete({ studentData, onReturnHome }: TestCompleteProps) {
   }, [stopAndUpload]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-600 via-pink-500 to-orange-400 flex items-center justify-center overflow-x-hidden p-4 relative">
-      <div className="absolute top-4 right-4 z-50">
-        <LanguageSwitcher />
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-purple-600 via-pink-500 to-orange-400 flex items-center justify-center overflow-x-hidden p-4">
       {/* Container restricted to a smaller max-width for better "fit" */}
       <div className="max-w-3xl w-full py-4">
         <motion.div
