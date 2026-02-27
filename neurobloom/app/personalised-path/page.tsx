@@ -27,6 +27,7 @@ import {
   Clock,
   BarChart2,
 } from "lucide-react";
+import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
 
 interface Assessment {
   id: string;
@@ -877,7 +878,10 @@ export default function PersonalisedPathPage() {
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden bg-[#F5F2FF]">
         {/* ─ Page Header ─ */}
         <div className="px-8 pt-8 pb-5 border-b border-slate-200/60 bg-white/60 backdrop-blur">
-          <h1 className="text-2xl font-extrabold text-[#1A1A2E] mb-0.5">Personalised Paths</h1>
+          <div className="flex items-center justify-between mb-0.5">
+            <h1 className="text-2xl font-extrabold text-[#1A1A2E]">Personalised Paths</h1>
+            <LanguageSwitcher />
+          </div>
           <p className="text-sm text-gray-400 mb-5">
             {totalCards} personalised {totalCards === 1 ? "quest" : "quests"} ready to explore
           </p>

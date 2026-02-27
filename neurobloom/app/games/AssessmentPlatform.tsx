@@ -10,6 +10,7 @@ import { Level4FeelingFriends } from '../games/Level4FeelingFriends';
 import { Level5SuperEars } from '../games/Level5SuperEars';
 import { Level6EagleEyes } from '../games/Level6EagleEyes';
 import { useTranslation } from "@/hooks/useTranslation";
+import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
 
 interface AssessmentPlatformProps {
   onExit?: () => void;
@@ -183,7 +184,8 @@ export function AssessmentPlatform({ onExit }: AssessmentPlatformProps) {
           </div>
 
           {/* Stars collected */}
-          <div className="flex justify-center gap-2 mb-8">
+          <div className="flex justify-center items-center gap-4 mb-8">
+            <LanguageSwitcher />
             <div className="bg-white rounded-full px-6 py-3 shadow-lg flex items-center gap-2">
               <Star className="w-6 h-6 fill-yellow-400 text-yellow-500" />
               <span className="text-2xl font-bold text-purple-600">{stars} {t('ap_stars')}</span>

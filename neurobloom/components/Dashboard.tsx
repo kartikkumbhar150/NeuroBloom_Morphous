@@ -169,6 +169,7 @@ export default function Dashboard({ onStartTest }: DashboardProps) {
               <p className="text-sm text-muted-foreground mt-1">Welcome back to your diagnostic terminal</p>
             </div>
             <div className="flex items-center gap-3">
+              <LanguageSwitcher />
               <div className="hidden sm:block text-right">
                 <p className="text-xs font-bold text-foreground">{userName}</p>
                 <p className="text-[10px] text-muted-foreground font-medium">{t("dash_practitioner")}</p>
