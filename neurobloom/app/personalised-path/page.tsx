@@ -24,11 +24,25 @@ import {
   Clock,
   BarChart2,
   Calendar,
+  Zap,
+  MessageSquare,
+  Ear,
+  Brain,
+  ChevronRight,
 } from "lucide-react";
 import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
 import { Sidebar } from "@/components/Sidebar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
 
 interface Assessment {
   id: string;
@@ -89,8 +103,8 @@ const DISABILITY_CONFIG: Record<
   dyslexia: {
     label: "Dyslexia",
     questName: "Reading Quest",
-    description: "Reading Support · 60 Day Plan",
-    duration: "60 Days",
+    description: "Reading & Phonological Support",
+    duration: "30 Days",
     method: "Interactive",
     color: ["#7C6FF7", "#A389F4"],
     icon: <BookOpen size={20} />,
@@ -103,48 +117,48 @@ const DISABILITY_CONFIG: Record<
     ],
     phases: [
       {
-        title: "Phonics Foundation",
-        emoji: "🔤",
-        days: "Days 1 – 20",
-        activities: [
-          "Letter Sound Matching Game",
-          "Rhyme Builder Challenge",
-          "Syllable Clapping Activity",
-          "Word Bingo (Audio Cues)",
-          "Alphabet Tracing with Sound",
-        ],
+        title: "Sound Awareness",
+        emoji: "🔊",
+        days: "Days 1–5",
+        activities: ["Sound Identification", "Ending Sounds", "Rhyming Awareness", "Sound Segmentation", "Sound Blending"],
       },
       {
-        title: "Word Decoding",
+        title: "Decoding Skills",
         emoji: "🧩",
-        days: "Days 21 – 40",
-        activities: [
-          "Word Puzzle Tiles",
-          "Sight Word Flash Cards",
-          "Sentence Assembly Game",
-          "Story Completion Quest",
-          "Reading Speed Races",
-        ],
+        days: "Days 6–10",
+        activities: ["CVC Words", "Short Vowels Mastery", "Consonant Blends", "Digraphs (sh, ch, th)", "Mixed Decoding"],
       },
       {
-        title: "Fluency & Comprehension",
-        emoji: "🚀",
-        days: "Days 41 – 60",
-        activities: [
-          "Audio Story + Quiz Game",
-          "Word Hunt Adventure",
-          "Reading Rocket Challenge",
-          "Comprehension Map Builder",
-          "Book Report Mini-Game",
-        ],
+        title: "Automaticity",
+        emoji: "⚡",
+        days: "Days 11–15",
+        activities: ["High Frequency Words", "Sight Word Sentences", "Speed Recognition", "Mixed Sight + Decoding", "Fluency Drills"],
+      },
+      {
+        title: "Sentence Reading",
+        emoji: "📖",
+        days: "Days 16–20",
+        activities: ["Simple Sentences", "WH Questions", "Sequencing", "Context Clues", "Sentence Fluency"],
+      },
+      {
+        title: "Comprehension",
+        emoji: "🧠",
+        days: "Days 21–25",
+        activities: ["Short Paragraphs", "Main Idea Identification", "Vocabulary in Context", "Inference Skills", "Comprehension Challenge"],
+      },
+      {
+        title: "Real Application",
+        emoji: "🎓",
+        days: "Days 26–30",
+        activities: ["Timed Story Reading", "Audio + Text Comparison", "Silent Reading", "Mixed Skill Challenge", "Final Assessment"],
       },
     ],
   },
   dyscalculia: {
     label: "Dyscalculia",
     questName: "Math Adventure",
-    description: "Number Skills · 60 Day Plan",
-    duration: "60 Days",
+    description: "Number Sense & Arithmetic",
+    duration: "30 Days",
     method: "Visual",
     color: ["#2E7D32", "#66BB6A"],
     icon: <Calculator size={20} />,
@@ -157,48 +171,48 @@ const DISABILITY_CONFIG: Record<
     ],
     phases: [
       {
-        title: "Number Sense",
+        title: "Number Foundations",
         emoji: "🔢",
-        days: "Days 1 – 20",
-        activities: [
-          "Counting Objects Game",
-          "Number Line Jump",
-          "More or Less Challenge",
-          "Shape & Pattern Sorter",
-          "Visual Quantity Match",
-        ],
+        days: "Days 1–5",
+        activities: ["Compare Numbers", "Number Matching", "Count Objects", "Simple Addition (Visual)", "Missing Number Puzzles"],
       },
       {
-        title: "Basic Operations",
-        emoji: "⚡",
-        days: "Days 21 – 40",
-        activities: [
-          "Addition Adventure Island",
-          "Subtraction Spaceship",
-          "Money Market Simulator",
-          "Clock Reading Quest",
-          "Math Fact Flashcards",
-        ],
+        title: "Real World Math",
+        emoji: "💰",
+        days: "Days 6–10",
+        activities: ["Coin Shop Game", "Number Line Jump", "Even/Odd Sorting", "Basic Subtraction Race", "Pattern Completion"],
       },
       {
-        title: "Applied Math",
+        title: "Time & Sequences",
+        emoji: "⏰",
+        days: "Days 11–15",
+        activities: ["Clock Reading", "Skip Counting", "Multiplication Groups", "Simple Word Problems", "Sequence Builder"],
+      },
+      {
+        title: "Operations",
+        emoji: "⚔️",
+        days: "Days 16–20",
+        activities: ["Multiplication Battle", "Division Sharing", "Multi-step Addition", "Discount Shop Problems"],
+      },
+      {
+        title: "Advanced Problems",
+        emoji: "🧩",
+        days: "Days 21–25",
+        activities: ["Multi-step Shopping", "Budget Planner", "Train Timing Puzzle", "Large Number Addition", "Mental Math Challenge"],
+      },
+      {
+        title: "Mastery + Speed",
         emoji: "🏆",
-        days: "Days 41 – 60",
-        activities: [
-          "Word Problem Detective",
-          "Multiplication Magic Forest",
-          "Fraction Pizza Builder",
-          "Measurement Lab",
-          "Math Olympics Challenge",
-        ],
+        days: "Days 26–30",
+        activities: ["Mixed Challenges", "Adaptive Difficulty", "Real-world Simulation", "Timed Quiz Mode", "Final Boss Level"],
       },
     ],
   },
   dysgraphia: {
     label: "Dysgraphia",
     questName: "Writing Wizard",
-    description: "Handwriting Skills · 60 Day Plan",
-    duration: "60 Days",
+    description: "Fine Motor & Writing",
+    duration: "30 Days",
     method: "Hands-On",
     color: ["#7C6FF7", "#A389F4"],
     icon: <PenTool size={20} />,
@@ -211,47 +225,256 @@ const DISABILITY_CONFIG: Record<
     ],
     phases: [
       {
-        title: "Fine Motor Warm-Up",
+        title: "Motor Control",
         emoji: "✋",
-        days: "Days 1 – 20",
-        activities: [
-          "Dot-to-Dot Tracing Game",
-          "Grip & Draw Challenge",
-          "Maze Navigator",
-          "Finger Yoga Exercises",
-          "Clay Shape Sculptor",
-        ],
+        days: "Days 1–5",
+        activities: ["Glowing Path Tracing", "Connect Dots", "Shape Tracing", "Air Writing Animation"],
       },
       {
         title: "Letter Formation",
         emoji: "✏️",
-        days: "Days 21 – 40",
-        activities: [
-          "Letter Tracing Wizard",
-          "Alphabet Writing Race",
-          "Copy & Compare Game",
-          "Word Spacing Trainer",
-          "Lined Paper Adventure",
-        ],
+        days: "Days 6–10",
+        activities: ["Copy the Letter", "Match Case", "Fix Broken Letter", "Speed Tracing Challenge"],
       },
       {
-        title: "Writing Fluency",
+        title: "Word Writing",
+        emoji: "📝",
+        days: "Days 11–15",
+        activities: ["Spell and Trace", "Fill Missing Letter", "Word Building Blocks", "Spacing Correction"],
+      },
+      {
+        title: "Sentence Building",
+        emoji: "🏗️",
+        days: "Days 16–20",
+        activities: ["Arrange Jumbled Words", "Write from Audio", "Fix Punctuation", "Story Builder"],
+      },
+      {
+        title: "Structured Writing",
+        emoji: "📐",
+        days: "Days 21–25",
+        activities: ["Describe Picture", "Guided Paragraphs", "Grammar Repair", "Timed Writing Games"],
+      },
+      {
+        title: "Independence",
         emoji: "🌟",
-        days: "Days 41 – 60",
-        activities: [
-          "Sentence Builder Game",
-          "Story Starters & Writing",
-          "Dictation Challenge",
-          "Handwriting Speed Test",
-          "Creative Writing Quest",
-        ],
+        days: "Days 26–30",
+        activities: ["Daily Journal", "Short Story Challenge", "Creative Writing", "Final Accuracy Test"],
+      },
+    ],
+  },
+  asd: {
+    label: "Autism (ASD)",
+    questName: "Social Quest",
+    description: "Social Cues & Emotion Recognition",
+    duration: "30 Days",
+    method: "Social-Visual",
+    color: ["#FF9800", "#FFB74D"],
+    icon: <Users size={20} />,
+    floaters: [
+      { symbol: "😊", x: "66%", y: "8%", size: "16px", delay: 0, duration: 2.5 },
+      { symbol: "🤝", x: "82%", y: "32%", size: "16px", delay: 0.4, duration: 3 },
+      { symbol: "💬", x: "64%", y: "60%", size: "14px", delay: 0.8, duration: 2.8 },
+      { symbol: "🎭", x: "88%", y: "20%", size: "14px", delay: 0.2, duration: 3.5 },
+    ],
+    phases: [
+      {
+        title: "Emotion Recognition",
+        emoji: "🎭",
+        days: "Days 1–5",
+        activities: ["Match Expressions", "Situation-Emotion Link", "Tone Identification", "Calm Breathing", "Emotion Memory"],
+      },
+      {
+        title: "Social Situations",
+        emoji: "🤝",
+        days: "Days 6–10",
+        activities: ["What to Say?", "Turn-taking Game", "Conversation Builder", "Personal Space", "Greeting Sims"],
+      },
+      {
+        title: "Flexibility",
+        emoji: "🧩",
+        days: "Days 11–15",
+        activities: ["Unexpected Changes", "Problem-solving Story", "Reaction Choice", "Thinking Puzzles", "Multiple Solutions"],
+      },
+      {
+        title: "Conversation",
+        emoji: "💬",
+        days: "Days 16–20",
+        activities: ["Choose Reply", "Topic Maintenance", "Dialogue Match", "Role-play Sim", "Emotional Reasoning"],
+      },
+      {
+        title: "Real-Life Simulation",
+        emoji: "🏫",
+        days: "Days 21–25",
+        activities: ["School Day Sim", "Playground Interaction", "Shop Interaction", "Asking for Help", "Group Activity"],
+      },
+      {
+        title: "Social Mastery",
+        emoji: "👑",
+        days: "Days 26–30",
+        activities: ["Multi-character Story", "Emotional Inference", "Conflict Resolution", "Decision Consequences", "Adaptive Test"],
+      },
+    ],
+  },
+  adhd: {
+    label: "ADHD",
+    questName: "Focus Adventure",
+    description: "Attention & Impulse Control",
+    duration: "30 Days",
+    method: "Cognitive",
+    color: ["#F44336", "#EF5350"],
+    icon: <Zap size={20} />,
+    floaters: [
+      { symbol: "⚡", x: "70%", y: "10%", size: "16px", delay: 0, duration: 2 },
+      { symbol: "🎯", x: "85%", y: "35%", size: "14px", delay: 0.5, duration: 2.5 },
+      { symbol: "🛑", x: "65%", y: "65%", size: "14px", delay: 1, duration: 3 },
+    ],
+    phases: [
+      {
+        title: "Attention Training",
+        emoji: "🎯",
+        days: "Days 1–5",
+        activities: ["Spot Difference", "Hidden Objects", "Reaction Tap", "Color-Word Match", "Focus Timer"],
+      },
+      {
+        title: "Working Memory",
+        emoji: "🧠",
+        days: "Days 6–10",
+        activities: ["Memory Card Match", "Sequence Repeat", "Number Recall", "Pattern Copy", "Audio Recall"],
+      },
+      {
+        title: "Impulse Control",
+        emoji: "🛑",
+        days: "Days 11–15",
+        activities: ["Red Light Green Light", "Wait-before-tap", "Go/No-Go Game", "Delayed Reward", "Stop-signal"],
+      },
+      {
+        title: "Task Organization",
+        emoji: "📋",
+        days: "Days 16–20",
+        activities: ["Arrange Steps", "Desk Organization", "Timed Completion", "Routine Planner", "Task Breakdown"],
+      },
+      {
+        title: "Executive Function",
+        emoji: "🏗️",
+        days: "Days 21–25",
+        activities: ["Trip Planning", "Budget Game", "Maze Rules", "Strategy Choice", "Time Allocation"],
+      },
+      {
+        title: "Focus Mastery",
+        emoji: "🔥",
+        days: "Days 26–30",
+        activities: ["Mixed Attention", "Distraction Test", "Long Focus Mode", "Multi-step Mission", "Executive Assessment"],
+      },
+    ],
+  },
+  speech: {
+    label: "Speech",
+    questName: "Clarity Quest",
+    description: "Articulation & Fluency",
+    duration: "30 Days",
+    method: "Audio-Verbal",
+    color: ["#9C27B0", "#BA68C8"],
+    icon: <MessageSquare size={20} />,
+    floaters: [
+      { symbol: "🗣️", x: "68%", y: "15%", size: "16px", delay: 0, duration: 3 },
+      { symbol: "🎵", x: "82%", y: "40%", size: "14px", delay: 0.6, duration: 2.8 },
+      { symbol: "✨", x: "65%", y: "70%", size: "12px", delay: 1.2, duration: 2.4 },
+    ],
+    phases: [
+      {
+        title: "Sound Awareness",
+        emoji: "👂",
+        days: "Days 1–5",
+        activities: ["Repeat After Audio", "Mouth Animations", "Sound Discrimination", "Mirror Mimic", "Slow Articulation"],
+      },
+      {
+        title: "Syllable Practice",
+        emoji: "👏",
+        days: "Days 6–10",
+        activities: ["Clap Syllables", "Word Breakdown", "Syllable Builder", "Slow Speech Game", "Syllable Count"],
+      },
+      {
+        title: "Pronunciation",
+        emoji: "🗣️",
+        days: "Days 11–15",
+        activities: ["Record & Compare", "Target Sound List", "Scoring Game", "Tongue Placement", "Minimal Pairs"],
+      },
+      {
+        title: "Sentence Fluency",
+        emoji: "🌊",
+        days: "Days 16–20",
+        activities: ["Read Sentences", "Speed Control", "Breath Timing", "Story Repeat", "Rhythm Speaking"],
+      },
+      {
+        title: "Conversation",
+        emoji: "💬",
+        days: "Days 21–25",
+        activities: ["Role Play", "Question-Answer", "Story Narration", "Express Feelings", "Dialogue Builder"],
+      },
+      {
+        title: "Fluency Mastery",
+        emoji: "🌟",
+        days: "Days 26–30",
+        activities: ["Timed Speech", "Clarity Tracker", "Public Speaking", "Complex Narration", "Final Assessment"],
+      },
+    ],
+  },
+  hearing: {
+    label: "Hearing",
+    questName: "Visual Discovery",
+    description: "Visual Cues & Sign Support",
+    duration: "30 Days",
+    method: "Visual-Sign",
+    color: ["#00BCD4", "#4DD0E1"],
+    icon: <Ear size={20} />,
+    floaters: [
+      { symbol: "👁️", x: "66%", y: "10%", size: "16px", delay: 0, duration: 3.5 },
+      { symbol: "🤟", x: "84%", y: "35%", size: "14px", delay: 0.7, duration: 2.9 },
+      { symbol: "📷", x: "62%", y: "65%", size: "12px", delay: 1.4, duration: 3.1 },
+    ],
+    phases: [
+      {
+        title: "Visual Attention",
+        emoji: "👁️",
+        days: "Days 1–5",
+        activities: ["Lip Shape Matching", "Silent Video Guess", "Expression ID", "Gesture Recognition", "Visual Reaction"],
+      },
+      {
+        title: "Sign Language",
+        emoji: "🤟",
+        days: "Days 6–10",
+        activities: ["Sign-Letter Match", "Sign-Word Match", "Sign Memory", "Gesture Imitation", "Sign Spelling"],
+      },
+      {
+        title: "Word Comprehension",
+        emoji: "🖼️",
+        days: "Days 11–15",
+        activities: ["Caption Matching", "Image+Text Pairing", "Visual Meaning", "Rearrange Story", "Missing Word"],
+      },
+      {
+        title: "Sentence Understanding",
+        emoji: "📝",
+        days: "Days 16–20",
+        activities: ["Sign Sentence Builder", "Scenario Selection", "Gesture Emotions", "Image Story", "Dialogue Completion"],
+      },
+      {
+        title: "Social Communication",
+        emoji: "🤝",
+        days: "Days 21–25",
+        activities: ["Classroom Sim", "Family Conversation", "Asking for Help", "Expressing Need", "Conflict Resolution"],
+      },
+      {
+        title: "Mastery",
+        emoji: "🏆",
+        days: "Days 26–30",
+        activities: ["Multi-scene Sim", "Conversation Practice", "Mixed Skill Challenge", "Real-world Tasks", "Final Test"],
       },
     ],
   },
 };
 
 /* ─── Seeded disability helper (stable random per assessment ID) ────────────── */
-const DISABILITY_LIST = ["dyslexia", "dyscalculia", "dysgraphia"] as const;
+const DISABILITY_LIST = ["dyslexia", "dyscalculia", "dysgraphia", "asd", "adhd", "speech", "hearing"] as const;
 
 function seededDisability(id: string): string {
   let hash = 0;
@@ -274,6 +497,7 @@ function AssessmentCard({
   createdAt,
   delay,
   onEndPath,
+  onStart,
 }: {
   childName: string;
   age: number;
@@ -284,6 +508,7 @@ function AssessmentCard({
   createdAt?: string;
   delay: number;
   onEndPath: () => void;
+  onStart: (name: string) => void;
 }) {
   const [status, setStatus] = useState<CardStatus>("idle");
   const [startDate, setStartDate] = useState<string | null>(null);
@@ -312,12 +537,25 @@ function AssessmentCard({
   const handleStart = () => {
     setStatus("running");
     setStartDate(new Date().toISOString());
+    onStart(childName);
   };
 
   const handleComplete = () => {
     setStatus("complete");
     setEndDate(new Date().toISOString());
     setProgress(totalActivities);
+  };
+
+  const completeActivity = () => {
+    setProgress((prev) => {
+      const next = prev + 1;
+      if (next >= totalActivities) {
+        setStatus("complete");
+        setEndDate(new Date().toISOString());
+        return totalActivities;
+      }
+      return next;
+    });
   };
 
   const statusStyles: Record<CardStatus, { label: string; variant: string; color: string }> = {
@@ -328,133 +566,314 @@ function AssessmentCard({
   const ss = statusStyles[status];
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 24 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay, type: "spring", stiffness: 110 }}
-      className="bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] overflow-hidden relative group hover:translate-y-[-4px] transition-all"
-    >
-      {/* Top bar */}
-      <div className="h-2 w-full bg-primary" />
+    <Dialog>
+      <motion.div
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay, type: "spring", stiffness: 110 }}
+        className="bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] overflow-hidden relative group hover:translate-y-[-4px] transition-all"
+      >
+        {/* Top bar */}
+        <div className="h-2 w-full bg-primary" />
 
-      {/* Floating symbols */}
-      {cfg?.floaters.slice(0, 3).map((el, i) => (
-        <FloatingSymbol key={i} el={el} color={gradColor0} />
-      ))}
+        {/* Floating symbols */}
+        {cfg?.floaters.slice(0, 3).map((el, i) => (
+          <FloatingSymbol key={i} el={el} color={gradColor0} />
+        ))}
 
-      <div className="p-6 relative z-10 space-y-6">
-        {/* Status badge */}
-        <div className="flex items-center justify-between">
-          <div className={`px-4 py-1 border-2 border-black ${ss.variant} ${ss.color} shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]`}>
-            <span className="text-xs font-black uppercase tracking-widest">{ss.label}</span>
+        <div className="p-6 relative z-10 space-y-6">
+          {/* Status badge */}
+          <div className="flex items-center justify-between">
+            <div className={`px-4 py-1 border-2 border-black ${ss.variant} ${ss.color} shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]`}>
+              <span className="text-xs font-black uppercase tracking-widest">{ss.label}</span>
+            </div>
+            <button
+              onClick={() => {
+                if (confirm(`End learning path for ${childName}?`)) onEndPath();
+              }}
+              className="text-primary hover:scale-110 transition-transform"
+            >
+              <XCircle size={20} />
+            </button>
           </div>
-          <button
-            onClick={() => {
-              if (confirm(`End learning path for ${childName}?`)) onEndPath();
-            }}
-            className="text-primary hover:scale-110 transition-transform"
-          >
-            <XCircle size={20} />
-          </button>
-        </div>
 
-        {/* Child Info */}
-        <div>
-          <h3 className="text-2xl font-black text-black uppercase italic tracking-tighter leading-none">{childName}</h3>
-          <p className="text-xs font-black text-black/40 mt-1 uppercase tracking-widest">
-            Age {age} &middot; {gender}
-            {isPending && <span className="ml-2 text-primary">(AI Pending)</span>}
-          </p>
-        </div>
+          {/* Child Info */}
+          <div>
+            <h3 className="text-2xl font-black text-black uppercase italic tracking-tighter leading-none">{childName}</h3>
+            <p className="text-xs font-black text-black/40 mt-1 uppercase tracking-widest">
+              Age {age} &middot; {gender}
+              {isPending && <span className="ml-2 text-primary">(AI Pending)</span>}
+            </p>
+          </div>
 
-        {/* Disability Type */}
-        <div className="bg-muted border-2 border-black p-3 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] flex items-center gap-3">
-          <div className="bg-white border-2 border-black p-1.5 shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">
+          {/* Disability Type */}
+          <div className="bg-muted border-2 border-black p-3 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] flex items-center gap-3">
+            <div className="bg-white border-2 border-black p-1.5 shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">
+              {cfg?.icon}
+            </div>
+            <div>
+              <p className="text-[10px] font-black text-black/40 uppercase tracking-widest leading-none mb-1">Condition</p>
+              <p className="text-sm font-black text-black uppercase">{cfg?.label ?? disability}</p>
+            </div>
+          </div>
+
+          {/* Progress */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-black text-black/40 uppercase tracking-widest">Quest Progress</span>
+              <span className="text-[10px] font-black text-black uppercase">
+                {progress}/{totalActivities} &middot; {pct}%
+              </span>
+            </div>
+            <div className="h-4 border-2 border-black bg-muted overflow-hidden shadow-[inset_2px_2px_0px_0px_rgba(0,0,0,0.1)]">
+              <motion.div
+                className="h-full bg-secondary border-r-2 border-black"
+                animate={{ width: `${pct}%` }}
+                transition={{ duration: 0.6 }}
+              />
+            </div>
+          </div>
+
+          {/* World Map (Phases) */}
+          <DialogTrigger asChild>
+            <div className="space-y-2 cursor-pointer group/map">
+              <div className="flex items-center justify-between">
+                <p className="text-[10px] font-black text-black/40 uppercase tracking-widest group-hover/map:text-primary transition-colors">World Map (Click to Expand)</p>
+                <ChevronRight size={10} className="text-black/40 group-hover/map:text-primary group-hover/map:translate-x-1 transition-all" />
+              </div>
+              <div className="grid grid-cols-6 gap-2">
+                {cfg?.phases.map((phase, idx) => {
+                  const activitiesInPhase = phase.activities.length;
+                  const prevActivities = cfg.phases.slice(0, idx).reduce((acc, p) => acc + p.activities.length, 0);
+                  const isPhaseComplete = progress >= prevActivities + activitiesInPhase;
+                  const isPhaseCurrent = progress >= prevActivities && progress < prevActivities + activitiesInPhase;
+
+                  return (
+                    <div
+                      key={idx}
+                      className={`aspect-square border-2 border-black flex items-center justify-center relative shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-transform group-hover/map:scale-105 ${
+                        isPhaseComplete ? "bg-chart-4" : isPhaseCurrent ? "bg-accent animate-pulse" : "bg-muted"
+                      }`}
+                      title={`${phase.title}: ${phase.days}`}
+                    >
+                      <span className="text-sm">{phase.emoji}</span>
+                      {isPhaseComplete && (
+                        <div className="absolute -top-1 -right-1 bg-white border border-black rounded-full p-0.5 shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">
+                          <CheckCircle size={8} className="text-chart-4" />
+                        </div>
+                      )}
+                      <span className="absolute -bottom-4 text-[7px] font-black text-black/30 uppercase">W-{idx + 1}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </DialogTrigger>
+
+          {/* Dates */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="bg-muted border-2 border-black p-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+              <p className="text-[9px] font-black text-black/40 uppercase leading-none mb-1">Started</p>
+              <p className="text-[10px] font-black text-black uppercase">{fmtDate(startDate)}</p>
+            </div>
+            <div className="bg-muted border-2 border-black p-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+              <p className="text-[9px] font-black text-black/40 uppercase leading-none mb-1">Target</p>
+              <p className="text-[10px] font-black text-black uppercase">{fmtDate(endDate)}</p>
+            </div>
+          </div>
+
+          {/* Footer Actions */}
+          <div className="pt-2 space-y-3">
+            {reportUrl && (
+              <Button
+                variant="outline"
+                className="w-full text-xs py-5 uppercase tracking-widest"
+                asChild
+              >
+                <a href={reportUrl} target="_blank">
+                  <FileText size={14} className="mr-2" />
+                  View Scroll
+                </a>
+              </Button>
+            )}
+
+            {status === "idle" && (
+              <Button
+                onClick={handleStart}
+                className="w-full py-6 text-sm uppercase italic tracking-wider"
+              >
+                <Play size={14} className="fill-current" />
+                Begin Quest
+              </Button>
+            )}
+
+            {status === "running" && (
+              <Button
+                onClick={handleComplete}
+                className="w-full py-6 text-sm bg-secondary text-white uppercase italic tracking-wider"
+              >
+                <RefreshCw size={14} className="animate-spin" />
+                Continue Adventure
+              </Button>
+            )}
+
+            {status === "complete" && (
+              <div className="w-full py-3 bg-[#43B047] border-4 border-black text-white text-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                <span className="text-sm font-black uppercase italic tracking-wider">Quest Cleared!</span>
+              </div>
+            )}
+          </div>
+        </div>
+      </motion.div>
+
+      <DialogContent className="max-w-2xl border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] p-0 gap-0 overflow-hidden bg-background">
+        <DialogHeader className="p-8 bg-primary border-b-4 border-black relative overflow-hidden">
+          {/* Background symbols in header */}
+          <div className="absolute top-0 right-0 p-4 opacity-20 text-8xl pointer-events-none grayscale">
             {cfg?.icon}
           </div>
-          <div>
-            <p className="text-[10px] font-black text-black/40 uppercase tracking-widest leading-none mb-1">Condition</p>
-            <p className="text-sm font-black text-black uppercase">{cfg?.label ?? disability}</p>
-          </div>
-        </div>
+          
+          <DialogTitle className="text-4xl font-black text-white uppercase italic tracking-tighter leading-none mb-2 relative z-10">
+            {cfg?.questName}
+          </DialogTitle>
+          <DialogDescription className="text-white/80 font-black uppercase tracking-widest text-xs relative z-10">
+            Adventure Roadmap for {childName} &middot; {cfg?.duration}
+          </DialogDescription>
+        </DialogHeader>
 
-        {/* Progress */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] font-black text-black/40 uppercase tracking-widest">Quest Progress</span>
-            <span className="text-[10px] font-black text-black uppercase">
-              {progress}/{totalActivities} &middot; {pct}%
-            </span>
-          </div>
-          <div className="h-4 border-2 border-black bg-muted overflow-hidden shadow-[inset_2px_2px_0px_0px_rgba(0,0,0,0.1)]">
-            <motion.div
-              className="h-full bg-secondary border-r-2 border-black"
-              animate={{ width: `${pct}%` }}
-              transition={{ duration: 0.6 }}
-            />
-          </div>
-        </div>
+        <div className="p-8 space-y-8 max-h-[70vh] overflow-y-auto custom-scrollbar">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="space-y-6">
+              <h4 className="text-xl font-black text-black uppercase italic tracking-tight border-b-4 border-black pb-2">Mission Log</h4>
+              <div className="space-y-4">
+                {cfg?.phases.map((phase, idx) => {
+                  const activitiesInPhase = phase.activities.length;
+                  const prevActivities = cfg.phases.slice(0, idx).reduce((acc, p) => acc + p.activities.length, 0);
+                  const isPhaseComplete = progress >= prevActivities + activitiesInPhase;
+                  const isPhaseCurrent = progress >= prevActivities && progress < prevActivities + activitiesInPhase;
 
-        {/* Dates */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="bg-muted border-2 border-black p-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-            <p className="text-[9px] font-black text-black/40 uppercase leading-none mb-1">Started</p>
-            <p className="text-[10px] font-black text-black uppercase">{fmtDate(startDate)}</p>
-          </div>
-          <div className="bg-muted border-2 border-black p-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-            <p className="text-[9px] font-black text-black/40 uppercase leading-none mb-1">Target</p>
-            <p className="text-[10px] font-black text-black uppercase">{fmtDate(endDate)}</p>
-          </div>
-        </div>
-
-        {/* Footer Actions */}
-        <div className="pt-2 space-y-3">
-          {reportUrl && (
-            <Button
-              variant="outline"
-              className="w-full text-xs py-5 uppercase tracking-widest"
-              asChild
-            >
-              <a href={reportUrl} target="_blank">
-                <FileText size={14} className="mr-2" />
-                View Scroll
-              </a>
-            </Button>
-          )}
-
-          {status === "idle" && (
-            <Button
-              onClick={handleStart}
-              className="w-full py-6 text-sm uppercase italic tracking-wider"
-            >
-              <Play size={14} className="fill-current" />
-              Begin Quest
-            </Button>
-          )}
-
-          {status === "running" && (
-            <Button
-              onClick={handleComplete}
-              className="w-full py-6 text-sm bg-secondary text-white uppercase italic tracking-wider"
-            >
-              <RefreshCw size={14} className="animate-spin" />
-              Continue Adventure
-            </Button>
-          )}
-
-          {status === "complete" && (
-            <div className="w-full py-3 bg-[#43B047] border-4 border-black text-white text-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-              <span className="text-sm font-black uppercase italic tracking-wider">Quest Cleared!</span>
+                  return (
+                    <div 
+                      key={idx} 
+                      className={`p-4 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex gap-4 transition-all ${
+                        isPhaseCurrent ? "bg-accent -translate-y-1" : isPhaseComplete ? "bg-chart-4 text-white opacity-80" : "bg-white"
+                      }`}
+                    >
+                      <div className="text-3xl flex-shrink-0">{phase.emoji}</div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2 mb-1">
+                          <p className={`text-sm font-black uppercase truncate ${isPhaseComplete ? "text-white" : "text-black"}`}>
+                            World {idx + 1}: {phase.title}
+                          </p>
+                          {isPhaseComplete && <CheckCircle size={14} />}
+                        </div>
+                        <p className={`text-[10px] font-bold uppercase tracking-widest ${isPhaseComplete ? "text-white/70" : "text-black/40"}`}>
+                          {phase.days}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
-          )}
+
+            <div className="space-y-6">
+              <h4 className="text-xl font-black text-black uppercase italic tracking-tight border-b-4 border-black pb-2">Quest Activities</h4>
+              <div className="bg-muted border-4 border-black p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] min-h-full">
+                {cfg?.phases.map((phase, idx) => {
+                  const prevActivities = cfg.phases.slice(0, idx).reduce((acc, p) => acc + p.activities.length, 0);
+                  const isPhaseCurrent = progress >= prevActivities && progress < prevActivities + phase.activities.length;
+                  
+                  if (!isPhaseCurrent) return null;
+
+                  return (
+                    <div key={idx} className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-500">
+                      <div className="flex items-center gap-2 mb-4">
+                        <Badge variant="secondary" className="border-2 border-black rounded-none uppercase font-black px-3 py-1">Current World</Badge>
+                      </div>
+                      <p className="text-lg font-black text-black uppercase leading-tight">{phase.title}</p>
+                      <ul className="space-y-3">
+                        {phase.activities.map((act, i) => (
+                          <li key={i} className="flex items-start gap-3 group">
+                            <div className="w-5 h-5 border-2 border-black bg-white flex items-center justify-center flex-shrink-0 mt-0.5 shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] group-hover:bg-primary group-hover:text-white transition-colors">
+                              <span className="text-[10px] font-black">{i + 1}</span>
+                            </div>
+                            <span className="text-sm font-bold text-black/70 group-hover:text-black transition-colors">{act}</span>
+                          </li>
+                        ))}
+                      </ul>
+                      <Button 
+                        onClick={completeActivity}
+                        className="w-full mt-6 py-6 text-sm uppercase italic tracking-widest shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-1 active:translate-y-1"
+                      >
+                        Complete Activity
+                      </Button>
+                    </div>
+                  );
+                })}
+                {!cfg?.phases.some((p, idx) => progress >= cfg.phases.slice(0, idx).reduce((acc, ph) => acc + ph.activities.length, 0) && progress < cfg.phases.slice(0, idx).reduce((acc, ph) => acc + ph.activities.length, 0) + p.activities.length) && (
+                  <div className="flex flex-col items-center justify-center py-12 text-center space-y-4">
+                    <div className="text-5xl">🚩</div>
+                    <p className="text-sm font-black text-black uppercase italic">Begin your journey to see today's missions!</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-    </motion.div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
 /* ─── Filter pill tabs ─────────────────────────────────────────────────────── */
-const FILTERS = ["All", "Dyslexia", "Dyscalculia", "Dysgraphia", "Pending"];
+const FILTERS = ["All", "Dyslexia", "Dyscalculia", "Dysgraphia", "ASD", "ADHD", "Speech", "Hearing", "Pending"];
+
+/* ─── Level Transition Overlay ───────────────────────────────────────────── */
+function LevelTransition({ heroName, onComplete }: { heroName: string; onComplete: () => void }) {
+  return (
+    <motion.div
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+    >
+      <motion.div
+        className="text-center space-y-8"
+        initial={{ scale: 0.8, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ delay: 0.2 }}
+      >
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-24 h-24 bg-accent border-4 border-black rounded-lg flex items-center justify-center shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] animate-bounce">
+            <span className="text-5xl">⭐</span>
+          </div>
+          <h2 className="text-white text-2xl font-black uppercase tracking-widest italic">Ready, {heroName}?</h2>
+        </div>
+        
+        <div className="relative h-24 flex items-center justify-center overflow-hidden w-64">
+          <motion.h1
+            className="text-8xl font-black text-accent uppercase italic tracking-tighter absolute"
+            initial={{ y: 100 }}
+            animate={{ y: [100, 0, 0, -100] }}
+            transition={{ times: [0, 0.4, 0.6, 1], duration: 2, ease: "anticipate" }}
+            onAnimationComplete={onComplete}
+          >
+            Go!
+          </motion.h1>
+        </div>
+      </motion.div>
+      
+      {/* Screen Flash */}
+      <motion.div
+        className="absolute inset-0 bg-white pointer-events-none"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: [0, 1, 0] }}
+        transition={{ delay: 1.8, duration: 0.2 }}
+      />
+    </motion.div>
+  );
+}
 
 /* ─── Main Page ────────────────────────────────────────────────────────────── */
 export default function PersonalisedPathPage() {
@@ -462,6 +881,13 @@ export default function PersonalisedPathPage() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>("All");
   const [search, setSearch] = useState("");
+  const [isStarting, setIsStarting] = useState(false);
+  const [startingHero, setStartingHero] = useState("");
+
+  const handleBeginAdventure = (heroName: string) => {
+    setStartingHero(heroName);
+    setIsStarting(true);
+  };
 
   useEffect(() => {
     fetch("/api/assessments")
@@ -526,15 +952,24 @@ export default function PersonalisedPathPage() {
     <div className="h-screen w-full bg-background text-foreground flex overflow-hidden font-sans">
       <Sidebar />
 
+      <AnimatePresence>
+        {isStarting && (
+          <LevelTransition 
+            heroName={startingHero} 
+            onComplete={() => setIsStarting(false)} 
+          />
+        )}
+      </AnimatePresence>
+
       {/* ─ Main Content ─ */}
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden bg-background">
         {/* ─ Page Header ─ */}
         <div className="px-8 pt-10 pb-4 flex-shrink-0 bg-background">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-4xl font-black text-black uppercase italic tracking-tighter">Personalised Paths</h1>
+              <h1 className="text-4xl font-black text-black uppercase italic tracking-tighter">Adventure Roadmap</h1>
               <p className="text-sm font-black text-black/40 mt-1 uppercase tracking-widest">
-                {totalCards} {totalCards === 1 ? "Quest" : "Quests"} Unlocked
+                {totalCards} {totalCards === 1 ? "Hero" : "Heroes"} on a Mission
               </p>
             </div>
             <div className="flex items-center gap-3">
@@ -564,7 +999,7 @@ export default function PersonalisedPathPage() {
                       : "bg-white text-black hover:bg-muted active:translate-y-[2px] active:shadow-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
                   }`}
                 >
-                  {f}
+                  {f === "All" ? "All Worlds" : f}
                 </button>
               ))}
             </div>
@@ -595,10 +1030,10 @@ export default function PersonalisedPathPage() {
                 exit={{ opacity: 0 }}
                 className="flex flex-col items-center justify-center py-16 gap-6"
               >
-                <div className="text-8xl">🎮</div>
-                <h4 className="text-3xl font-black text-black uppercase italic">No Quests Found</h4>
+                <div className="text-8xl animate-bounce">🏰</div>
+                <h4 className="text-3xl font-black text-black uppercase italic text-center">Your Princess is in Another Castle!</h4>
                 <p className="text-sm font-bold text-black/40 max-w-sm text-center uppercase tracking-widest">
-                  Finish an assessment to unlock your personalized learning adventure!
+                  Finish an assessment to unlock your personalized adventure roadmap!
                 </p>
               </motion.div>
             ) : (
@@ -618,6 +1053,7 @@ export default function PersonalisedPathPage() {
                     createdAt={card.created_at}
                     delay={i * 0.05}
                     onEndPath={() => handleDelete(card.id)}
+                    onStart={handleBeginAdventure}
                   />
                 ))}
               </motion.div>
