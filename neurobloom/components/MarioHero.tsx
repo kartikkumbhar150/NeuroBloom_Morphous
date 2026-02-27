@@ -1,35 +1,54 @@
 "use client";
 import React, { useRef } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { Float, PerspectiveCamera, Text } from '@react-three/drei';
+import { Canvas, useFrame, ThreeElements } from '@react-three/fiber';
+import { Float, PerspectiveCamera, Edges, Environment, ContactShadows } from '@react-three/drei';
 import * as THREE from 'three';
 
-function Box(props: any) {
+// FIX: Use a 'type' alias with an intersection (&) instead of an interface
+type BoxProps = ThreeElements['mesh'] & {
+  color?: string;
+};
+
+function Box({ color = '#FBD000', ...props }: BoxProps) {
   const ref = useRef<THREE.Mesh>(null!);
-  useFrame((state, delta) => (ref.current.rotation.x += delta * 0.5, ref.current.rotation.y += delta * 0.2));
+  
+  useFrame((_, delta) => {
+    ref.current.rotation.x += delta * 0.5;
+    ref.current.rotation.y += delta * 0.2;
+  });
   
   return (
-    <mesh {...props} ref={ref}>
+    <mesh {...props} ref={ref} castShadow receiveShadow>
       <boxGeometry args={[1, 1, 1]} />
-      <meshStandardMaterial color={props.color || '#FBD000'} />
-      {/* Add a border effect */}
-      <lineSegments>
-        <edgesGeometry args={[new THREE.BoxGeometry(1, 1, 1)]} />
-        <lineBasicMaterial color="black" linewidth={2} />
-      </lineSegments>
+      <meshStandardMaterial color={color} />
+      <Edges linewidth={2} threshold={15} color="black" />
     </mesh>
   );
 }
 
-function Coin(props: any) {
+function Coin(props: ThreeElements['mesh']) {
   const ref = useRef<THREE.Mesh>(null!);
-  useFrame((state, delta) => (ref.current.rotation.y += delta * 2));
+  
+  useFrame((_, delta) => {
+    ref.current.rotation.y += delta * 2;
+  });
   
   return (
-    <mesh {...props} ref={ref}>
+    <mesh {...props} ref={ref} castShadow>
       <cylinderGeometry args={[0.4, 0.4, 0.1, 32]} />
-      <meshStandardMaterial color="#FBD000" metalness={0.8} roughness={0.2} />
+      <meshStandardMaterial color="#FFD700" metalness={1} roughness={0.1} />
     </mesh>
+  );
+}
+
+function Cloud({ className }: { className?: string }) {
+  return (
+    <div className={`absolute ${className}`}>
+      <div className="w-12 h-12 bg-white rounded-full absolute bottom-0 left-0" />
+      <div className="w-16 h-16 bg-white rounded-full absolute bottom-0 left-6" />
+      <div className="w-12 h-12 bg-white rounded-full absolute bottom-0 left-16" />
+      <div className="w-24 h-8 bg-white rounded-full absolute bottom-0 left-2" />
+    </div>
   );
 }
 
@@ -37,10 +56,12 @@ export function MarioHero() {
   return (
     <div className="w-full h-[500px] relative bg-[#5C94FC] overflow-hidden rounded-3xl border-4 border-black shadow-lg">
       <Canvas shadows>
-        <PerspectiveCamera makeDefault position={[0, 0, 5]} />
-        <ambientLight intensity={0.7} />
+        <PerspectiveCamera makeDefault position={[0, 0, 6]} />
+        <ambientLight intensity={0.6} />
         <pointLight position={[10, 10, 10]} intensity={1.5} castShadow />
         <spotLight position={[-10, 10, 10]} angle={0.15} penumbra={1} intensity={1} />
+        
+        <Environment preset="city" />
         
         <Float speed={2} rotationIntensity={0.5} floatIntensity={0.5}>
           <Box position={[-2, 1, 0]} color="#E52521" />
@@ -52,13 +73,12 @@ export function MarioHero() {
           <Coin position={[0, -1.5, 0.5]} />
         </Float>
 
-        <gridHelper args={[20, 20, '#ffffff', '#ffffff']} position={[0, -2, 0]} />
+        <ContactShadows position={[0, -2.5, 0]} opacity={0.6} scale={15} blur={2} far={4} />
       </Canvas>
       
-      {/* Decorative CSS Clouds */}
-      <div className="absolute top-10 left-10 w-24 h-8 bg-white rounded-full opacity-80 blur-sm" />
-      <div className="absolute top-20 right-20 w-32 h-10 bg-white rounded-full opacity-60 blur-md" />
-      <div className="absolute bottom-10 left-1/4 w-20 h-6 bg-white rounded-full opacity-70 blur-sm" />
+      <Cloud className="top-12 left-10 scale-100 opacity-90" />
+      <Cloud className="top-24 right-24 scale-125 opacity-70" />
+      <Cloud className="bottom-16 left-1/4 scale-75 opacity-80" />
     </div>
   );
 }

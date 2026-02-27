@@ -149,7 +149,7 @@ export default function LandingPage() {
         </div>
 
         {/* ──── TITLE ──── */}
-        <div className="relative z-[20] pt-14 pb-4">
+        <div className="relative z-[20] pt-25 pb-4">
           <motion.div initial={{ opacity: 0, y: -20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center">
             <h2 className="text-5xl md:text-7xl font-[1000] text-white drop-shadow-[5px_5px_0px_#000] uppercase tracking-tighter italic">
               ADVENTURE MAP

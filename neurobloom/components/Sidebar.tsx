@@ -7,8 +7,7 @@ import {
   Activity,
   LayoutDashboard,
   FileText,
-  Users,
-  TrendingUp,
+  Stethoscope,
   Settings,
   HelpCircle,
   Compass
@@ -56,16 +55,10 @@ export function Sidebar() {
           active={pathname === "/assessments"}
         />
         <NavItem
-          icon={<Users size={20} />}
-          label={t("nav_patients") || "Patients"}
-          href="/patients"
-          active={pathname === "/patients"}
-        />
-        <NavItem
-          icon={<TrendingUp size={20} />}
-          label={t("nav_analytics") || "Analytics"}
-          href="/analytics"
-          active={pathname === "/analytics"}
+          icon={<Stethoscope size={20} />}
+          label="Psychologists"
+          href="/psychologists"
+          active={pathname === "/psychologists"}
         />
         <NavItem
           icon={<Compass size={20} />}
