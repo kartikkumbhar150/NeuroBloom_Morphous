@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Activity,
@@ -43,6 +44,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { useProgress, CardStatus } from "@/hooks/useProgress";
 
 interface Assessment {
   id: string;
@@ -485,9 +487,9 @@ function seededDisability(id: string): string {
 }
 
 /* ─── Assessment Card ──────────────────────────────────────────────────────── */
-type CardStatus = "idle" | "running" | "complete";
 
 function AssessmentCard({
+  id,
   childName,
   age,
   gender,
@@ -499,6 +501,7 @@ function AssessmentCard({
   onEndPath,
   onStart,
 }: {
+  id: string;
   childName: string;
   age: number;
   gender: string;
@@ -510,13 +513,11 @@ function AssessmentCard({
   onEndPath: () => void;
   onStart: (name: string) => void;
 }) {
-  const [status, setStatus] = useState<CardStatus>("idle");
-  const [startDate, setStartDate] = useState<string | null>(null);
-  const [endDate, setEndDate] = useState<string | null>(null);
-  const [progress, setProgress] = useState(0);
-
+  const router = useRouter();
   const cfg = DISABILITY_CONFIG[disability.toLowerCase()];
   const totalActivities = cfg?.phases.reduce((s, p) => s + p.activities.length, 0) ?? 15;
+  const { progress, status, startDate, endDate, handleStart: hookHandleStart, handleComplete, completeActivity, isLoaded } = useProgress(id, totalActivities);
+
   const pct = totalActivities > 0 ? Math.round((progress / totalActivities) * 100) : 0;
 
   const gradColor0 = cfg?.color[0] ?? "#E52521";
@@ -535,27 +536,8 @@ function AssessmentCard({
   };
 
   const handleStart = () => {
-    setStatus("running");
-    setStartDate(new Date().toISOString());
+    hookHandleStart();
     onStart(childName);
-  };
-
-  const handleComplete = () => {
-    setStatus("complete");
-    setEndDate(new Date().toISOString());
-    setProgress(totalActivities);
-  };
-
-  const completeActivity = () => {
-    setProgress((prev) => {
-      const next = prev + 1;
-      if (next >= totalActivities) {
-        setStatus("complete");
-        setEndDate(new Date().toISOString());
-        return totalActivities;
-      }
-      return next;
-    });
   };
 
   const statusStyles: Record<CardStatus, { label: string; variant: string; color: string }> = {
@@ -803,10 +785,10 @@ function AssessmentCard({
                         ))}
                       </ul>
                       <Button 
-                        onClick={completeActivity}
+                        onClick={() => router.push(`/quest?assessmentId=${id}&disability=${encodeURIComponent(disability.toLowerCase())}&phase=${idx}&activity=${progress}`)}
                         className="w-full mt-6 py-6 text-sm uppercase italic tracking-widest shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-1 active:translate-y-1"
                       >
-                        Complete Activity
+                        Start Activity
                       </Button>
                     </div>
                   );
@@ -1044,6 +1026,7 @@ export default function PersonalisedPathPage() {
                 {filteredCards.map((card, i) => (
                   <AssessmentCard
                     key={`${card.id}-${card.disability}`}
+                    id={card.id}
                     childName={card.child_name}
                     age={card.age}
                     gender={card.gender}
