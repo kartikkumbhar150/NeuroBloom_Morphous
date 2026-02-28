@@ -73,7 +73,7 @@ function FloatingSymbol({ el, color }: { el: FloatingEl; color: string }) {
   return (
     <motion.div
       className="absolute pointer-events-none select-none font-extrabold"
-      style={{ left: el.x, top: el.y, fontSize: el.size, color, opacity: 0.55, zIndex: 1 }}
+      style={{ left: el.x, top: el.y, fontSize: el.size, color, opacity: 0.45, zIndex: 1 }}
       animate={isRotating ? { y: [0, -8, 0], rotate: [0, el.rotate ?? 360] } : { y: [0, -7, 0] }}
       transition={{
         duration: el.duration,
@@ -490,7 +490,6 @@ function seededDisability(id: string): string {
 }
 
 /* ─── Assessment Card ──────────────────────────────────────────────────────── */
-
 function AssessmentCard({
   id,
   childName,
@@ -523,7 +522,6 @@ function AssessmentCard({
   const { progress, status, startDate, endDate, handleStart: hookHandleStart, handleComplete, completeActivity, isLoaded } = useProgress(id, totalActivities);
 
   const pct = totalActivities > 0 ? Math.round((progress / totalActivities) * 100) : 0;
-
   const gradColor0 = cfg?.color[0] ?? "#E52521";
 
   const fmtDate = (d: string | null | undefined) => {
@@ -546,7 +544,6 @@ function AssessmentCard({
     if (!isLoaded) return;
     if (searchParams.get("openModal") === id) {
       setShowPathModal(true);
-      // Clean the URL so a refresh doesn't re-open the modal
       router.replace("/personalised-path");
     }
   }, [isLoaded, searchParams, id, router]);
@@ -556,35 +553,55 @@ function AssessmentCard({
     onStart(childName);
   };
 
-  const handleOpenPath = () => {
-    setShowPathModal(true);
-  };
+  const handleOpenPath = () => setShowPathModal(true);
 
   const statusStyles: Record<CardStatus, { label: string; variant: string; color: string }> = {
-    idle: { label: "Ready", variant: "bg-accent", color: "text-black" },
-    running: { label: "Playing", variant: "bg-secondary", color: "text-white" },
-    complete: { label: "Finished", variant: "bg-[#43B047]", color: "text-white" },
+    idle:     { label: "Ready",   variant: "bg-accent",    color: "text-black" },
+    running:  { label: "Playing", variant: "bg-secondary", color: "text-white" },
+    complete: { label: "Finished",variant: "bg-[#43B047]", color: "text-white" },
   };
   const ss = statusStyles[status];
 
+  /* ── FIX: compute phase helpers once, used in both card & dialog ── */
+  const getPhaseState = (idx: number) => {
+    if (!cfg) return { isComplete: false, isCurrent: false, prevCount: 0 };
+    const prevCount = cfg.phases.slice(0, idx).reduce((acc, p) => acc + p.activities.length, 0);
+    const count = cfg.phases[idx].activities.length;
+    return {
+      isComplete: progress >= prevCount + count,
+      isCurrent:  progress >= prevCount && progress < prevCount + count,
+      prevCount,
+    };
+  };
+
+  const currentPhaseIdx = cfg?.phases.findIndex((_, idx) => {
+    const { isCurrent } = getPhaseState(idx);
+    return isCurrent;
+  }) ?? -1;
+
   return (
+    // FIX: wrap Dialog around the whole card so DialogTrigger (world map) works correctly
     <Dialog>
       <motion.div
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay, type: "spring", stiffness: 110 }}
-        className="bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] overflow-hidden relative group hover:translate-y-[-4px] transition-all"
+        // FIX: removed `group` from here — it was bleeding into inner group/map hover
+        className="bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] overflow-hidden relative hover:translate-y-[-4px] transition-transform"
       >
-        {/* Top bar */}
-        <div className="h-2 w-full bg-primary" />
+        {/* Top accent bar — colored per disability */}
+        <div className="h-2 w-full" style={{ backgroundColor: gradColor0 }} />
 
-        {/* Floating symbols */}
-        {cfg?.floaters.slice(0, 3).map((el, i) => (
-          <FloatingSymbol key={i} el={el} color={gradColor0} />
-        ))}
+        {/* Floating symbols — clipped inside card, won't spill out */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {cfg?.floaters.slice(0, 3).map((el, i) => (
+            <FloatingSymbol key={i} el={el} color={gradColor0} />
+          ))}
+        </div>
 
-        <div className="p-6 relative z-10 space-y-6">
-          {/* Status badge */}
+        <div className="p-6 relative z-10 space-y-5">
+
+          {/* ── Status badge + delete ── */}
           <div className="flex items-center justify-between">
             <div className={`px-4 py-1 border-2 border-black ${ss.variant} ${ss.color} shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]`}>
               <span className="text-xs font-black uppercase tracking-widest">{ss.label}</span>
@@ -593,33 +610,35 @@ function AssessmentCard({
               onClick={() => {
                 if (confirm(`End learning path for ${childName}?`)) onEndPath();
               }}
-              className="text-primary hover:scale-110 transition-transform"
+              className="text-primary hover:scale-110 transition-transform p-1"
+              title="End Path"
             >
               <XCircle size={20} />
             </button>
           </div>
 
-          {/* Child Info */}
+          {/* ── Child info ── */}
           <div>
-            <h3 className="text-2xl font-black text-black uppercase italic tracking-tighter leading-none">{childName}</h3>
+            {/* FIX: long names were overflowing — added truncate + min-w-0 */}
+            <h3 className="text-2xl font-black text-black uppercase italic tracking-tighter leading-none truncate">{childName}</h3>
             <p className="text-xs font-black text-black/40 mt-1 uppercase tracking-widest">
               Age {age} &middot; {gender}
               {isPending && <span className="ml-2 text-primary">(AI Pending)</span>}
             </p>
           </div>
 
-          {/* Disability Type */}
+          {/* ── Disability type ── */}
           <div className="bg-muted border-2 border-black p-3 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] flex items-center gap-3">
-            <div className="bg-white border-2 border-black p-1.5 shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">
+            <div className="bg-white border-2 border-black p-1.5 shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] flex-shrink-0">
               {cfg?.icon}
             </div>
-            <div>
+            <div className="min-w-0">
               <p className="text-[10px] font-black text-black/40 uppercase tracking-widest leading-none mb-1">Condition</p>
-              <p className="text-sm font-black text-black uppercase">{cfg?.label ?? disability}</p>
+              <p className="text-sm font-black text-black uppercase truncate">{cfg?.label ?? disability}</p>
             </div>
           </div>
 
-          {/* Progress */}
+          {/* ── Progress bar ── */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-black text-black/40 uppercase tracking-widest">Quest Progress</span>
@@ -629,42 +648,44 @@ function AssessmentCard({
             </div>
             <div className="h-4 border-2 border-black bg-muted overflow-hidden shadow-[inset_2px_2px_0px_0px_rgba(0,0,0,0.1)]">
               <motion.div
-                className="h-full bg-secondary border-r-2 border-black"
+                className="h-full border-r-2 border-black"
+                style={{ backgroundColor: gradColor0 }}
                 animate={{ width: `${pct}%` }}
                 transition={{ duration: 0.6 }}
               />
             </div>
           </div>
 
-          {/* World Map (Phases) */}
+          {/* ── World Map (phases grid) — DialogTrigger ── */}
           <DialogTrigger asChild>
-            <div className="space-y-2 cursor-pointer group/map">
+            <div className="space-y-3 cursor-pointer group/map">
               <div className="flex items-center justify-between">
-                <p className="text-[10px] font-black text-black/40 uppercase tracking-widest group-hover/map:text-primary transition-colors">World Map (Click to Expand)</p>
-                <ChevronRight size={10} className="text-black/40 group-hover/map:text-primary group-hover/map:translate-x-1 transition-all" />
+                <p className="text-[10px] font-black text-black/40 uppercase tracking-widest group-hover/map:text-primary transition-colors">
+                  World Map
+                </p>
+                <div className="flex items-center gap-1 text-[10px] font-black text-black/30 group-hover/map:text-primary transition-colors uppercase tracking-widest">
+                  Expand <ChevronRight size={10} className="group-hover/map:translate-x-0.5 transition-transform" />
+                </div>
               </div>
-              <div className="grid grid-cols-6 gap-2">
+              {/* FIX: bottom padding so W-N labels don't clip */}
+              <div className="grid grid-cols-6 gap-2 pb-5">
                 {cfg?.phases.map((phase, idx) => {
-                  const activitiesInPhase = phase.activities.length;
-                  const prevActivities = cfg.phases.slice(0, idx).reduce((acc, p) => acc + p.activities.length, 0);
-                  const isPhaseComplete = progress >= prevActivities + activitiesInPhase;
-                  const isPhaseCurrent = progress >= prevActivities && progress < prevActivities + activitiesInPhase;
-
+                  const { isComplete, isCurrent } = getPhaseState(idx);
                   return (
                     <div
                       key={idx}
                       className={`aspect-square border-2 border-black flex items-center justify-center relative shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-transform group-hover/map:scale-105 ${
-                        isPhaseComplete ? "bg-chart-4" : isPhaseCurrent ? "bg-accent animate-pulse" : "bg-muted"
+                        isComplete ? "bg-chart-4" : isCurrent ? "bg-accent animate-pulse" : "bg-muted"
                       }`}
                       title={`${phase.title}: ${phase.days}`}
                     >
                       <span className="text-sm">{phase.emoji}</span>
-                      {isPhaseComplete && (
+                      {isComplete && (
                         <div className="absolute -top-1 -right-1 bg-white border border-black rounded-full p-0.5 shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">
                           <CheckCircle size={8} className="text-chart-4" />
                         </div>
                       )}
-                      <span className="absolute -bottom-4 text-[7px] font-black text-black/30 uppercase">W-{idx + 1}</span>
+                      <span className="absolute -bottom-4 left-0 right-0 text-center text-[7px] font-black text-black/30 uppercase">W-{idx + 1}</span>
                     </div>
                   );
                 })}
@@ -672,7 +693,7 @@ function AssessmentCard({
             </div>
           </DialogTrigger>
 
-          {/* Dates */}
+          {/* ── Dates ── */}
           <div className="grid grid-cols-2 gap-3">
             <div className="bg-muted border-2 border-black p-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
               <p className="text-[9px] font-black text-black/40 uppercase leading-none mb-1">Started</p>
@@ -684,15 +705,11 @@ function AssessmentCard({
             </div>
           </div>
 
-          {/* Footer Actions */}
-          <div className="pt-2 space-y-3">
+          {/* ── Footer actions ── */}
+          <div className="pt-1 space-y-3">
             {reportUrl && (
-              <Button
-                variant="outline"
-                className="w-full text-xs py-5 uppercase tracking-widest"
-                asChild
-              >
-                <a href={reportUrl} target="_blank">
+              <Button variant="outline" className="w-full text-xs py-5 uppercase tracking-widest" asChild>
+                <a href={reportUrl} target="_blank" rel="noopener noreferrer">
                   <FileText size={14} className="mr-2" />
                   View Scroll
                 </a>
@@ -700,11 +717,8 @@ function AssessmentCard({
             )}
 
             {status === "idle" && (
-              <Button
-                onClick={handleOpenPath}
-                className="w-full py-6 text-sm uppercase italic tracking-wider"
-              >
-                <Play size={14} className="fill-current" />
+              <Button onClick={handleOpenPath} className="w-full py-6 text-sm uppercase italic tracking-wider">
+                <Play size={14} className="fill-current mr-2" />
                 Begin Quest
               </Button>
             )}
@@ -714,7 +728,7 @@ function AssessmentCard({
                 onClick={handleOpenPath}
                 className="w-full py-6 text-sm bg-secondary text-white uppercase italic tracking-wider"
               >
-                <RefreshCw size={14} />
+                <RefreshCw size={14} className="mr-2" />
                 Continue Adventure
               </Button>
             )}
@@ -728,6 +742,7 @@ function AssessmentCard({
         </div>
       </motion.div>
 
+      {/* ── PathGameModal (outside Dialog so z-index doesn't clash) ── */}
       <AnimatePresence>
         {showPathModal && (
           <PathGameModal
@@ -745,13 +760,12 @@ function AssessmentCard({
         )}
       </AnimatePresence>
 
+      {/* ── World Map Dialog ── */}
       <DialogContent className="max-w-2xl border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] p-0 gap-0 overflow-hidden bg-background">
         <DialogHeader className="p-8 bg-primary border-b-4 border-black relative overflow-hidden">
-          {/* Background symbols in header */}
           <div className="absolute top-0 right-0 p-4 opacity-20 text-8xl pointer-events-none grayscale">
             {cfg?.icon}
           </div>
-          
           <DialogTitle className="text-4xl font-black text-white uppercase italic tracking-tighter leading-none mb-2 relative z-10">
             {cfg?.questName}
           </DialogTitle>
@@ -760,33 +774,32 @@ function AssessmentCard({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="p-8 space-y-8 max-h-[70vh] overflow-y-auto custom-scrollbar">
+        <div className="p-8 space-y-8 max-h-[70vh] overflow-y-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+            {/* Left — Mission Log */}
             <div className="space-y-6">
               <h4 className="text-xl font-black text-black uppercase italic tracking-tight border-b-4 border-black pb-2">Mission Log</h4>
               <div className="space-y-4">
                 {cfg?.phases.map((phase, idx) => {
-                  const activitiesInPhase = phase.activities.length;
-                  const prevActivities = cfg.phases.slice(0, idx).reduce((acc, p) => acc + p.activities.length, 0);
-                  const isPhaseComplete = progress >= prevActivities + activitiesInPhase;
-                  const isPhaseCurrent = progress >= prevActivities && progress < prevActivities + activitiesInPhase;
-
+                  const { isComplete, isCurrent } = getPhaseState(idx);
                   return (
-                    <div 
-                      key={idx} 
+                    <div
+                      key={idx}
                       className={`p-4 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex gap-4 transition-all ${
-                        isPhaseCurrent ? "bg-accent -translate-y-1" : isPhaseComplete ? "bg-chart-4 text-white opacity-80" : "bg-white"
+                        isCurrent ? "bg-accent -translate-y-1" : isComplete ? "bg-chart-4 text-white opacity-80" : "bg-white"
                       }`}
                     >
                       <div className="text-3xl flex-shrink-0">{phase.emoji}</div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-2 mb-1">
-                          <p className={`text-sm font-black uppercase truncate ${isPhaseComplete ? "text-white" : "text-black"}`}>
-                            World {idx + 1}: {phase.title}
+                          {/* FIX: long phase titles were overflowing dialog */}
+                          <p className={`text-sm font-black uppercase truncate ${isComplete ? "text-white" : "text-black"}`}>
+                            W{idx + 1}: {phase.title}
                           </p>
-                          {isPhaseComplete && <CheckCircle size={14} />}
+                          {isComplete && <CheckCircle size={14} className="flex-shrink-0" />}
                         </div>
-                        <p className={`text-[10px] font-bold uppercase tracking-widest ${isPhaseComplete ? "text-white/70" : "text-black/40"}`}>
+                        <p className={`text-[10px] font-bold uppercase tracking-widest ${isComplete ? "text-white/70" : "text-black/40"}`}>
                           {phase.days}
                         </p>
                       </div>
@@ -796,48 +809,72 @@ function AssessmentCard({
               </div>
             </div>
 
+            {/* Right — Quest Activities */}
             <div className="space-y-6">
               <h4 className="text-xl font-black text-black uppercase italic tracking-tight border-b-4 border-black pb-2">Quest Activities</h4>
-              <div className="bg-muted border-4 border-black p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] min-h-full">
-                {cfg?.phases.map((phase, idx) => {
-                  const prevActivities = cfg.phases.slice(0, idx).reduce((acc, p) => acc + p.activities.length, 0);
-                  const isPhaseCurrent = progress >= prevActivities && progress < prevActivities + phase.activities.length;
-                  
-                  if (!isPhaseCurrent) return null;
-
-                  return (
-                    <div key={idx} className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-500">
-                      <div className="flex items-center gap-2 mb-4">
-                        <Badge variant="secondary" className="border-2 border-black rounded-none uppercase font-black px-3 py-1">Current World</Badge>
+              <div className="bg-muted border-4 border-black p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] min-h-[200px]">
+                {currentPhaseIdx !== -1 && cfg ? (
+                  (() => {
+                    const phase = cfg.phases[currentPhaseIdx];
+                    return (
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-2 mb-4">
+                          <Badge variant="secondary" className="border-2 border-black rounded-none uppercase font-black px-3 py-1">
+                            Current World
+                          </Badge>
+                        </div>
+                        <p className="text-lg font-black text-black uppercase leading-tight">{phase.title}</p>
+                        <ul className="space-y-3">
+                          {phase.activities.map((act, i) => {
+                            // FIX: highlight already-done activities within current phase
+                            const { prevCount } = getPhaseState(currentPhaseIdx);
+                            const isDone = progress > prevCount + i;
+                            return (
+                              <li key={i} className="flex items-start gap-3 group">
+                                <div className={`w-5 h-5 border-2 border-black flex items-center justify-center flex-shrink-0 mt-0.5 shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] transition-colors ${
+                                  isDone ? "bg-[#43B047] border-[#43B047]" : "bg-white group-hover:bg-primary group-hover:text-white"
+                                }`}>
+                                  {isDone
+                                    ? <CheckCircle size={10} className="text-white" />
+                                    : <span className="text-[10px] font-black">{i + 1}</span>
+                                  }
+                                </div>
+                                <span className={`text-sm font-bold transition-colors ${isDone ? "text-black/40 line-through" : "text-black/70 group-hover:text-black"}`}>
+                                  {act}
+                                </span>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                        <Button
+                          onClick={() =>
+                            router.push(
+                              `/quest?assessmentId=${id}&disability=${encodeURIComponent(disability.toLowerCase())}&phase=${currentPhaseIdx}&activity=${progress}`
+                            )
+                          }
+                          className="w-full mt-6 py-6 text-sm uppercase italic tracking-widest shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-1 active:translate-y-1"
+                        >
+                          Start Activity
+                        </Button>
                       </div>
-                      <p className="text-lg font-black text-black uppercase leading-tight">{phase.title}</p>
-                      <ul className="space-y-3">
-                        {phase.activities.map((act, i) => (
-                          <li key={i} className="flex items-start gap-3 group">
-                            <div className="w-5 h-5 border-2 border-black bg-white flex items-center justify-center flex-shrink-0 mt-0.5 shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] group-hover:bg-primary group-hover:text-white transition-colors">
-                              <span className="text-[10px] font-black">{i + 1}</span>
-                            </div>
-                            <span className="text-sm font-bold text-black/70 group-hover:text-black transition-colors">{act}</span>
-                          </li>
-                        ))}
-                      </ul>
-                      <Button 
-                        onClick={() => router.push(`/quest?assessmentId=${id}&disability=${encodeURIComponent(disability.toLowerCase())}&phase=${idx}&activity=${progress}`)}
-                        className="w-full mt-6 py-6 text-sm uppercase italic tracking-widest shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-1 active:translate-y-1"
-                      >
-                        Start Activity
-                      </Button>
-                    </div>
-                  );
-                })}
-                {!cfg?.phases.some((p, idx) => progress >= cfg.phases.slice(0, idx).reduce((acc, ph) => acc + ph.activities.length, 0) && progress < cfg.phases.slice(0, idx).reduce((acc, ph) => acc + ph.activities.length, 0) + p.activities.length) && (
+                    );
+                  })()
+                ) : (
+                  // FIX: was using a complex .some() expression that was hard to read and could incorrectly show empty state
                   <div className="flex flex-col items-center justify-center py-12 text-center space-y-4">
-                    <div className="text-5xl">🚩</div>
-                    <p className="text-sm font-black text-black uppercase italic">Begin your journey to see today's missions!</p>
+                    <div className="text-5xl">
+                      {status === "complete" ? "🏆" : "🚩"}
+                    </div>
+                    <p className="text-sm font-black text-black uppercase italic">
+                      {status === "complete"
+                        ? "All quests cleared! Amazing work!"
+                        : "Begin your journey to see today's missions!"}
+                    </p>
                   </div>
                 )}
               </div>
             </div>
+
           </div>
         </div>
       </DialogContent>
@@ -869,7 +906,7 @@ function LevelTransition({ heroName, onComplete }: { heroName: string; onComplet
           </div>
           <h2 className="text-white text-2xl font-black uppercase tracking-widest italic">Ready, {heroName}?</h2>
         </div>
-        
+
         <div className="relative h-24 flex items-center justify-center overflow-hidden w-64">
           <motion.h1
             className="text-8xl font-black text-accent uppercase italic tracking-tighter absolute"
@@ -882,7 +919,7 @@ function LevelTransition({ heroName, onComplete }: { heroName: string; onComplet
           </motion.h1>
         </div>
       </motion.div>
-      
+
       {/* Screen Flash */}
       <motion.div
         className="absolute inset-0 bg-white pointer-events-none"
@@ -918,7 +955,6 @@ export default function PersonalisedPathPage() {
       .catch(() => setLoading(false));
   }, []);
 
-  // Build unified card list — each assessment gets one card with a disability
   const allCards = assessments.flatMap((a) => {
     const hasDis = Array.isArray(a.disabilities) && a.disabilities.length > 0;
     if (hasDis) {
@@ -973,17 +1009,18 @@ export default function PersonalisedPathPage() {
 
       <AnimatePresence>
         {isStarting && (
-          <LevelTransition 
-            heroName={startingHero} 
-            onComplete={() => setIsStarting(false)} 
+          <LevelTransition
+            heroName={startingHero}
+            onComplete={() => setIsStarting(false)}
           />
         )}
       </AnimatePresence>
 
       {/* ─ Main Content ─ */}
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden bg-background">
+
         {/* ─ Page Header ─ */}
-        <div className="px-8 pt-10 pb-4 flex-shrink-0 bg-background">
+        <div className="px-8 pt-10 pb-4 flex-shrink-0 bg-background border-b-4 border-black">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-4xl font-black text-black uppercase italic tracking-tighter">Adventure Roadmap</h1>
@@ -991,31 +1028,36 @@ export default function PersonalisedPathPage() {
                 {totalCards} {totalCards === 1 ? "Hero" : "Heroes"} on a Mission
               </p>
             </div>
-            <div className="flex items-center gap-3">
-              <LanguageSwitcher />
-            </div>
+            <LanguageSwitcher />
           </div>
-          
-          <div className="flex items-center gap-4 flex-wrap mt-8">
-            <div className="flex items-center gap-3 bg-white border-4 border-black px-6 py-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex-1 min-w-[300px]">
-              <Search size={18} className="text-black" />
+
+          {/* Search + Filters */}
+          <div className="flex items-start gap-4 flex-wrap mt-6">
+            <div className="flex items-center gap-3 bg-white border-4 border-black px-5 py-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] w-full sm:w-72 flex-shrink-0">
+              <Search size={16} className="text-black/50 flex-shrink-0" />
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search Hero or Quest..."
+                placeholder="Search hero or quest..."
                 className="w-full bg-transparent text-sm font-black uppercase outline-none placeholder:text-black/20"
               />
+              {/* FIX: clear button when search has text */}
+              {search && (
+                <button onClick={() => setSearch("")} className="text-black/30 hover:text-primary transition-colors">
+                  <XCircle size={14} />
+                </button>
+              )}
             </div>
-            
-            <div className="flex gap-3 flex-wrap">
+
+            <div className="flex gap-2 flex-wrap">
               {visibleFilters.map((f) => (
                 <button
                   key={f}
                   onClick={() => setFilter(f)}
-                  className={`px-6 py-2 border-4 border-black text-xs font-black uppercase tracking-widest transition-all ${
+                  className={`px-5 py-2 border-4 border-black text-xs font-black uppercase tracking-widest transition-all ${
                     filter === f
-                      ? "bg-accent text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] translate-y-[-2px]"
-                      : "bg-white text-black hover:bg-muted active:translate-y-[2px] active:shadow-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+                      ? "bg-accent text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] -translate-y-0.5"
+                      : "bg-white text-black hover:bg-muted active:translate-y-0.5 active:shadow-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
                   }`}
                 >
                   {f === "All" ? "All Worlds" : f}
@@ -1025,8 +1067,8 @@ export default function PersonalisedPathPage() {
           </div>
         </div>
 
-        {/* Content area */}
-        <div className="flex-1 overflow-y-auto px-8 pb-28 pt-6">
+        {/* ─ Card Grid ─ */}
+        <div className="flex-1 overflow-y-auto px-8 pb-16 pt-8">
           <AnimatePresence mode="wait">
             {loading ? (
               <motion.div
@@ -1041,6 +1083,7 @@ export default function PersonalisedPathPage() {
                 </div>
                 <p className="text-xl font-black text-black uppercase italic tracking-widest">Loading World...</p>
               </motion.div>
+
             ) : totalCards === 0 ? (
               <motion.div
                 key="empty"
@@ -1055,6 +1098,26 @@ export default function PersonalisedPathPage() {
                   Finish an assessment to unlock your personalized adventure roadmap!
                 </p>
               </motion.div>
+
+            ) : filteredCards.length === 0 ? (
+              // FIX: was missing a "no results for filter/search" empty state
+              <motion.div
+                key="no-results"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="flex flex-col items-center justify-center py-16 gap-4"
+              >
+                <div className="text-6xl">🔍</div>
+                <p className="text-lg font-black text-black uppercase italic">No heroes found!</p>
+                <button
+                  onClick={() => { setSearch(""); setFilter("All"); }}
+                  className="text-xs font-black uppercase tracking-widest text-primary underline hover:no-underline"
+                >
+                  Clear filters
+                </button>
+              </motion.div>
+
             ) : (
               <motion.div
                 key="list"
@@ -1081,8 +1144,8 @@ export default function PersonalisedPathPage() {
           </AnimatePresence>
         </div>
 
-        {/* Footer */}
-        <footer className="h-12 bg-white border-t-4 border-black px-8 flex items-center justify-between">
+        {/* ─ Footer ─ */}
+        <footer className="h-12 bg-white border-t-4 border-black px-8 flex items-center justify-between flex-shrink-0">
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 bg-[#43B047] border border-black animate-pulse" />
             <span className="text-xs font-black uppercase tracking-widest">System Online</span>

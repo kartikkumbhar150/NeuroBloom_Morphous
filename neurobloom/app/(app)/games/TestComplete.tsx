@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Trophy, Star, Download, Home, Sparkles } from 'lucide-react';
+import { Trophy, Star, Home, Sparkles } from 'lucide-react';
 import { StudentData } from './StudentForm';
 import { useEffect, useState } from "react";
 import { useVideo } from "@/context/VideoContext";
@@ -143,9 +143,7 @@ export function TestComplete({ studentData, onReturnHome }: TestCompleteProps) {
             </p>
           </motion.div>
 
-          <motion.div
-            className="flex flex-col sm:flex-row gap-6 justify-center"
-          >
+          <motion.div className="flex justify-center">
             <Button
               size="lg"
               onClick={onReturnHome}
@@ -153,15 +151,6 @@ export function TestComplete({ studentData, onReturnHome }: TestCompleteProps) {
             >
               <Home className="w-6 h-6" />
               {t('tcomp_return_home')}
-            </Button>
-
-            <Button
-              variant="outline"
-              size="lg"
-              className="text-xl py-8 px-10 h-auto"
-            >
-              <Download className="w-6 h-6" />
-              {t('tcomp_certificate')}
             </Button>
           </motion.div>
         </motion.div>

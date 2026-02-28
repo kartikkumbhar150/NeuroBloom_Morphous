@@ -114,8 +114,10 @@ export default function AssessmentsPage() {
                     </tr>
                   ) : (
                     data.map((item, idx) => (
-                      <motion.tr 
-                        key={item.child_id}
+                      <motion.tr
+                        // ✅ FIX: child_id can be undefined or duplicated (same child, multiple reports)
+                        // Combining with idx guarantees a unique key every time
+                        key={`${item.child_id ?? "row"}-${idx}`}
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: idx * 0.05 }}
@@ -146,7 +148,7 @@ export default function AssessmentsPage() {
                               className="text-[10px] h-auto py-2 px-4 uppercase tracking-widest"
                               asChild
                             >
-                              <a href={item.report_url} download target="_blank">
+                              <a href={item.report_url} download target="_blank" rel="noopener noreferrer">
                                 <FileDown size={14} className="mr-2" />
                                 {t("assess_download_pdf")}
                               </a>

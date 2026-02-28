@@ -22,6 +22,9 @@ export function PermissionsScreen({ onComplete, onBack }: PermissionsScreenProps
   const [requestingCamera, setRequestingCamera] = useState(false);
   const [requestingMic, setRequestingMic] = useState(false);
   const [requestingBt, setRequestingBt] = useState(false);
+
+  // ✅ NEW: MindWave Mobile toggle state
+  const [mindwaveEnabled, setMindwaveEnabled] = useState(false);
   
   const { startRecording } = useVideo();
 
@@ -60,7 +63,9 @@ export function PermissionsScreen({ onComplete, onBack }: PermissionsScreenProps
     }
   };
 
+  // ✅ Connect only works when toggle is ON
   const requestBluetoothPermission = () => {
+    if (!mindwaveEnabled) return; // Guard: sirf tab chalega jab toggle ON ho
     setRequestingBt(true);
     setTimeout(() => {
       setBtPermission('granted');
@@ -68,22 +73,28 @@ export function PermissionsScreen({ onComplete, onBack }: PermissionsScreenProps
     }, 1500);
   };
 
-  const canProceed = cameraPermission === 'granted' && micPermission === 'granted' && btPermission === 'granted';
+  // ✅ Toggle OFF karne par permission bhi reset ho jaayegi
+  const handleMindwaveToggle = () => {
+    const newState = !mindwaveEnabled;
+    setMindwaveEnabled(newState);
+    if (!newState) {
+      setBtPermission('pending');
+      setRequestingBt(false);
+    }
+  };
+
+  // ✅ BT sirf tab required hai jab toggle ON ho
+  const canProceed = cameraPermission === 'granted' && micPermission === 'granted' && 
+    (!mindwaveEnabled || btPermission === 'granted');
 
   return (
-    // FIX 1: Changed `h-screen overflow-hidden` → `min-h-screen overflow-x-hidden`
-    // so the page can grow taller than the viewport on small screens.
-    // Added `overflow-y-auto` to enable native scroll.
     <div className="min-h-screen w-full bg-[#5C94FC] flex items-start md:items-center justify-center p-4 sm:p-6 overflow-x-hidden overflow-y-auto font-sans relative">
       {/* Background Clouds */}
       <div className="absolute top-20 left-10 w-32 h-10 bg-white rounded-full opacity-60 blur-sm pointer-events-none" />
       <div className="absolute top-40 right-20 w-40 h-12 bg-white rounded-full opacity-40 blur-md pointer-events-none" />
       
-      {/* FIX 2: Grass floor — keep decorative but don't let it overlap content.
-          Use `fixed` so it stays at the bottom of the viewport, not the page. */}
       <div className="fixed bottom-0 left-0 right-0 h-20 sm:h-32 bg-[#43B047] border-t-8 border-black pointer-events-none z-0" />
 
-      {/* FIX 3: Added `py-24` bottom padding so content isn't hidden behind the grass */}
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -120,8 +131,6 @@ export function PermissionsScreen({ onComplete, onBack }: PermissionsScreenProps
               </p>
             </div>
 
-            {/* FIX 4: `grid-cols-1` on mobile, `md:grid-cols-3` on desktop — already done,
-                but confirmed gap is responsive too. */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-8 sm:mb-10">
               
               {/* Camera */}
@@ -196,26 +205,62 @@ export function PermissionsScreen({ onComplete, onBack }: PermissionsScreenProps
                 </div>
               </div>
 
-              {/* Neural Link (Bluetooth) */}
+              {/* ✅ Neural Link (MindWave Mobile) — with Toggle */}
               <div className={`p-6 sm:p-8 border-4 border-black transition-all shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] ${
-                btPermission === 'granted' ? 'bg-[#43B047]/10' : 'bg-white'
+                btPermission === 'granted' ? 'bg-[#43B047]/10' : 
+                !mindwaveEnabled ? 'bg-white opacity-70' : 'bg-white'
               }`}>
                 <div className="flex flex-col items-center text-center space-y-6">
+
+                  {/* Icon */}
                   <div className={`w-16 h-16 border-4 border-black flex items-center justify-center transition-colors shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] ${
-                    btPermission === 'granted' ? 'bg-[#43B047]' : 'bg-muted'
+                    btPermission === 'granted' ? 'bg-[#43B047]' : 
+                    mindwaveEnabled ? 'bg-muted' : 'bg-muted/50'
                   }`}>
-                    <Bluetooth size={28} className={btPermission === 'pending' ? 'text-black/40' : 'text-white'} />
+                    <Bluetooth size={28} className={btPermission === 'granted' ? 'text-white' : mindwaveEnabled ? 'text-black/60' : 'text-black/20'} />
                   </div>
+
                   <div>
                     <h3 className="text-lg font-black text-black uppercase italic tracking-tighter">{t('ps_neural')}</h3>
                     <p className="text-[10px] text-black/40 mt-2 font-black uppercase tracking-widest leading-relaxed">{t('ps_neural_desc')}</p>
                   </div>
 
+                  {/* ✅ MindWave Toggle */}
+                  <div className="w-full flex items-center justify-between px-1">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-black/60">
+                      MindWave Mobile
+                    </span>
+                    <button
+                      onClick={handleMindwaveToggle}
+                      className={`relative w-14 h-7 border-2 border-black transition-colors shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] focus:outline-none ${
+                        mindwaveEnabled ? 'bg-[#43B047]' : 'bg-black/10'
+                      }`}
+                      aria-label="Toggle MindWave Mobile"
+                    >
+                      <motion.div
+                        className="absolute top-0.5 w-5 h-5 bg-white border-2 border-black"
+                        animate={{ left: mindwaveEnabled ? '28px' : '2px' }}
+                        transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                      />
+                      <span className={`absolute inset-0 flex items-center text-[8px] font-black uppercase tracking-widest select-none ${
+                        mindwaveEnabled ? 'justify-start pl-1.5 text-white' : 'justify-end pr-1.5 text-black/40'
+                      }`}>
+                        {mindwaveEnabled ? 'ON' : 'OFF'}
+                      </span>
+                    </button>
+                  </div>
+
+                  {/* Connect Button — disabled when toggle is OFF */}
                   {btPermission === 'pending' ? (
                     <button 
                       onClick={requestBluetoothPermission}
-                      disabled={requestingBt}
-                      className="w-full py-3 bg-white border-2 border-black text-[10px] font-black uppercase tracking-widest hover:bg-muted active:translate-y-1 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+                      disabled={requestingBt || !mindwaveEnabled}
+                      title={!mindwaveEnabled ? 'MindWave toggle ON karo pehle' : ''}
+                      className={`w-full py-3 border-2 border-black text-[10px] font-black uppercase tracking-widest transition-all ${
+                        mindwaveEnabled
+                          ? 'bg-white hover:bg-muted active:translate-y-1 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] cursor-pointer'
+                          : 'bg-black/5 text-black/30 cursor-not-allowed shadow-none'
+                      }`}
                     >
                       {requestingBt ? t('ps_scanning') : t('ps_pair_device')}
                     </button>
@@ -224,6 +269,7 @@ export function PermissionsScreen({ onComplete, onBack }: PermissionsScreenProps
                       <CheckCircle2 size={18} /> {t('ps_linked')}
                     </div>
                   )}
+
                 </div>
               </div>
 
