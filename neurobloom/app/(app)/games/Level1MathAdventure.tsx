@@ -21,9 +21,15 @@ export function Level1MathAdventure({ onComplete, onProgress }: Level1Props) {
   const [selectedCoins, setSelectedCoins] = useState<number[]>([]);
 
   const questionStartTime = useRef<number>(Date.now());
+  // Ref to scroll back to top when game changes
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     questionStartTime.current = Date.now();
+    // Scroll to top of the game container on each new game
+    if (containerRef.current) {
+      containerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   }, [currentGame]);
 
 
@@ -232,14 +238,14 @@ export function Level1MathAdventure({ onComplete, onProgress }: Level1Props) {
             whileHover={{ scale: 1.1, rotate: 5 }}
             whileTap={{ scale: 0.9 }}
             onClick={() => setSelectedCoins([...selectedCoins, coin])}
-            className="bg-accent border-4 border-black w-20 h-20 flex items-center justify-center rounded-full shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-2xl font-black active:translate-y-1 active:shadow-none"
+            className="bg-accent border-4 border-black w-20 h-20 flex items-center justify-center rounded-full shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-2xl font-black active:translate-y-1 active:shadow-none mx-auto"
           >
             ₹{coin}
           </motion.button>
         ))}
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-4 justify-center">
+      <div className="flex flex-col sm:flex-row gap-4 justify-center pb-4">
         <Button
           size="lg"
           onClick={() => {
@@ -296,13 +302,20 @@ export function Level1MathAdventure({ onComplete, onProgress }: Level1Props) {
   ];
 
   return (
-    <div className="relative max-w-4xl mx-auto px-4">
+    // Key change: make the outer wrapper scrollable on mobile
+    <div
+      ref={containerRef}
+      className="relative max-w-4xl mx-auto px-4 overflow-y-auto overscroll-contain"
+      style={{ WebkitOverflowScrolling: 'touch' }}
+    >
       <motion.div
         key={currentGame}
         initial={{ opacity: 0, x: 50 }}
         animate={{ opacity: 1, x: 0 }}
         exit={{ opacity: 0, x: -50 }}
         transition={{ duration: 0.3 }}
+        // Add bottom padding so content isn't clipped behind nav bars on mobile
+        className="pb-8"
       >
         {games[currentGame]}
       </motion.div>

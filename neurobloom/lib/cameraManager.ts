@@ -4,7 +4,7 @@ export async function getCameraStream() {
   if (!globalStream) {
     globalStream = await navigator.mediaDevices.getUserMedia({
       video: true,
-      audio: true,
+      audio: false,
     });
   }
   return globalStream;

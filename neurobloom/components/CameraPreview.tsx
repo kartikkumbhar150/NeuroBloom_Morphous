@@ -11,7 +11,6 @@ export function CameraPreview() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [videoReady, setVideoReady] = useState(false);
   
-  // Only run face detection when video is ready
   const { alert, faceCount, clearAlert } = useFaceDetection(
     videoReady ? videoRef.current : null,
     isRecording
@@ -36,7 +35,6 @@ export function CameraPreview() {
           videoRef.current.srcObject = stream;
           console.log("✅ Stream attached to video element");
           
-          // Wait for video to be ready
           videoRef.current.onloadedmetadata = () => {
             if (active && !hasSetReady) {
               console.log("✅ Video metadata loaded");
@@ -47,7 +45,6 @@ export function CameraPreview() {
             }
           };
 
-          // Set a timeout in case onloadedmetadata doesn't fire
           setTimeout(() => {
             if (active && !hasSetReady) {
               console.log("⚠️ Forcing video ready after timeout");
@@ -88,16 +85,15 @@ export function CameraPreview() {
 
       {/* Camera Feed */}
       <div className="hidden sm:flex fixed bottom-3 right-3 z-[9999] flex-col items-end gap-1.5">
-        {/* Camera feed */}
         <div className="w-64 h-44 rounded-lg overflow-hidden border-0 border-white/20 shadow-2xl bg-black">
           <video
             ref={videoRef}
             playsInline
+            muted
             className="w-full h-full object-cover scale-x-[-1]"
           />
         </div>
 
-        {/* Face count indicator */}
         {videoReady && faceCount > 0 && (
           <div className="bg-green-500/80 text-white text-xs font-semibold px-2.5 py-1 rounded-full">
             {faceCount === 1 ? "✓ 1 face detected" : `⚠️ ${faceCount} faces`}

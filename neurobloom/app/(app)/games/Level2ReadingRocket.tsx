@@ -1,283 +1,260 @@
 ﻿"use client";
 
-import { useState, useRef, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Check, X } from "lucide-react";
+import { useState } from 'react';
+import { motion } from "framer-motion";
+import { Mic, Square } from 'lucide-react';
+import { useRef } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
+
 
 interface Level2Props {
   onComplete: () => void;
   onProgress: (gameIndex: number) => void;
-  phase?: number;
 }
 
-const TOTAL_GAMES = 5;
-const BG = "#049CD8";
+// Inline spinner component
+function ButtonSpinner() {
+  return (
+    <motion.div
+      animate={{ rotate: 360 }}
+      transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }}
+      className="w-8 h-8 border-4 border-white border-t-transparent rounded-full"
+    />
+  );
+}
 
-export function Level2ReadingRocket({ onComplete, onProgress, phase = 0 }: Level2Props) {
+export function Level2ReadingRocket({ onComplete, onProgress }: Level2Props) {
   const { t } = useTranslation();
   const [currentGame, setCurrentGame] = useState(0);
-  const [feedback, setFeedback] = useState<"correct" | "incorrect" | null>(null);
-  const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
-  const [tappedLetter, setTappedLetter] = useState<number | null>(null);
-  const questionStartTime = useRef(Date.now());
+  const [isRecording, setIsRecording] = useState(false);
+  const [hasRecorded, setHasRecorded] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
-  useEffect(() => {
-    questionStartTime.current = Date.now();
-    setTappedLetter(null);
-  }, [currentGame]);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunks = useRef<Blob[]>([]);
 
-  const handleAnswer = async (isCorrect: boolean, answerIndex?: number) => {
-    if (feedback) return;
-    setFeedback(isCorrect ? "correct" : "incorrect");
-    if (answerIndex !== undefined) setSelectedAnswer(answerIndex);
+  const startRecording = async () => {
+    if (isRecording) return;
 
-    const score = isCorrect ? 1 : 0;
-    const timeTaken = Math.floor((Date.now() - questionStartTime.current) / 1000);
-    const sessionId = localStorage.getItem("sessionId");
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream, { mimeType: "audio/webm" });
 
-    const payloadMap: Record<number, object> = {
-      0: { test2_q1_score: score, test2_q1_time: timeTaken },
-      1: { test2_q2_score: score, test2_q2_time: timeTaken },
-      2: { test2_q3_score: score, test2_q3_time: timeTaken },
-      3: { test2_q4_score: score, test2_q4_time: timeTaken },
-      4: { test2_q5_score: score, test2_q5_time: timeTaken },
-    };
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunks.current = [];
 
-    await fetch("/api/session/save", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ sessionId, payload: payloadMap[currentGame] }),
-    });
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) audioChunks.current.push(e.data);
+      };
 
-    setTimeout(() => {
-      setFeedback(null);
-      setSelectedAnswer(null);
-      if (currentGame < TOTAL_GAMES - 1) {
-        setCurrentGame((g) => g + 1);
-        onProgress(currentGame + 1);
-      } else {
-        onComplete();
-      }
-    }, 1500);
+      mediaRecorder.onstop = async () => {
+        setIsSaving(true);
+        const audioBlob = new Blob(audioChunks.current, { type: "audio/webm" });
+
+        const formData = new FormData();
+        formData.append("file", audioBlob, "reading.webm");
+
+        try {
+          const upload = await fetch("/api/upload", {
+            method: "POST",
+            body: formData
+          });
+
+          const uploadRes = await upload.json();
+          const url = uploadRes.url;
+
+          if (!url) {
+            console.error("Upload failed:", uploadRes.error);
+            setIsSaving(false);
+            setIsRecording(false);
+            return;
+          }
+
+          const sessionId = localStorage.getItem("sessionId");
+          await fetch("/api/session/save", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              sessionId,
+              payload: currentGame === 0
+                ? { test2_audio1: url }
+                : { test2_audio2: url }
+            })
+          });
+
+          setHasRecorded(true);
+        } catch (error) {
+          console.error("Process failed:", error);
+        } finally {
+          mediaRecorderRef.current?.stream.getTracks().forEach(t => t.stop());
+          setIsRecording(false);
+          setIsSaving(false);
+        }
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+    } catch (err) {
+      console.error("Error accessing microphone:", err);
+    }
   };
 
-  const OptionBtn = ({
-    label,
-    index,
-    correct,
-  }: {
-    label: string;
-    index: number;
-    correct: boolean;
-  }) => (
-    <button
-      onClick={() => handleAnswer(correct, index)}
-      disabled={feedback !== null}
-      className={`p-5 border-4 border-black text-xl font-black uppercase tracking-tight shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-y-1 transition-all ${
-        selectedAnswer === index
-          ? feedback === "correct"
-            ? "bg-[#43B047] text-white"
-            : "bg-[#E52521] text-white"
-          : "bg-white hover:bg-[#FBD000]"
-      }`}
+  const finishRecording = () => {
+    if (!mediaRecorderRef.current) return;
+    mediaRecorderRef.current.stop();
+  };
+
+  const handleNext = () => {
+    if (currentGame < 1) {
+      setCurrentGame(currentGame + 1);
+      onProgress(currentGame + 1);
+      setHasRecorded(false);
+    } else {
+      onComplete();
+    }
+  };
+
+  // Shared record/stop button used in both games
+  const RecordButton = () => (
+    <motion.button
+      whileHover={!isSaving ? { scale: 1.05, y: -4 } : {}}
+      whileTap={!isSaving ? { scale: 0.95, y: 0 } : {}}
+      onClick={isRecording ? finishRecording : startRecording}
+      disabled={isSaving}
+      className={`relative ${
+        isSaving
+          ? 'bg-secondary opacity-80 cursor-not-allowed'
+          : isRecording
+          ? 'bg-primary'
+          : 'bg-secondary'
+      } text-white px-12 py-8 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] active:shadow-none transition-all`}
     >
-      {label}
-    </button>
-  );
+      {isSaving ? (
+        // Saving / uploading state — show spinner inside button
+        <div className="flex items-center gap-4">
+          <ButtonSpinner />
+          <span className="text-2xl font-black uppercase tracking-wide">Saving...</span>
+        </div>
+      ) : isRecording ? (
+        <div className="flex items-center gap-4">
+          <motion.div
+            animate={{ scale: [1, 1.2, 1] }}
+            transition={{ duration: 0.5, repeat: Infinity }}
+          >
+            <Square className="w-10 h-10 fill-white" />
+          </motion.div>
+          <span className="text-2xl font-black uppercase tracking-wide">{t('game_r1_btn_stop')}</span>
+        </div>
+      ) : (
+        <div className="flex items-center gap-4">
+          <Mic className="w-10 h-10" />
+          <span className="text-2xl font-black uppercase tracking-wide">{t('game_r1_btn_start')}</span>
+        </div>
+      )}
 
-  const Header = ({ title, sub }: { title: string; sub: string }) => (
-    <div className="w-full border-b-4 border-black px-6 py-4 mb-6 flex-shrink-0" style={{ background: BG }}>
-      <p className="text-xs font-black uppercase tracking-widest text-white/70">LEVEL 2  READING ROCKET</p>
-      <h2 className="text-2xl font-black uppercase text-white tracking-tight">{title}</h2>
-      <p className="text-sm font-bold text-white/80 mt-0.5">{sub}</p>
-    </div>
+      {isRecording && !isSaving && (
+        <motion.div
+          className="absolute inset-0 border-4 border-white"
+          animate={{ scale: [1, 1.1, 1], opacity: [0.5, 0, 0.5] }}
+          transition={{ duration: 1, repeat: Infinity }}
+        />
+      )}
+    </motion.button>
   );
-
-  const progressPct = Math.round(((currentGame + 1) / TOTAL_GAMES) * 100);
 
   const games = [
-    /* GAME 1  Rhyme Hunter */
-    <div key="rhyme" className="flex flex-col items-center text-center px-4 pb-6 w-full">
-      <Header title=" Rhyme Hunter" sub="Listen to the sound at the end!" />
-      <div className="bg-white border-4 border-black p-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] mb-6 max-w-sm w-full">
-        <p className="text-sm font-black uppercase text-black/50 mb-3 tracking-widest">Which word rhymes with</p>
-        <div className="border-4 border-black px-8 py-4 inline-block shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]" style={{ background: BG }}>
-          <span className="text-5xl font-black text-white uppercase tracking-widest">STAR </span>
-        </div>
-      </div>
-      <div className="grid grid-cols-2 gap-4 max-w-sm w-full">
-        <OptionBtn label="CAR " index={0} correct={true} />
-        <OptionBtn label="DOG " index={1} correct={false} />
-        <OptionBtn label="HAT " index={2} correct={false} />
-        <OptionBtn label="BUS " index={3} correct={false} />
-      </div>
-    </div>,
+    // Reading 1
+    <div key="reading1" className="text-center max-w-2xl mx-auto px-4">
+      <h2 className="text-4xl font-black text-black mb-6 uppercase tracking-tight">
+        {t('game_r1_title1')}
+      </h2>
 
-    /* GAME 2  Odd Letter Out */
-    <div key="odd-letter" className="flex flex-col items-center text-center px-4 pb-6 w-full">
-      <Header title=" Odd Letter Out" sub="Tap the letter that looks different!" />
-      <div className="bg-white border-4 border-black p-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] mb-6 max-w-sm w-full">
-        <p className="text-sm font-black uppercase text-black/50 mb-4 tracking-widest">
-          Which letter is the <span className="text-[#E52521]">odd one out?</span>
-        </p>
-        <div className="flex justify-center gap-4 flex-wrap">
-          {["b", "b", "d", "b"].map((letter, idx) => (
-            <button
-              key={idx}
-              onClick={() => {
-                if (feedback) return;
-                setTappedLetter(idx);
-                handleAnswer(idx === 2, idx);
-              }}
-              disabled={feedback !== null}
-              className={`w-20 h-20 border-4 border-black text-5xl font-black transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-y-1 ${
-                tappedLetter === idx
-                  ? feedback === "correct" ? "bg-[#43B047] text-white" : "bg-[#E52521] text-white"
-                  : "bg-white hover:bg-[#FBD000]"
-              }`}
-            >
-              {letter}
-            </button>
-          ))}
-        </div>
-      </div>
-      <div className="bg-[#FBD000] border-4 border-black px-6 py-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] max-w-xs">
-        <p className="font-black uppercase text-sm text-black">Tip: look at which way the bump faces!</p>
-      </div>
-    </div>,
+      <motion.div
+        animate={{ y: [0, -20, 0] }}
+        transition={{ duration: 1, repeat: Infinity }}
+        className="text-8xl mb-8 drop-shadow-lg"
+      >
+        🚀
+      </motion.div>
 
-    /* GAME 3  Missing Word */
-    <div key="missing-word" className="flex flex-col items-center text-center px-4 pb-6 w-full">
-      <Header title=" Missing Word" sub="Complete the sentence!" />
-      <div className="bg-white border-4 border-black p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] mb-6 max-w-sm w-full">
-        <p className="text-sm font-black uppercase text-black/50 mb-4 tracking-widest">Fill in the blank</p>
-        <p className="text-3xl font-black text-black leading-snug">
-           The cat sat on the{" "}
-          <span className="inline-block border-b-4 border-black px-4 text-[#E52521]">___</span>
+      <div className="bg-white border-4 border-black p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] mb-8">
+        <p className="text-3xl font-black leading-tight text-black text-left">
+          {t('game_r1_text1')}
         </p>
       </div>
-      <div className="grid grid-cols-2 gap-4 max-w-sm w-full">
-        <OptionBtn label="MAT " index={0} correct={true} />
-        <OptionBtn label="SKY " index={1} correct={false} />
-        <OptionBtn label="CAR " index={2} correct={false} />
-        <OptionBtn label="BLUE " index={3} correct={false} />
-      </div>
+
+      <p className="text-xl font-black text-primary mb-8 uppercase tracking-widest">
+        {!hasRecorded ? t('game_r1_instr1') : t('game_r1_success1')}
+      </p>
+
+      {!hasRecorded ? (
+        <RecordButton />
+      ) : (
+        <motion.button
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          whileHover={{ scale: 1.05, y: -4 }}
+          whileTap={{ scale: 0.95, y: 0 }}
+          onClick={handleNext}
+          className="bg-accent border-4 border-black text-black text-2xl font-black px-12 py-8 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] uppercase"
+        >
+          {t('game_r1_btn_next')}
+        </motion.button>
+      )}
     </div>,
 
-    /* GAME 4  Picture-Word Match */
-    <div key="picture-match" className="flex flex-col items-center text-center px-4 pb-6 w-full">
-      <Header title=" Picture Match" sub="Match the word to the picture!" />
-      <div className="bg-white border-4 border-black p-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] mb-6 max-w-xs w-full flex flex-col items-center">
-        <p className="text-sm font-black uppercase text-black/50 mb-3 tracking-widest">Which word matches this?</p>
-        <div className="text-[7rem] leading-none select-none"></div>
-      </div>
-      <div className="grid grid-cols-2 gap-4 max-w-sm w-full">
-        <OptionBtn label="APPLE" index={0} correct={true} />
-        <OptionBtn label="ORANGE" index={1} correct={false} />
-        <OptionBtn label="HOUSE" index={2} correct={false} />
-        <OptionBtn label="BALL" index={3} correct={false} />
-      </div>
-    </div>,
+    // Reading 2
+    <div key="reading2" className="text-center max-w-2xl mx-auto px-4">
+      <h2 className="text-4xl font-black text-black mb-6 uppercase tracking-tight">
+        {t('game_r1_title2')}
+      </h2>
 
-    /* GAME 5  Word Sort */
-    <div key="word-sort" className="flex flex-col items-center text-center px-4 pb-6 w-full">
-      <Header title=" Word Sort" sub="Sort the word into the right group!" />
-      <div className="bg-white border-4 border-black p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] mb-6 max-w-sm w-full">
-        <p className="text-sm font-black uppercase text-black/50 mb-4 tracking-widest">Is this a FRUIT or an ANIMAL?</p>
-        <div className="border-4 border-black px-8 py-4 inline-block shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]" style={{ background: BG }}>
-          <span className="text-5xl font-black text-white uppercase tracking-widest"> LION</span>
-        </div>
+      <motion.div
+        animate={{ rotate: [0, 360] }}
+        transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
+        className="text-8xl mb-8 drop-shadow-lg"
+      >
+        🌍
+      </motion.div>
+
+      <div className="bg-white border-4 border-black p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] mb-8">
+        <p className="text-3xl font-black leading-tight text-black">
+          {t('game_r1_text2')}
+        </p>
       </div>
-      <div className="grid grid-cols-2 gap-6 max-w-sm w-full">
-        <button
-          onClick={() => handleAnswer(false, 0)}
-          disabled={feedback !== null}
-          className={`py-8 text-3xl font-black uppercase border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-y-1 transition-all ${
-            selectedAnswer === 0
-              ? feedback === "correct" ? "bg-[#43B047] text-white" : "bg-[#E52521] text-white"
-              : "bg-white hover:bg-[#FBD000]"
-          }`}
+
+      <p className="text-xl font-black text-primary mb-8 uppercase tracking-widest">
+        {!hasRecorded ? t('game_r1_instr2') : t('game_r1_success2')}
+      </p>
+
+      {!hasRecorded ? (
+        <RecordButton />
+      ) : (
+        <motion.button
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          whileHover={{ scale: 1.05, y: -4 }}
+          whileTap={{ scale: 0.95, y: 0 }}
+          onClick={handleNext}
+          className="bg-accent border-4 border-black text-black text-2xl font-black px-12 py-8 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] uppercase"
         >
-           FRUIT
-        </button>
-        <button
-          onClick={() => handleAnswer(true, 1)}
-          disabled={feedback !== null}
-          className={`py-8 text-3xl font-black uppercase border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-y-1 transition-all ${
-            selectedAnswer === 1
-              ? feedback === "correct" ? "bg-[#43B047] text-white" : "bg-[#E52521] text-white"
-              : "bg-white hover:bg-[#FBD000]"
-          }`}
-        >
-           ANIMAL
-        </button>
-      </div>
+          {t('game_r1_btn_complete')}
+        </motion.button>
+      )}
     </div>,
   ];
 
   return (
-    <div className="relative h-full flex flex-col overflow-hidden">
-      {/* Progress bar */}
-      <div className="h-3 bg-black/10 border-b-2 border-black flex-shrink-0">
-        <div
-          className="h-full bg-[#FBD000] border-r-2 border-black transition-all duration-500"
-          style={{ width: `${progressPct}%` }}
-        />
-      </div>
-
-      {/* Score chip */}
-      <div className="flex justify-end px-4 pt-2 flex-shrink-0">
-        <div className="bg-white border-2 border-black px-3 py-1 text-xs font-black uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-          {currentGame + 1} / {TOTAL_GAMES}
-        </div>
-      </div>
-
-      {/* Game area */}
-      <div className="flex-1 overflow-y-auto flex flex-col items-center">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentGame}
-            initial={{ opacity: 0, x: 40 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -40 }}
-            transition={{ duration: 0.25 }}
-            className="w-full flex flex-col items-center"
-          >
-            {games[currentGame]}
-          </motion.div>
-        </AnimatePresence>
-      </div>
-
-      {/* Feedback overlay */}
-      <AnimatePresence>
-        {feedback && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.8 }}
-            className="fixed inset-0 flex items-center justify-center pointer-events-none z-[100] bg-black/20 backdrop-blur-sm"
-          >
-            <div
-              className={`p-12 border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] ${
-                feedback === "correct" ? "bg-[#43B047] rotate-2" : "bg-[#E52521] -rotate-2"
-              }`}
-            >
-              {feedback === "correct" ? (
-                <div className="flex flex-col items-center text-white">
-                  <Check className="w-20 h-20 stroke-[4]" />
-                  <span className="text-3xl font-black mt-3 uppercase tracking-widest">Correct! </span>
-                </div>
-              ) : (
-                <div className="flex flex-col items-center text-white">
-                  <X className="w-20 h-20 stroke-[4]" />
-                  <span className="text-3xl font-black mt-3 uppercase tracking-widest">Try Again!</span>
-                </div>
-              )}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+    <div className="relative">
+      <motion.div
+        key={currentGame}
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.9 }}
+        transition={{ duration: 0.3 }}
+      >
+        {games[currentGame]}
+      </motion.div>
     </div>
   );
 }
