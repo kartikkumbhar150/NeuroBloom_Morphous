@@ -1,116 +1,136 @@
 "use client";
 
-import { useState } from 'react';
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, X, Eye, Image as ImageIcon } from 'lucide-react';
-import { useTranslation } from "@/hooks/useTranslation";
-import { Button } from '@/components/ui/button';
+import { Check, X, Eye } from "lucide-react";
 
 interface Level9Props {
   onComplete: () => void;
   onProgress: (gameIndex: number) => void;
+  phase?: number;
 }
 
-export function Level9VisualDiscovery({ onComplete, onProgress }: Level9Props) {
-  const { t } = useTranslation();
-  const [currentGame, setCurrentGame] = useState(0);
-  const [feedback, setFeedback] = useState<'correct' | 'incorrect' | null>(null);
+const ROUNDS = [
+  { target: "HAPPY",    correct: "😊", options: ["😊", "😢", "😠"] },
+  { target: "APPLE",    correct: "🍎", options: ["🚗", "🍎", "🐶"] },
+  { target: "HOUSE",    correct: "🏠", options: ["🌳", "🌟", "🏠"] },
+  { target: "SUN",      correct: "☀️", options: ["🌙", "☀️", "⭐"] },
+  { target: "FISH",     correct: "🐟", options: ["🐟", "🐸", "🦋"] },
+  { target: "ROCKET",   correct: "🚀", options: ["🚂", "⛵", "🚀"] },
+];
 
-  const rounds = [
-    { target: "HAPPY", options: ["😊", "😢", "😠"] },
-    { target: "APPLE", options: ["🍎", "🚗", "🐶"] },
-    { target: "HOUSE", options: ["🌳", "🏠", "🌟"] },
-  ];
+export function Level9VisualDiscovery({ onComplete, onProgress, phase = 0 }: Level9Props) {
+  const [round, setRound] = useState(0);
+  const [feedback, setFeedback] = useState<"correct" | "wrong" | null>(null);
+  const [score, setScore] = useState(0);
 
-  const currentRound = rounds[currentGame];
+  const current = ROUNDS[round];
 
-  const handleAnswer = (option: string) => {
+  const handlePick = (opt: string) => {
     if (feedback !== null) return;
-
-    // Simple check based on index for this placeholder
-    const isCorrect = option === currentRound.options[0] || option === currentRound.options[1] && currentRound.target === "HOUSE"; 
-
-    if (option === "😊" && currentRound.target === "HAPPY" || 
-        option === "🍎" && currentRound.target === "APPLE" ||
-        option === "🏠" && currentRound.target === "HOUSE") {
-      setFeedback('correct');
-    } else {
-      setFeedback('incorrect');
-    }
-
+    const isCorrect = opt === current.correct;
+    setFeedback(isCorrect ? "correct" : "wrong");
+    if (isCorrect) setScore((s) => s + 1);
     setTimeout(() => {
       setFeedback(null);
-      if (option === "😊" || option === "🍎" || option === "🏠") {
-        if (currentGame < rounds.length - 1) {
-          setCurrentGame(c => c + 1);
-          onProgress(currentGame + 1);
-        } else {
-          onComplete();
-        }
+      if (round < ROUNDS.length - 1) {
+        onProgress(round + 1);
+        setRound((r) => r + 1);
+      } else {
+        onComplete();
       }
-    }, 1500);
+    }, isCorrect ? 1100 : 1400);
   };
 
   return (
-    <div className="w-full h-full flex flex-col relative bg-muted p-8">
+    <div className="w-full h-full flex flex-col bg-background overflow-y-auto">
       {/* Header */}
-      <div className="flex justify-between items-center mb-12">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 bg-chart-2 border-4 border-black rounded-full flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-            <Eye className="w-6 h-6 text-white" />
+      <div className="flex items-center justify-between px-6 py-4 border-b-4 border-black bg-[#00BCD4]">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-white border-2 border-black flex items-center justify-center shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+            <Eye size={18} className="text-[#00BCD4]" />
           </div>
-          <h2 className="text-2xl font-black text-black uppercase italic tracking-wider">
-            Visual Discovery
-          </h2>
+          <span className="text-white font-black uppercase italic tracking-tight text-xl">Visual Discovery</span>
         </div>
-        <div className="bg-white border-4 border-black px-6 py-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-          <span className="text-xl font-black text-black">
-            Scene {currentGame + 1}/{rounds.length}
-          </span>
+        <div className="flex items-center gap-3">
+          <div className="bg-white border-2 border-black px-3 py-1 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+            <span className="text-xs font-black uppercase tracking-widest">Score </span>
+            <span className="text-lg font-black">{score}</span>
+          </div>
+          <div className="bg-black/20 border-2 border-white/40 px-3 py-1">
+            <span className="text-white text-xs font-black uppercase tracking-widest">
+              Scene {round + 1}/{ROUNDS.length}
+            </span>
+          </div>
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col items-center justify-center space-y-12">
-        <p className="text-xl font-bold uppercase tracking-widest text-black/60 text-center max-w-lg">
-          Match the visual sign to the word!
+      {/* Progress strip */}
+      <div className="h-3 bg-white border-b-2 border-black">
+        <div
+          className="h-full bg-[#FBD000] border-r-2 border-black transition-all duration-500"
+          style={{ width: `${(round / ROUNDS.length) * 100}%` }}
+        />
+      </div>
+
+      {/* Game area */}
+      <div className="flex-1 flex flex-col items-center justify-center gap-10 p-8 relative">
+        <p className="text-center text-black/60 font-black uppercase tracking-widest text-sm">
+          Match the word to the correct picture!
         </p>
 
-        <div className="bg-white border-8 border-black p-8 shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] rotate-[-2deg]">
-          <h1 className="text-6xl font-black uppercase tracking-widest text-primary">
-            {currentRound.target}
-          </h1>
-        </div>
+        {/* Word card */}
+        <motion.div
+          key={round}
+          initial={{ scale: 0.85, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="bg-[#00BCD4] border-4 border-black px-10 py-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] -rotate-1"
+        >
+          <span className="text-white font-black uppercase tracking-widest text-5xl">
+            {current.target}
+          </span>
+        </motion.div>
 
-        <div className="flex gap-8 mt-12">
-          {currentRound.options.map((opt, i) => (
+        {/* Options */}
+        <div className="flex gap-6">
+          {current.options.map((opt, i) => (
             <motion.button
-              key={i}
-              whileHover={{ scale: 1.1, rotate: Math.random() > 0.5 ? 5 : -5 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={() => handleAnswer(opt)}
-              className="w-32 h-32 bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center text-7xl hover:bg-accent transition-colors"
+              key={`${round}-${i}`}
+              whileHover={{ scale: 1.08, y: -4 }}
+              whileTap={{ scale: 0.94 }}
+              onClick={() => handlePick(opt)}
+              disabled={feedback !== null}
+              className="w-28 h-28 bg-white border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center text-6xl hover:bg-[#FBD000] active:shadow-none active:translate-x-1 active:translate-y-1 transition-colors"
             >
               {opt}
             </motion.button>
           ))}
         </div>
 
+        {/* Feedback overlay */}
         <AnimatePresence>
           {feedback && (
             <motion.div
-              initial={{ opacity: 0, y: 50, scale: 0.5 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0 }}
-              className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white border-8 border-black p-12 shadow-[16px_16px_0px_0px_rgba(0,0,0,1)] ${
-                feedback === 'correct' ? 'rotate-3' : '-rotate-3'
-              }`}
+              key="fb"
+              initial={{ opacity: 0, scale: 0.6 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.6 }}
+              className="absolute inset-0 flex items-center justify-center pointer-events-none"
             >
-              {feedback === 'correct' ? (
-                <Check className="w-32 h-32 text-chart-4" strokeWidth={4} />
-              ) : (
-                <X className="w-32 h-32 text-destructive" strokeWidth={4} />
-              )}
+              <div
+                className={`border-8 border-black p-10 shadow-[16px_16px_0px_0px_rgba(0,0,0,1)] flex flex-col items-center gap-3 ${
+                  feedback === "correct" ? "bg-[#43B047] rotate-3" : "bg-[#E52521] -rotate-3"
+                }`}
+              >
+                {feedback === "correct" ? (
+                  <Check size={72} strokeWidth={4} className="text-white" />
+                ) : (
+                  <X size={72} strokeWidth={4} className="text-white" />
+                )}
+                <span className="text-white font-black uppercase italic text-xl tracking-tight">
+                  {feedback === "correct" ? "Perfect Match!" : "Try Again!"}
+                </span>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>

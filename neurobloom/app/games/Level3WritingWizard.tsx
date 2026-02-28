@@ -8,20 +8,17 @@ import { useTranslation } from "@/hooks/useTranslation";
 interface Level3Props {
   onComplete: () => void;
   onProgress: (gameIndex: number) => void;
+  phase?: number;
 }
 
-// Inline spinner matching the brutalist button style
+// CSS-only spinner — no framer-motion on every frame
 function ButtonSpinner() {
   return (
-    <motion.div
-      animate={{ rotate: 360 }}
-      transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }}
-      className="w-8 h-8 border-4 border-white border-t-transparent rounded-full"
-    />
+    <div className="w-8 h-8 border-4 border-white border-t-transparent rounded-full animate-spin" />
   );
 }
 
-export function Level3WritingWizard({ onComplete, onProgress }: Level3Props) {
+export function Level3WritingWizard({ onComplete, onProgress, phase = 0 }: Level3Props) {
   const { t } = useTranslation();
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -83,18 +80,15 @@ export function Level3WritingWizard({ onComplete, onProgress }: Level3Props) {
   };
 
   return (
-    <div className="text-center max-w-2xl mx-auto px-4 py-2 min-h-[60vh] flex flex-col justify-center">
-      <h2 className="text-4xl font-black text-black mb-6 uppercase tracking-tight">
+    <div className="text-center max-w-2xl mx-auto px-4 py-8 h-full overflow-y-auto flex flex-col items-center">
+      <h2 className="text-4xl font-black text-black mb-4 uppercase tracking-tight">
         {t('game_w1_title')}
       </h2>
 
-      <motion.div
-        animate={{ rotate: [0, 10, -10, 0], y: [0, -10, 0] }}
-        transition={{ duration: 3, repeat: Infinity }}
-        className="text-8xl mb-8 drop-shadow-lg"
-      >
+      {/* Static emoji — infinite framer-motion loops cause layout jank */}
+      <div className="text-8xl mb-6 drop-shadow-lg select-none animate-bounce">
         🍄
-      </motion.div>
+      </div>
 
       <div className="bg-white border-4 border-black p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] mb-8">
         <div className="bg-muted border-2 border-black p-6 mb-6 shadow-[inset_4px_4px_0px_0px_rgba(0,0,0,0.1)]">

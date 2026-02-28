@@ -1,107 +1,133 @@
 "use client";
 
-import { useState } from 'react';
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mic, Check, Play, Volume2 } from 'lucide-react';
-import { useTranslation } from "@/hooks/useTranslation";
-import { Button } from '@/components/ui/button';
+import { Mic, Check, Volume2 } from "lucide-react";
 
 interface Level8Props {
   onComplete: () => void;
   onProgress: (gameIndex: number) => void;
+  phase?: number;
 }
 
-export function Level8ClarityQuest({ onComplete, onProgress }: Level8Props) {
-  const { t } = useTranslation();
-  const [currentGame, setCurrentGame] = useState(0);
-  const [isRecording, setIsRecording] = useState(false);
-  const [feedback, setFeedback] = useState<'correct' | null>(null);
+const WORDS = [
+  { display: "Ba · na · na", syllables: 3, emoji: "🍌" },
+  { display: "El · e · phant", syllables: 3, emoji: "🐘" },
+  { display: "Um · brel · la", syllables: 3, emoji: "☂️" },
+  { display: "Wa · ter · mel · on", syllables: 4, emoji: "🍉" },
+  { display: "But · ter · fly", syllables: 3, emoji: "🦋" },
+  { display: "Hip · po · pot · a · mus", syllables: 5, emoji: "🦛" },
+];
 
-  const words = ["Ba-na-na", "El-e-phant", "Um-brel-la", "Wa-ter-mel-on"];
+export function Level8ClarityQuest({ onComplete, onProgress, phase = 0 }: Level8Props) {
+  const [idx, setIdx] = useState(0);
+  const [recording, setRecording] = useState(false);
+  const [showFeedback, setShowFeedback] = useState(false);
 
-  const handleRecord = () => {
-    setIsRecording(true);
-    
-    // Simulate recording duration
+  const word = WORDS[idx];
+
+  const handleSpeak = () => {
+    if (recording || showFeedback) return;
+    setRecording(true);
     setTimeout(() => {
-      setIsRecording(false);
-      setFeedback('correct');
-      
+      setRecording(false);
+      setShowFeedback(true);
       setTimeout(() => {
-        setFeedback(null);
-        if (currentGame < words.length - 1) {
-          setCurrentGame(c => c + 1);
-          onProgress(currentGame + 1);
+        setShowFeedback(false);
+        if (idx < WORDS.length - 1) {
+          onProgress(idx + 1);
+          setIdx((i) => i + 1);
         } else {
           onComplete();
         }
-      }, 1500);
+      }, 1400);
     }, 2000);
   };
 
   return (
-    <div className="w-full h-full flex flex-col relative bg-muted p-8">
+    <div className="w-full h-full flex flex-col bg-background overflow-y-auto">
       {/* Header */}
-      <div className="flex justify-between items-center mb-12">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 bg-secondary border-4 border-black rounded-full flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-            <Volume2 className="w-6 h-6 text-white" />
+      <div className="flex items-center justify-between px-6 py-4 border-b-4 border-black bg-[#9C27B0]">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-white border-2 border-black flex items-center justify-center shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+            <Volume2 size={18} className="text-[#9C27B0]" />
           </div>
-          <h2 className="text-2xl font-black text-black uppercase italic tracking-wider">
-            Clarity Quest
-          </h2>
+          <span className="text-white font-black uppercase italic tracking-tight text-xl">Clarity Quest</span>
         </div>
-        <div className="bg-white border-4 border-black px-6 py-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-          <span className="text-xl font-black text-black">
-            Word {currentGame + 1}/{words.length}
-          </span>
+        <div className="flex items-center gap-3">
+          <div className="bg-white border-2 border-black px-3 py-1 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+            <span className="text-xs font-black uppercase tracking-widest">Word </span>
+            <span className="text-lg font-black">{idx + 1}/{WORDS.length}</span>
+          </div>
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col items-center justify-center space-y-12">
-        <p className="text-xl font-bold uppercase tracking-widest text-black/60 text-center max-w-lg">
-          Listen to the word, then repeat it clearly!
+      {/* Progress strip */}
+      <div className="h-3 bg-white border-b-2 border-black">
+        <div
+          className="h-full bg-[#FBD000] border-r-2 border-black transition-all duration-500"
+          style={{ width: `${(idx / WORDS.length) * 100}%` }}
+        />
+      </div>
+
+      {/* Game area */}
+      <div className="flex-1 flex flex-col items-center justify-center gap-8 p-8 relative">
+        <p className="text-center text-black/60 font-black uppercase tracking-widest text-sm">
+          Say the word clearly — clap for each syllable!
         </p>
 
-        <div className="flex items-center gap-6">
-          <Button variant="outline" size="icon" className="w-16 h-16 rounded-full border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-            <Play className="w-8 h-8 ml-1" />
-          </Button>
-          <div className="bg-white border-4 border-black px-8 py-4 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-            <h1 className="text-5xl font-black uppercase tracking-widest text-primary">
-              {words[currentGame]}
-            </h1>
-          </div>
-        </div>
-
+        {/* Word card */}
         <motion.div
-          animate={isRecording ? { scale: [1, 1.1, 1] } : {}}
-          transition={{ duration: 1, repeat: Infinity }}
+          key={idx}
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          className="bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] px-10 py-8 flex flex-col items-center gap-4"
         >
-          <Button 
-            onClick={handleRecord}
-            disabled={isRecording || feedback !== null}
-            size="lg"
-            className={`text-xl py-8 px-12 border-4 border-black uppercase italic tracking-widest transition-all ${
-              isRecording ? 'bg-destructive animate-pulse shadow-none translate-y-1' : 'shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]'
-            }`}
-          >
-            <Mic className={`w-8 h-8 mr-3 ${isRecording ? 'animate-bounce' : ''}`} />
-            {isRecording ? "Listening..." : "Hold to Speak"}
-          </Button>
+          <span className="text-7xl">{word.emoji}</span>
+          <div className="bg-[#9C27B0] border-2 border-black px-6 py-3">
+            <span className="text-white font-black uppercase tracking-widest text-3xl">
+              {word.display}
+            </span>
+          </div>
+          <div className="flex gap-2 mt-1">
+            {Array.from({ length: word.syllables }).map((_, i) => (
+              <div key={i} className="w-8 h-8 border-2 border-black bg-[#FBD000] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center">
+                <span className="font-black text-black text-sm">{i + 1}</span>
+              </div>
+            ))}
+          </div>
         </motion.div>
 
+        {/* Mic button */}
+        <button
+          onClick={handleSpeak}
+          disabled={recording || showFeedback}
+          className={`flex items-center gap-4 text-xl font-black uppercase italic tracking-widest px-12 py-6 border-4 border-black transition-all ${
+            recording
+              ? "bg-[#E52521] text-white shadow-none translate-y-1 translate-x-1"
+              : "bg-[#049CD8] text-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:bg-[#0380B5] active:shadow-none active:translate-x-1 active:translate-y-1"
+          }`}
+        >
+          <Mic size={28} className={recording ? "animate-bounce" : ""} />
+          {recording ? "Listening…" : "Tap & Say It!"}
+        </button>
+
+        {/* Feedback overlay */}
         <AnimatePresence>
-          {feedback && (
+          {showFeedback && (
             <motion.div
-              initial={{ opacity: 0, scale: 0.5 }}
+              key="fb"
+              initial={{ opacity: 0, scale: 0.6 }}
               animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.5 }}
-              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white border-8 border-black p-8 shadow-[16px_16px_0px_0px_rgba(0,0,0,1)] flex flex-col items-center gap-4"
+              exit={{ opacity: 0, scale: 0.6 }}
+              className="absolute inset-0 flex items-center justify-center pointer-events-none"
             >
-              <Check className="w-24 h-24 text-chart-4" strokeWidth={4} />
-              <p className="text-2xl font-black uppercase italic">Great Job!</p>
+              <div className="bg-[#43B047] border-8 border-black p-10 shadow-[16px_16px_0px_0px_rgba(0,0,0,1)] flex flex-col items-center gap-3 rotate-3">
+                <Check size={72} strokeWidth={4} className="text-white" />
+                <span className="text-white font-black uppercase italic text-2xl tracking-tight">
+                  Great Job!
+                </span>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
