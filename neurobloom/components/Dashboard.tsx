@@ -84,25 +84,31 @@ export default function Dashboard({ onStartTest }: DashboardProps) {
   }, []);
 
   return (
-    <div className="h-screen w-full bg-background text-foreground flex overflow-hidden font-sans">
+    // FIX 1: Changed from `h-screen overflow-hidden` to `min-h-screen` so the
+    // page can grow taller than the viewport on small screens.
+    <div className="min-h-screen w-full bg-background text-foreground flex font-sans">
       <Sidebar />
 
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col min-w-0 overflow-hidden bg-background">
+      {/* FIX 2: Removed `overflow-hidden` from main so content isn't clipped.
+          Added `overflow-x-hidden` only to prevent unwanted horizontal scroll. */}
+      <main className="flex-1 flex flex-col min-w-0 overflow-x-hidden bg-background">
         {/* Header */}
-        <div className="px-8 pt-10 pb-4 flex-shrink-0 bg-background">
-          <div className="flex items-center justify-between">
-            <div>
+        <div className="px-4 sm:px-8 pt-8 sm:pt-10 pb-4 flex-shrink-0 bg-background">
+          <div className="flex items-center justify-between gap-4">
+            <div className="min-w-0">
               <motion.h1
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="text-3xl font-black text-black uppercase italic tracking-tighter"
+                className="text-2xl sm:text-3xl font-black text-black uppercase italic tracking-tighter truncate"
               >
                 Hello, <span className="text-primary">{userName}</span>
               </motion.h1>
-              <p className="text-sm font-black text-black/40 mt-1 uppercase tracking-widest">Welcome back to your diagnostic terminal</p>
+              <p className="text-xs sm:text-sm font-black text-black/40 mt-1 uppercase tracking-widest">
+                Welcome back to your diagnostic terminal
+              </p>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 flex-shrink-0">
               <LanguageSwitcher />
               <div className="hidden sm:block text-right">
                 <p className="text-xs font-black text-black uppercase tracking-tight">{userName}</p>
@@ -117,13 +123,17 @@ export default function Dashboard({ onStartTest }: DashboardProps) {
         </div>
 
         {/* Content */}
-        <div className="flex-1 px-8 py-6 overflow-y-auto">
+        {/* FIX 3: Removed `flex-1` + `overflow-y-auto` — content now flows
+            naturally in the document, enabling native page scroll on mobile. */}
+        <div className="px-4 sm:px-8 py-6">
           <div className="max-w-6xl flex flex-col items-start">
             
             {/* Section Header */}
             <div className="mb-8">
-              <h3 className="text-2xl font-black text-black uppercase italic tracking-tighter">Active Modules</h3>
-              <p className="text-sm font-black text-black/40 mt-1 uppercase tracking-widest">Select an environment to begin patient screening.</p>
+              <h3 className="text-xl sm:text-2xl font-black text-black uppercase italic tracking-tighter">Active Modules</h3>
+              <p className="text-xs sm:text-sm font-black text-black/40 mt-1 uppercase tracking-widest">
+                Select an environment to begin patient screening.
+              </p>
             </div>
 
             {/* Assessment Card */}
@@ -131,7 +141,8 @@ export default function Dashboard({ onStartTest }: DashboardProps) {
               initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ type: "spring", stiffness: 110 }}
-              className="w-full max-w-md bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[-4px] transition-all relative overflow-hidden"
+              // FIX 4: `w-full` on mobile, capped at `max-w-md` on larger screens
+              className="w-full sm:max-w-md bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[-4px] transition-all relative overflow-hidden"
             >
               {/* Top bar */}
               <div className="h-2 w-full bg-primary" />
@@ -142,10 +153,10 @@ export default function Dashboard({ onStartTest }: DashboardProps) {
               ))}
 
               {/* Card content */}
-              <div className="p-8 relative z-10">
+              <div className="p-6 sm:p-8 relative z-10">
                 {/* Status Row */}
                 <div className="flex items-center justify-between mb-8">
-                  <div className="flex items-center gap-2 bg-accent border-2 border-black px-4 py-1 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                  <div className="flex items-center gap-2 bg-accent border-2 border-black px-3 sm:px-4 py-1 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
                     <Zap size={14} className="fill-black text-black" />
                     <span className="text-xs font-black tracking-widest uppercase text-black">
                       {t("dash_system_ready")}
@@ -160,14 +171,14 @@ export default function Dashboard({ onStartTest }: DashboardProps) {
                 </div>
 
                 {/* Title */}
-                <h3 className="text-3xl font-black text-black leading-tight mb-1 uppercase italic tracking-tighter">
+                <h3 className="text-2xl sm:text-3xl font-black text-black leading-tight mb-1 uppercase italic tracking-tighter">
                   {t("dash_cognitive_reading")}
                 </h3>
                 <p className="text-xs text-black/40 font-black mb-8 uppercase tracking-widest">{t("dash_ai_module")}</p>
 
                 {/* Stat boxes */}
-                <div className="flex gap-4 mb-8">
-                  <div className="flex-1 border-2 border-black p-4 bg-muted shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                <div className="flex gap-3 sm:gap-4 mb-8">
+                  <div className="flex-1 border-2 border-black p-3 sm:p-4 bg-muted shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
                     <div className="flex items-center gap-2 mb-1">
                       <Clock size={14} className="text-black/40" />
                       <span className="text-[10px] font-black tracking-widest text-black/40 uppercase">
@@ -176,7 +187,7 @@ export default function Dashboard({ onStartTest }: DashboardProps) {
                     </div>
                     <p className="text-sm font-black text-black uppercase">{t("dash_duration_val")}</p>
                   </div>
-                  <div className="flex-1 border-2 border-black p-4 bg-muted shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                  <div className="flex-1 border-2 border-black p-3 sm:p-4 bg-muted shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
                     <div className="flex items-center gap-2 mb-1">
                       <BarChart2 size={14} className="text-black/40" />
                       <span className="text-[10px] font-black tracking-widest text-black/40 uppercase">
@@ -191,7 +202,7 @@ export default function Dashboard({ onStartTest }: DashboardProps) {
                 <Button
                   size="lg"
                   onClick={onStartTest}
-                  className="w-full text-xl py-10 uppercase italic shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]"
+                  className="w-full text-lg sm:text-xl py-8 sm:py-10 uppercase italic shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]"
                 >
                   <Play size={20} className="fill-current" />
                   {t("dash_launch_env")}
@@ -207,7 +218,9 @@ export default function Dashboard({ onStartTest }: DashboardProps) {
         </div>
 
         {/* Footer Status */}
-        <footer className="h-12 bg-white border-t-4 border-black px-8 flex items-center justify-between">
+        {/* FIX 5: Removed `h-12` fixed height — use padding instead so it
+            doesn't get cut off or collapse on small screens. */}
+        <footer className="mt-auto bg-white border-t-4 border-black px-4 sm:px-8 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 bg-[#43B047] border border-black animate-pulse" />
             <span className="text-xs font-black uppercase tracking-widest">{t("dash_system_conn")}</span>
