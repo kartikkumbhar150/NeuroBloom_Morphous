@@ -118,7 +118,7 @@ export function LoginPage() {
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder={t("login_email_placeholder")}
                       required
-                      className="w-full pl-12 pr-4 py-4 bg-muted border-4 border-black focus:outline-none focus:bg-white transition-all text-sm font-black uppercase tracking-tight"
+                      className="w-full pl-12 pr-4 py-4 bg-muted border-4 border-black focus:outline-none focus:bg-white transition-all text-sm font-black tracking-tight"
                     />
                   </div>
                 </div>

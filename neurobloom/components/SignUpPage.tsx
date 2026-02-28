@@ -71,12 +71,12 @@ export function SignUpPage() {
           <span>{t("signup_back_to_home")}</span>
         </button>
   
-        <div className="absolute top-8 right-8 z-20">
+        <div className="absolute top-10 right-8 z-20">
           <LanguageSwitcher />
         </div>
   
         {/* Sign Up Card */}
-        <div className="w-full max-w-5xl relative z-10">
+        <div className="w-full max-w-5xl mt-4 relative z-10">
           <div className="grid md:grid-cols-5 gap-0 bg-white border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] overflow-hidden">
             
             {/* Left Side - Mission Message */}
@@ -151,7 +151,7 @@ export function SignUpPage() {
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                       placeholder={t("signup_email_placeholder")}
                       required
-                      className="w-full pl-12 pr-4 py-4 bg-muted border-4 border-black focus:outline-none focus:bg-white transition-all text-sm font-black uppercase tracking-tight"
+                      className="w-full pl-12 pr-4 py-4 bg-muted border-4 border-black focus:outline-none focus:bg-white transition-all text-sm font-black tracking-tight"
                     />
                   </div>
                 </div>

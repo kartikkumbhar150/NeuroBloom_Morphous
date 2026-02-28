@@ -3,15 +3,15 @@
 import { useSearchParams, useRouter } from "next/navigation";
 import { useEffect, useState, Suspense } from "react";
 import { useProgress } from "@/hooks/useProgress";
-import { Level1MathAdventure } from "@/app/games/Level1MathAdventure";
-import { Level2ReadingRocket } from "@/app/games/Level2ReadingRocket";
-import { Level3WritingWizard } from "@/app/games/Level3WritingWizard";
-import { Level4FeelingFriends } from "@/app/games/Level4FeelingFriends";
-import { Level5SuperEars } from "@/app/games/Level5SuperEars";
-import { Level6EagleEyes } from "@/app/games/Level6EagleEyes";
-import { Level7FocusAdventure } from "@/app/games/Level7FocusAdventure";
-import { Level8ClarityQuest } from "@/app/games/Level8ClarityQuest";
-import { Level9VisualDiscovery } from "@/app/games/Level9VisualDiscovery";
+import { Level1MathAdventure } from "@/app/(app)/games/Level1MathAdventure";
+import { Level2ReadingRocket } from "@/app/(app)/games/Level2ReadingRocket";
+import { Level3WritingWizard } from "@/app/(app)/games/Level3WritingWizard";
+import { Level4FeelingFriends } from "@/app/(app)/games/Level4FeelingFriends";
+import { Level5SuperEars } from "@/app/(app)/games/Level5SuperEars";
+import { Level6EagleEyes } from "@/app/(app)/games/Level6EagleEyes";
+import { Level7FocusAdventure } from "@/app/(app)/games/Level7FocusAdventure";
+import { Level8ClarityQuest } from "@/app/(app)/games/Level8ClarityQuest";
+import { Level9VisualDiscovery } from "@/app/(app)/games/Level9VisualDiscovery";
 import { motion, AnimatePresence } from "framer-motion";
 
 function QuestContent() {
