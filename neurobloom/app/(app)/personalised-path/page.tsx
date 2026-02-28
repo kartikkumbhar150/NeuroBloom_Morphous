@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Activity,
@@ -45,6 +45,7 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { useProgress, CardStatus } from "@/hooks/useProgress";
+import { PathGameModal } from "@/components/PathGameModal";
 
 interface Assessment {
   id: string;
@@ -99,7 +100,7 @@ const DISABILITY_CONFIG: Record<
     color: [string, string];
     floaters: FloatingEl[];
     icon: React.ReactNode;
-    phases: { title: string; emoji: string; days: string; activities: string[] }[];
+    phases: { title: string; emoji: string; days: string; activities: string[]; difficulty?: string }[];
   }
 > = {
   dyslexia: {
@@ -177,12 +178,14 @@ const DISABILITY_CONFIG: Record<
         emoji: "🔢",
         days: "Days 1–5",
         activities: ["Compare Numbers", "Number Matching", "Count Objects", "Simple Addition (Visual)", "Missing Number Puzzles"],
+        difficulty: "Single digit → Visual support → No timer",
       },
       {
         title: "Real World Math",
         emoji: "💰",
         days: "Days 6–10",
         activities: ["Coin Shop Game", "Number Line Jump", "Even/Odd Sorting", "Basic Subtraction Race", "Pattern Completion"],
+        difficulty: "Introduce timer + reduce visual hints",
       },
       {
         title: "Time & Sequences",
@@ -514,6 +517,7 @@ function AssessmentCard({
   onStart: (name: string) => void;
 }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const cfg = DISABILITY_CONFIG[disability.toLowerCase()];
   const totalActivities = cfg?.phases.reduce((s, p) => s + p.activities.length, 0) ?? 15;
   const { progress, status, startDate, endDate, handleStart: hookHandleStart, handleComplete, completeActivity, isLoaded } = useProgress(id, totalActivities);
@@ -535,9 +539,25 @@ function AssessmentCard({
     }
   };
 
+  const [showPathModal, setShowPathModal] = useState(false);
+
+  // Auto-open modal when returning from a completed quest
+  useEffect(() => {
+    if (!isLoaded) return;
+    if (searchParams.get("openModal") === id) {
+      setShowPathModal(true);
+      // Clean the URL so a refresh doesn't re-open the modal
+      router.replace("/personalised-path");
+    }
+  }, [isLoaded, searchParams, id, router]);
+
   const handleStart = () => {
     hookHandleStart();
     onStart(childName);
+  };
+
+  const handleOpenPath = () => {
+    setShowPathModal(true);
   };
 
   const statusStyles: Record<CardStatus, { label: string; variant: string; color: string }> = {
@@ -681,7 +701,7 @@ function AssessmentCard({
 
             {status === "idle" && (
               <Button
-                onClick={handleStart}
+                onClick={handleOpenPath}
                 className="w-full py-6 text-sm uppercase italic tracking-wider"
               >
                 <Play size={14} className="fill-current" />
@@ -691,10 +711,10 @@ function AssessmentCard({
 
             {status === "running" && (
               <Button
-                onClick={handleComplete}
+                onClick={handleOpenPath}
                 className="w-full py-6 text-sm bg-secondary text-white uppercase italic tracking-wider"
               >
-                <RefreshCw size={14} className="animate-spin" />
+                <RefreshCw size={14} />
                 Continue Adventure
               </Button>
             )}
@@ -707,6 +727,23 @@ function AssessmentCard({
           </div>
         </div>
       </motion.div>
+
+      <AnimatePresence>
+        {showPathModal && (
+          <PathGameModal
+            open={showPathModal}
+            onClose={() => setShowPathModal(false)}
+            childName={childName}
+            disability={disability}
+            assessmentId={id}
+            progress={progress}
+            totalActivities={totalActivities}
+            cfg={cfg}
+            status={status}
+            onFirstStart={handleStart}
+          />
+        )}
+      </AnimatePresence>
 
       <DialogContent className="max-w-2xl border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] p-0 gap-0 overflow-hidden bg-background">
         <DialogHeader className="p-8 bg-primary border-b-4 border-black relative overflow-hidden">

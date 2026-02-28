@@ -21,7 +21,9 @@ function QuestContent() {
   const assessmentId = searchParams.get("assessmentId") || "";
   const disability = searchParams.get("disability") || "";
   const activityStr = searchParams.get("activity") || "0";
+  const phaseStr = searchParams.get("phase") || "0";
   const activityIdx = parseInt(activityStr, 10);
+  const phaseIdx = parseInt(phaseStr, 10);
   
   // We assume 30 total activities for all quests right now.
   const { completeActivity, isLoaded, progress } = useProgress(assessmentId, 30);
@@ -31,7 +33,7 @@ function QuestContent() {
     completeActivity();
     setCompleted(true);
     setTimeout(() => {
-      router.push("/personalised-path");
+      router.push(`/personalised-path?openModal=${encodeURIComponent(assessmentId)}`);
     }, 2500);
   };
 
@@ -107,7 +109,17 @@ function QuestContent() {
             exit={{ y: -50, opacity: 0 }}
             className="w-full max-w-4xl h-[80vh] border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] bg-white overflow-hidden relative"
           >
-            <GameComponent onComplete={handleComplete} onProgress={handleProgress} />
+            {disability.toLowerCase() === "dysgraphia" ? (
+              <Level3WritingWizard onComplete={handleComplete} onProgress={handleProgress} phase={phaseIdx} />
+            ) : disability.toLowerCase() === "adhd" ? (
+              <Level7FocusAdventure onComplete={handleComplete} onProgress={handleProgress} phase={phaseIdx} />
+            ) : disability.toLowerCase() === "speech" ? (
+              <Level8ClarityQuest onComplete={handleComplete} onProgress={handleProgress} phase={phaseIdx} />
+            ) : disability.toLowerCase() === "hearing" ? (
+              <Level9VisualDiscovery onComplete={handleComplete} onProgress={handleProgress} phase={phaseIdx} />
+            ) : (
+              <GameComponent onComplete={handleComplete} onProgress={handleProgress} />
+            )}
           </motion.div>
         )}
       </AnimatePresence>
