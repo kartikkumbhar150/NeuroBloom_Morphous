@@ -1,0 +1,29 @@
+{
+  "task": "engagement",
+  "class_to_idx": {
+    "bored": 0,
+    "confused": 1,
+    "engaged": 2,
+    "not_engaged": 3
+  },
+  "idx_to_class": {
+    "0": "bored",
+    "1": "confused",
+    "2": "engaged",
+    "3": "not_engaged"
+  },
+  "input_size": [
+    224,
+    224
+  ],
+  "normalize_mean": [
+    0.485,
+    0.456,
+    0.406
+  ],
+  "normalize_std": [
+    0.229,
+    0.224,
+    0.225
+  ]
+}
