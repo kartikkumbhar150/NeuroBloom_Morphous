@@ -33,7 +33,7 @@ export default function LandingPage() {
             <LanguageSwitcher />
             <Button 
               variant="ghost"
-              onClick={() => router.push("/login")}
+              onClick={() => router.push("/dashboard")}
               className="hidden sm:flex"
             >
               {t("landing_btn_signin")}

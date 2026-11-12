@@ -44,7 +44,7 @@ export function SignUpPage() {
 
     //  Signup success
     alert("Account created successfully!");
-    router.push("/login");
+    router.push("/dashboard");
 
   } catch (error) {
     console.error("Signup error:", error);
@@ -223,7 +223,7 @@ export function SignUpPage() {
                 <p className="text-black/40 text-xs font-black uppercase tracking-widest">
                   {t("signup_already_have_account")}{' '}
                   <button
-                    onClick={() => router.push("/login")}
+                    onClick={() => router.push("/dashboard")}
                     className="text-primary font-black hover:underline"
                   >
                     {t("signup_login_link")}
