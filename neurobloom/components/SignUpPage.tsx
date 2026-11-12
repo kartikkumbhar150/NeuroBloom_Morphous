@@ -44,6 +44,7 @@ export function SignUpPage() {
 
     //  Signup success
     alert("Account created successfully!");
+    localStorage.setItem("userName", formData.fullName);
     router.push("/dashboard");
 
   } catch (error) {
